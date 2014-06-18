@@ -30,5 +30,7 @@ This program includes third party libraries:
 		NOTE: muParser has been modified
 * JChart2D[http://jchart2d.sourceforge.net/] license (LGPL) is located in the javaclient/lib/jchart2d-3.2.2 directory
 		NOTE: This includes other libraries; Licenses are included as well
+* CImg[http://cimg.sourceforge.net] license (CeCILL-C) is located in the CImg directory
+
 
 
