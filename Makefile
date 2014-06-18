@@ -1,6 +1,6 @@
 # General
 
-INC_DIRS = -I./muParserC -I./sqlite3
+INC_DIRS = -I./muParserC -I./sqlite3 -I./CImg
 LIBS = -ldl -lpthread -lpng
 LD = g++
 LDFLAGS = -D_GLIBCXX_USE_NANOSLEEP
