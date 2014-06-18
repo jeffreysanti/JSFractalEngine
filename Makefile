@@ -17,8 +17,8 @@ CFLAGS_C = -c -Wall -g
 
 # Params For C++ Code
 
-CC_CPP = g++ -w -std=c++0x
-CFLAGS_CPP = -c -Wall -g -D_GLIBCXX_USE_NANOSLEEP
+CC_CPP = g++
+CFLAGS_CPP = -c -Wall -g -D_GLIBCXX_USE_NANOSLEEP -w -std=c++0x
 
 # FILES TO BUILD
 
@@ -46,7 +46,7 @@ PREBUILD:
 	
 $(EXECUTABLE): $(OBJECTS) $(OBJECTS_C) 
 	
-	cd $(BUILD_DIR); $(LD) $(LDFLAGS) $(OBJECTS) $(OBJECTS_C) -o $@ $(LIBS)
+	cd $(BUILD_DIR); $(LD) $(OBJECTS) $(OBJECTS_C) -o $@ $(LDFLAGS) $(LIBS)
 	cp $(BUILD_DIR)/$@ $(DIST_DIR)
 	cp ./etc/* $(DIST_DIR)
 
