@@ -30,13 +30,30 @@ int main(int argc, char** argv)
 	std::cout << "Login Options: \n";
 	std::cout << gen.getDB()->auth.dumpAuthDetails() << "\n\n";
 
+#ifdef _WIN32
+	WSADATA WsaDat;
+    if (WSAStartup(MAKEWORD(2, 2), &WsaDat) != 0)
+    {
+		std::cerr << "WinSocket Initialization Failed\n";
+		exit(0);
+    } 
+#endif
 
 	struct sockaddr_in addr;
+#ifdef _WIN32
+	SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock == INVALID_SOCKET) {
+		std::cerr << "Socket Creation Failed\n";
+		std::cerr << "  Error" << WSAGetLastError() << "\n";
+		exit(0);
+	}
+#else
 	int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == -1) {
 		std::cerr << "Socket Creation Failed\n";
 		exit(0);
 	}
+#endif
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
@@ -47,7 +64,16 @@ int main(int argc, char** argv)
 		std::cerr << "Socket Binding Failed: " << errno << "\n";
 		exit(0);
 	}
+#ifdef _WIN32
+	u_long iMode = 1;
+	int res = ioctlsocket(sock, FIONBIO, &iMode);
+	if (res != NO_ERROR){
+		std::cerr << "ioctlsocket [For Non-Blocking Mode] failed with error: " << res << "\n";
+		exit(0);
+	}
+#else
 	fcntl(sock, F_SETFL, O_NONBLOCK); // Non-Blocking Mode
+#endif
 
     if(-1 == listen(sock, 30))
     {
@@ -66,20 +92,41 @@ int main(int argc, char** argv)
     while(true){
 
     	sockaddr_in cli_addr;
-    	unsigned int sz = sizeof(cli_addr);
+    	int sz = sizeof(cli_addr);
+    	
+#ifdef _WIN32
+		SOCKET newClient = accept(sock, (struct sockaddr *) &cli_addr, &sz);
+		int err = WSAGetLastError();
+    	if(newClient != INVALID_SOCKET){
+    		// spawn client
+			u_long iMode = 1;
+			int res = ioctlsocket(newClient, FIONBIO, &iMode);
+			if (res != NO_ERROR){
+				std::cerr << "ioctlsocket [For Non-Blocking Mode] failed with error: " << res << "\n";
+				exit(0);
+			}
+			SocketClient cli(newClient, cli_addr, &gen);
+    		C.push_back(cli);
+    		std::cout << "Client Connected\n";
+    	}else if(err != WSAEWOULDBLOCK){
+    		std::cerr << "Socket Accept Failed: " << err << "\n";
+			exit(0);
+    	}
+#else
     	int newClient = accept(sock, (struct sockaddr *) &cli_addr, &sz);
     	if(newClient > 0){
     		// spawn client
-    		int flags = fcntl(newClient, F_GETFL, 0);
+			int flags = fcntl(newClient, F_GETFL, 0);
     		fcntl(newClient, F_SETFL, flags | O_NONBLOCK);
-
-    		SocketClient cli(newClient, cli_addr, &gen);
+			SocketClient cli(newClient, cli_addr, &gen);
     		C.push_back(cli);
     		std::cout << "Client Connected\n";
     	}else if(errno != EWOULDBLOCK && errno != EAGAIN){
     		std::cerr << "Socket Accept Failed: " << errno << "\n";
 			exit(0);
     	}
+#endif
+    		
 
     	// check if any clients have something to say    \o/
     	auto it = C.begin();
@@ -104,7 +151,11 @@ int main(int argc, char** argv)
     }
 
     std::cout.rdbuf( oldCoutStreamBuf );
-    close(sock);
+#ifdef _WIN32
+	closesocket(sock);
+#else
+	close(sock);
+#endif
 
 
 	/*while(true){
@@ -202,6 +253,10 @@ int main(int argc, char** argv)
 		//gen.update();
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	//}
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
 
 	return 0;
 }

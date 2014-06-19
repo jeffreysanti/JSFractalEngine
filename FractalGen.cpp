@@ -33,7 +33,7 @@ FractalGen::~FractalGen() {
 
 void FractalGen::deleteRunningJob(RenderingJob *job)
 {
-	DELETE(job->fract);
+	SAFE_DELETE(job->fract);
 	job->params = NULL;
 }
 

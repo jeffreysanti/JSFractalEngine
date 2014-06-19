@@ -212,9 +212,9 @@ namespace muc
     stream.seekg(0);        // todo:  check if this really is necessary
     stream.imbue(Parser::s_locale);
     stream >> fVal;
-    stringstream_type::pos_type iEnd = stream.tellg(); // Position after reading
+    unsigned int iEnd = stream.tellg(); // Position after reading
 
-    if (iEnd==(stringstream_type::pos_type)-1)
+    if (iEnd==-1)
       return 0;
 
     // find out if imaginary

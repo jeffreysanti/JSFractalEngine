@@ -37,9 +37,9 @@ Fractal::~Fractal()
 	flogFile.flush();
 	flogFile.close();
 
-	DELETE(p);
-	DELETE(pOut);
-	DELETE(img);
+	SAFE_DELETE(p);
+	SAFE_DELETE(pOut);
+	SAFE_DELETE(img);
 }
 
 bool Fractal::isEndedEarly()

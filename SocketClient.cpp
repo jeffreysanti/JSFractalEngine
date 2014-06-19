@@ -50,7 +50,11 @@ bool SocketClient::update(){
 }
 
 void SocketClient::close(){
+#ifdef _WIN32
+	closesocket(sock);
+#else
 	::close(sock);
+#endif
 }
 
 void SocketClient::sendPacket(const char* dta, unsigned int len)
@@ -65,13 +69,13 @@ void SocketClient::sendPacket(const char* dta, unsigned int len)
 
 	if(len == 0)
 		return;
-	unsigned int magicSend = htonl(MAGIC);
-	unsigned int tmp = htonl(len);
-	unsigned int sent=0;
+	int magicSend = htonl(MAGIC);
+	int tmp = htonl(len);
+	int sent=0;
 	int s=0;
 
 	while(sent < 4){
-		s = send(sock, &magicSend+sent, sizeof(unsigned int)-sent, 0);
+		s = send(sock, (const char*)(&magicSend+sent), sizeof(unsigned int)-sent, 0);
 		if(s < 0)
 			return;
 		sent += s;
@@ -80,7 +84,7 @@ void SocketClient::sendPacket(const char* dta, unsigned int len)
 	}
 	sent = 0;
 	while(sent < 4){
-		s = send(sock, &tmp+sent, sizeof(unsigned int)-sent, 0);
+		s = send(sock, (const char*)(&tmp+sent), sizeof(unsigned int)-sent, 0);
 		if(s < 0)
 			return;
 		sent += s;
@@ -100,17 +104,24 @@ void SocketClient::sendPacket(const char* dta, unsigned int len)
 	}
 }
 
+#ifdef _WIN32
+#define wouldBeBlocked (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+#define wouldBeBlocked(i) (errno == EWOULDBLOCK || errno == EAGAIN)
+#endif
+#define isBlocked 
+
 char SocketClient::readInt(unsigned int &val, bool block){
 	unsigned long start = time(NULL);
 	int i = 0;
 	memset(&val, 0, 4);
 	while(i < 4){ // read all four bytes
-		int count = recv(sock, &val+i, 4-i, 0);
+		int count = recv(sock,  (char*)(&val+i), 4-i, 0);
 		if(count == 0){
 			std::cout << "Client Disconnected\n";
 			close();
 			return 2; // disconnected
-		}if(count < 0 && !(errno == EWOULDBLOCK || errno == EAGAIN)){
+		}if(count < 0 && !wouldBeBlocked){
 			std::cerr << "Client Disconnected Unusually: Errno: " << errno << "\n";
 			close();
 			return 2; // disconnected
@@ -171,7 +182,7 @@ char SocketClient::readPacket(char **dta, unsigned int &len)
 			close();
 			delete [] *dta;
 			return 2; // disconnected
-		}if(count < 0 && !(errno == EWOULDBLOCK || errno == EAGAIN)){
+		}if(count < 0 && !wouldBeBlocked){
 			std::cerr << "Client Disconnected Unusually: Errno: " << errno << "\n";
 			close();
 			delete [] *dta;

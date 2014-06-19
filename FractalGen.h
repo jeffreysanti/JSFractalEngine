@@ -14,12 +14,21 @@
 #include <list>
 #include <thread>
 #include <csignal>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#endif
+
 #include <errno.h>
 #include "Fractal.h"
 #include "DBSystem.h"

@@ -46,13 +46,13 @@ namespace muc
     ECmdCode Cmd;
     int StackPos;
 
-    union
-    {
+//    union
+//    {
       struct //SValData
       {
         value_type *ptr;
-        value_type  data;
-        value_type  data2;
+        value_type data;
+        value_type data2;
       } Val;
 
       struct //SFunData
@@ -71,13 +71,15 @@ namespace muc
         value_type *ptr;
         int offset;
       } Oprt;
-    };
+//    };
     SToken(){
     	Cmd = cmLE;
     	StackPos = 0;
     	Val.data = std::complex<double>(0,0);
     	Val.data2 = std::complex<double>(0,0);
     }
+	~SToken(){
+	}
   };
   
   

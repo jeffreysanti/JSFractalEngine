@@ -20,7 +20,7 @@
 #include "ParamaterSchema.h"
 #include "ImageWriter.h"
 
-#define DELETE(x) if(x != NULL){ delete x; x = NULL;}
+#define SAFE_DELETE(x) if(x != NULL){ delete x; x = NULL;}
 
 template<typename TYP>
 inline double linearInterpolate(TYP v0, TYP v1, double t)
