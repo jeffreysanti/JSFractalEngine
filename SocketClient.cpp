@@ -107,7 +107,7 @@ void SocketClient::sendPacket(const char* dta, unsigned int len)
 #ifdef _WIN32
 #define wouldBeBlocked (WSAGetLastError() == WSAEWOULDBLOCK)
 #else
-#define wouldBeBlocked(i) (errno == EWOULDBLOCK || errno == EAGAIN)
+#define wouldBeBlocked (errno == EWOULDBLOCK || errno == EAGAIN)
 #endif
 #define isBlocked 
 

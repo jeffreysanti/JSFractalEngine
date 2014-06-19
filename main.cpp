@@ -92,9 +92,9 @@ int main(int argc, char** argv)
     while(true){
 
     	sockaddr_in cli_addr;
-    	int sz = sizeof(cli_addr);
     	
 #ifdef _WIN32
+    	int sz = sizeof(cli_addr);
 		SOCKET newClient = accept(sock, (struct sockaddr *) &cli_addr, &sz);
 		int err = WSAGetLastError();
     	if(newClient != INVALID_SOCKET){
@@ -113,6 +113,7 @@ int main(int argc, char** argv)
 			exit(0);
     	}
 #else
+    	socklen_t sz = sizeof(cli_addr);
     	int newClient = accept(sock, (struct sockaddr *) &cli_addr, &sz);
     	if(newClient > 0){
     		// spawn client

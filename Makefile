@@ -39,10 +39,10 @@ OBJECTS_C=$(SOURCES_C:.c=.o)
 all: PREBUILD $(SOURCES) $(SOURCES_C) $(EXECUTABLE)
 
 PREBUILD:
-	mkdir $(BUILD_DIR)
-	mkdir $(BUILD_DIR)/muParserC
-	mkdir $(BUILD_DIR)/sqlite3
-	mkdir $(DIST_DIR)
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/muParserC
+	mkdir -p $(BUILD_DIR)/sqlite3
+	mkdir -p $(DIST_DIR)
 	
 $(EXECUTABLE): $(OBJECTS) $(OBJECTS_C) 
 	
