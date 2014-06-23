@@ -35,6 +35,7 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
     private final int REQUEST_GAP = 1000;
     private final long REQUEST_GAP_SSLT = 2000L;
     private final int REQUEST_GAP_RE_SSLT = 60000;
+    private final int REQUEST_GAP_REREQ = 10000;
     
     public PanelLibrary(){
         
@@ -76,6 +77,14 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
             }
         });
         timer.setRepeats(false);
+        timer2 = new javax.swing.Timer(REQUEST_GAP_REREQ, new ActionListener() { // once per minute
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateReRequest();
+            }
+        });
+        timer2.start();
+        timer2.setRepeats(true);
     }
     
     public void handleServerPackets(String head, DataInputStream ds){
@@ -134,11 +143,23 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
         timer.start();
     }
     
+    // send any nessesary re-requests if they failed to come at first
+    public void updateReRequest(){
+        int deferTimer = 0;
+        for(LibraryTile t : T){
+            if(t.getStatus() == LibraryTile.FDBS_UNLINKED){
+                t.updateData(deferTimer);
+                deferTimer += REQUEST_GAP;
+            }
+        }
+    }
+    
     
     private JTextField txtSearch;
     private JButton btnNew;
     private ArrayList<LibraryTile> T;
     private Timer timer;
+    private Timer timer2;
     private long lastUpdate;
 
     @Override

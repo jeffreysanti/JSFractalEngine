@@ -133,6 +133,10 @@ public class LibraryTile extends javax.swing.JPanel {
     }
     
     public void updateData(int deferTime){
+        
+        if(updateTimer.isRunning()) // do not force another request
+            return;
+        
         // retrieve data for job
         if(deferTime > 0){
             updateTimer.stop();
