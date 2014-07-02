@@ -69,9 +69,9 @@ void FractalJulia::processParamsAlgorithm()
 	double sizeY = schem.getDouble(*p, "radI");
 
 	cornerX = (centerX - sizeX);
-	cornerY = (centerY - sizeY);
+	cornerY = (centerY + sizeY);
 	multX = sizeX*2/(double)width;
-	multY = sizeY*2/(double)height;
+	multY = -1 * sizeY*2/(double)height;
 
 	iters = schem.getInt(*p, "iters");
 

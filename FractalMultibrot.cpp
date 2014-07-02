@@ -124,9 +124,9 @@ void FractalMultibrot::processParamsAlgorithm()
 
 
 	cornerX = (centerX - sizeX);
-	cornerY = (centerY - sizeY);
+	cornerY = (centerY + sizeY);
 	multX = sizeX*2/(double)width;
-	multY = sizeY*2/(double)height;
+	multY = -1 * sizeY*2/(double)height;
 
 	iters = schem.getInt(*p, "iters");
 
@@ -146,13 +146,13 @@ void FractalMultibrot::applyTransformations(double sizeX, double sizeY, double c
 	sizeY *= 1.0/scaleY;
 
 	multX = sizeX*2/(double)width;
-	multY = sizeY*2/(double)height;
+	multY = -1 * sizeY*2/(double)height;
 
 	cornerX += (transX*multX);
 	cornerY += (transY*multY);
 
 	centerX = cornerX + sizeX;
-	centerY = cornerY + sizeY;
+	centerY = cornerY - sizeY;
 
 	p->setValue("radR", concat("",sizeX));
 	p->setValue("radI", concat("",sizeY));
