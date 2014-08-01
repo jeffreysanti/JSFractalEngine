@@ -1,0 +1,86 @@
+<project name="JSFractalEngine" default="dist" basedir=".">
+    <description>
+        Build both client and server
+    </description>
+  <!-- set global properties for this build -->
+  <property name="dist"  location="dist"/>
+
+  <property name="linuxroot" value="/usr/bin" />
+  <property name="windowsroot" value="/usr/bin" />
+
+
+  <target name="init" depends="clean">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the dist directory -->
+    <mkdir dir="${dist}"/>
+    <buildnumber/>
+  </target>
+	
+	<target name="javaClient" depends="init">
+		<mkdir dir="${dist}/javaclient" />
+		<ant antfile="build.xml" target="jar" dir="Client/"/>
+		<copy todir="${dist}/javaclient">
+			<fileset dir="Client/dist/">
+      				<exclude name="README.TXT"/>
+    			</fileset>
+		</copy>
+		<copy todir="${dist}/javaclient">
+			<fileset dir="Client/etc/" />
+		</copy>
+		<zip destfile="${dist}/client.${build.number}.noarch.zip" basedir="${dist}/javaclient" />
+	</target>
+
+	<target name="server64linux" depends="init">
+		<mkdir dir="${dist}/server.amd64.linux" />
+		<exec executable="Server/buildscript.sh">
+			<arg value="${linuxroot}"/>
+		    	<arg value="64"/>
+	  	</exec>
+		<copy file="Sever/build/fractServ" todir="${dist}/server.amd64.linux" />
+		<copy todir="${dist}/server.amd64.linux">
+			<fileset dir="Server/etc/" />
+		</copy>
+		<zip destfile="${dist}/server.${build.number}.amd64.linux.zip" basedir="${dist}/server.amd64.linux" />
+	</target>
+
+	<target name="server32linux" depends="init">
+		<mkdir dir="${dist}/server.intel32.linux" />
+		<exec executable="Server/buildscript.sh">
+			<arg value="${linuxroot}"/>
+		    	<arg value="32"/>
+	  	</exec>
+		<copy file="Sever/build/fractServ" todir="${dist}/server.intel32.linux" />
+		<copy todir="${dist}/server.intel32.linux">
+			<fileset dir="Server/etc/" />
+		</copy>
+		<zip destfile="${dist}/server.${build.number}.intel32.linux.zip" basedir="${dist}/server.intel32.linux" />
+	</target>
+
+	<target name="server32windows" depends="init">
+		<mkdir dir="${dist}/server.win32" />
+		<exec executable="Server/buildscript.sh">
+			<arg value="${windowsroot}"/>
+		    	<arg value="32"/>
+	  	</exec>
+		<copy file="Sever/build/fractServ" todir="${dist}/server.win32" />
+		<copy todir="${dist}/server.win32">
+			<fileset dir="Server/etc/" />
+		</copy>
+		<zip destfile="${dist}/server.${build.number}.win32.zip" basedir="${dist}/server.win32" />
+	</target>
+
+	<target name="buildall" depends="javaClient,server64linux,server32linux">
+		
+	</target>
+	<target name="dist" depends="buildall">
+		
+	</target>
+
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${dist} directory trees -->
+    <delete dir="${dist}"/>
+  </target>
+</project>
