@@ -5,8 +5,10 @@
   <!-- set global properties for this build -->
   <property name="dist"  location="dist"/>
 
-  <property name="linuxroot" value="${linuxroot}" />
-  <property name="windowsroot" value="${windowsroot}" />
+  <property name="linuxgcc" value="/usr/bin/gcc" />
+  <property name="linuxgxx" value="/usr/bin/g++" />
+  <property name="wingcc" value="/usr/bin/gcc" />
+  <property name="wingxx" value="/usr/bin/g++" />
 
 
   <target name="init" depends="clean">

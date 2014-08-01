@@ -5,8 +5,10 @@
   <!-- set global properties for this build -->
   <property name="dist"  location="dist"/>
 
-  <property name="linuxroot" value="/usr/bin" />
-  <property name="windowsroot" value="/usr/bin" />
+  <property name="linuxgcc" value="/usr/bin/gcc" />
+  <property name="linuxgxx" value="/usr/bin/g++" />
+  <property name="wingcc" value="/usr/bin/gcc" />
+  <property name="wingxx" value="/usr/bin/g++" />
 
 
   <target name="init" depends="clean">
@@ -34,7 +36,8 @@
 	<target name="server64linux" depends="init">
 		<mkdir dir="${dist}/server.amd64.linux" />
 		<exec executable="Server/buildscript.sh">
-			<arg value="${linuxroot}"/>
+			<arg value="${linuxgcc}"/>
+			<arg value="${linuxgxx}"/>
 		    	<arg value="64"/>
 	  	</exec>
 		<copy file="Sever/build/fractServ" todir="${dist}/server.amd64.linux" />
@@ -47,7 +50,8 @@
 	<target name="server32linux" depends="init">
 		<mkdir dir="${dist}/server.intel32.linux" />
 		<exec executable="Server/buildscript.sh">
-			<arg value="${linuxroot}"/>
+			<arg value="${linuxgcc}"/>
+			<arg value="${linuxgxx}"/>
 		    	<arg value="32"/>
 	  	</exec>
 		<copy file="Sever/build/fractServ" todir="${dist}/server.intel32.linux" />
@@ -60,7 +64,8 @@
 	<target name="server32windows" depends="init">
 		<mkdir dir="${dist}/server.win32" />
 		<exec executable="Server/buildscript.sh">
-			<arg value="${windowsroot}"/>
+			<arg value="${wingcc}"/>
+			<arg value="${wingxx}"/>
 		    	<arg value="32"/>
 	  	</exec>
 		<copy file="Sever/build/fractServ" todir="${dist}/server.win32" />
