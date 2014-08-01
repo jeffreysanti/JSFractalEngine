@@ -40,7 +40,7 @@
 			<arg value="${linuxgxx}"/>
 		    	<arg value="64"/>
 	  	</exec>
-		<copy file="Sever/build/fractServ" todir="${dist}/server.amd64.linux" />
+		<copy file="Server/build/fractServ" todir="${dist}/server.amd64.linux" />
 		<copy todir="${dist}/server.amd64.linux">
 			<fileset dir="Server/etc/" />
 		</copy>
@@ -54,7 +54,7 @@
 			<arg value="${linuxgxx}"/>
 		    	<arg value="32"/>
 	  	</exec>
-		<copy file="Sever/build/fractServ" todir="${dist}/server.intel32.linux" />
+		<copy file="Server/build/fractServ" todir="${dist}/server.intel32.linux" />
 		<copy todir="${dist}/server.intel32.linux">
 			<fileset dir="Server/etc/" />
 		</copy>
@@ -68,7 +68,7 @@
 			<arg value="${wingxx}"/>
 		    	<arg value="32"/>
 	  	</exec>
-		<copy file="Sever/build/fractServ" todir="${dist}/server.win32" />
+		<copy file="Server/build/fractServ" todir="${dist}/server.win32" />
 		<copy todir="${dist}/server.win32">
 			<fileset dir="Server/etc/" />
 		</copy>

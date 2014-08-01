@@ -36,10 +36,11 @@
 	<target name="server64linux" depends="init">
 		<mkdir dir="${dist}/server.amd64.linux" />
 		<exec executable="Server/buildscript.sh">
-			<arg value="${linuxroot}"/>
+			<arg value="${linuxgcc}"/>
+			<arg value="${linuxgxx}"/>
 		    	<arg value="64"/>
 	  	</exec>
-		<copy file="Sever/build/fractServ" todir="${dist}/server.amd64.linux" />
+		<copy file="Server/build/fractServ" todir="${dist}/server.amd64.linux" />
 		<copy todir="${dist}/server.amd64.linux">
 			<fileset dir="Server/etc/" />
 		</copy>
@@ -49,10 +50,11 @@
 	<target name="server32linux" depends="init">
 		<mkdir dir="${dist}/server.intel32.linux" />
 		<exec executable="Server/buildscript.sh">
-			<arg value="${linuxroot}"/>
+			<arg value="${linuxgcc}"/>
+			<arg value="${linuxgxx}"/>
 		    	<arg value="32"/>
 	  	</exec>
-		<copy file="Sever/build/fractServ" todir="${dist}/server.intel32.linux" />
+		<copy file="Server/build/fractServ" todir="${dist}/server.intel32.linux" />
 		<copy todir="${dist}/server.intel32.linux">
 			<fileset dir="Server/etc/" />
 		</copy>
@@ -62,10 +64,11 @@
 	<target name="server32windows" depends="init">
 		<mkdir dir="${dist}/server.win32" />
 		<exec executable="Server/buildscript.sh">
-			<arg value="${windowsroot}"/>
+			<arg value="${wingcc}"/>
+			<arg value="${wingxx}"/>
 		    	<arg value="32"/>
 	  	</exec>
-		<copy file="Sever/build/fractServ" todir="${dist}/server.win32" />
+		<copy file="Server/build/fractServ" todir="${dist}/server.win32" />
 		<copy todir="${dist}/server.win32">
 			<fileset dir="Server/etc/" />
 		</copy>
