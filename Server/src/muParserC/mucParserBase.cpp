@@ -24,7 +24,6 @@
 */
 
 #include "mucParserBase.h"
-#include "mucParserTemplateMagic.h"
 
 //--- Standard includes ------------------------------------------------------------------------
 #include <cassert>
@@ -1036,7 +1035,7 @@ namespace muc
                   continue;
 
       case  cmPOW: 
-              --sidx; Stack[sidx] = MathImpl<value_type>::Pow(Stack[sidx], Stack[1+sidx]);
+              --sidx; Stack[sidx] = std::pow(Stack[sidx], Stack[1+sidx]);
               continue;
 
       case  cmLAND: --sidx; Stack[sidx]  = abs(Stack[sidx]) && abs(Stack[sidx+1]); continue;

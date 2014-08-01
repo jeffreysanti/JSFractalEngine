@@ -12,7 +12,7 @@
 #include <complex>
 #include <cmath>
 #include <algorithm>
-#include "mucParser.h"
+#include "muParserC/mucParser.h"
 #include "Fractal.h"
 
 class FractalMultibrot : public Fractal {

@@ -49,6 +49,8 @@ public class JavaDesktop extends JFrame {
         
         getInst().setVisible(true);
         
+        ServerConnectionDialog.openDialog();
+        
         while(true){
             try {
                 Thread.sleep(200);

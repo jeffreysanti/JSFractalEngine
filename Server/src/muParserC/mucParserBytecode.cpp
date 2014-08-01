@@ -35,7 +35,6 @@
 #include "mucParserError.h"
 #include "mucParserToken.h"
 #include "mucParserStack.h"
-#include "mucParserTemplateMagic.h"
 
 
 namespace muc
@@ -169,7 +168,7 @@ namespace muc
         m_vRPN.pop_back();
         break;
 
-    case cmPOW: x = MathImpl<value_type>::Pow(x, y); 
+    case cmPOW: x = std::pow(x, y);
                 m_vRPN.pop_back();
                 break;
 

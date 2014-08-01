@@ -57,6 +57,14 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
             public void windowLostFocus(java.awt.event.WindowEvent evt) {
             }
         });
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Dialog", 0, 18));
         jLabel1.setText("Connect to Server:");
@@ -185,6 +193,8 @@ private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:
     }
     txtAddr.setText(ServerConnection.getInst().getAddress());
     txtPort.setText(Integer.toString(ServerConnection.getInst().getPort()));
+    txtUser.setText(ServerConnection.getInst().getUser());
+    txtPass.setText(ServerConnection.getInst().getPassword());
     btnOkay.setEnabled(true);
     btnLocal.setEnabled(false);
 }//GEN-LAST:event_formWindowGainedFocus
@@ -192,6 +202,26 @@ private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:
     private void btnLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLocalActionPerformed
 
     }//GEN-LAST:event_btnLocalActionPerformed
+
+private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+    JavaDesktop.getInst().getWorkspacePanel().setVisible(false);
+    JavaDesktop.getInst().getLibraryPanel().setVisible(false);
+    insts ++;
+}//GEN-LAST:event_formWindowOpened
+
+private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    JavaDesktop.getInst().getWorkspacePanel().setVisible(true);
+    JavaDesktop.getInst().getLibraryPanel().setVisible(true);
+    insts --;
+}//GEN-LAST:event_formWindowClosing
+    
+public static void openDialog(){
+    if(insts < 1){
+        ServerConnectionDialog dlg = new ServerConnectionDialog();
+        dlg.setVisible(true);
+    }
+}
+private static int insts = 0;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;

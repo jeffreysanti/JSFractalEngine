@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,27 +42,6 @@ public class ServerConnection {
     public synchronized ASyncPool getASyncPool(){
         return aSyncPool;
     }
-    
-    /*public synchronized void addServerUpdateListener(ActionListener listener) 
-    {
-        serverUpdateList.add(ActionListener.class, listener);
-    }
-    public synchronized void removeServerUpdateListener(ActionListener listener) 
-    {
-        serverUpdateList.remove(ActionListener.class, listener);
-    }
-    protected synchronized void fireServerUpdate(ActionEvent evt)
-    {
-        Object[] listeners = serverUpdateList.getListenerList();
-        int numListeners = listeners.length;
-        for(int i = 0; i<numListeners; i+=2) 
-        {
-            if (listeners[i]==ActionListener.class) 
-            {
-                ((ActionListener)listeners[i+1]).actionPerformed(evt);
-            }
-        }
-    }*/
     
     public synchronized String getJobsMessage(){
         if(isConnected())
@@ -99,23 +79,25 @@ public class ServerConnection {
     }
     
     public synchronized void update(){
-        DataInputStream rd = readPacketBG(false);
-        try {
-            if(rd.available() >= 4){
-                // first 4 characters
-                byte[] BA = new byte[4];
-                BA[0] = rd.readByte(); BA[1] = rd.readByte(); BA[2] = rd.readByte(); BA[3] = rd.readByte();
-                String head = new String(BA);
-                if(SHOW_DEBUG)
-                    System.out.println("update() caught: "+head);
-                processPacket(head, rd);
+        if(isConnected()){
+            DataInputStream rd = readPacketBG(false);
+            try {
+                if(rd.available() >= 4){
+                    // first 4 characters
+                    byte[] BA = new byte[4];
+                    BA[0] = rd.readByte(); BA[1] = rd.readByte(); BA[2] = rd.readByte(); BA[3] = rd.readByte();
+                    String head = new String(BA);
+                    if(SHOW_DEBUG)
+                        System.out.println("update() caught: "+head);
+                    processPacket(head, rd);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
-        //ActionEvent evt = new ActionEvent(this, 0, "requested");
-        //fireServerUpdate(evt);
+            //ActionEvent evt = new ActionEvent(this, 0, "requested");
+            //fireServerUpdate(evt);
+        }
     }
     
     public synchronized void connectNow(String addr, int port, String user, String pass){
@@ -153,11 +135,13 @@ public class ServerConnection {
                 sock = null;
                 out = null;
                 in = null;
+                onConnectionDrop();
             }
         } catch (Exception e) {
             sock = null;
             out = null;
             in = null;
+            onConnectionDrop();
         }
         JavaDesktop.getInst().getLibraryPanel().update();
         //fireServerUpdate(new ActionEvent(this, 0, "connection_start"));
@@ -169,8 +153,19 @@ public class ServerConnection {
         return serverPort;
     }
     
+    public synchronized String getUser(){
+        return user;
+    }
+    public synchronized String getPassword(){
+        return pass;
+    }
+    
     public synchronized void updateSocket(){
         
+    }
+    
+    private synchronized void onConnectionDrop(){
+        ServerConnectionDialog.openDialog();
     }
     
     public synchronized void sendPacket(String str){
@@ -187,32 +182,34 @@ public class ServerConnection {
     }
     
     public synchronized void sendPacket(ByteArrayOutputStream dta){
-        ByteArrayOutputStream outputter = new ByteArrayOutputStream();
-        DataOutputStream outputterDS = new DataOutputStream(outputter);
-        if(dta.size() == 0)
-            return;
-        try {
-            outputterDS.writeInt(MAGIC);
-            outputterDS.writeInt(dta.size());
-            byte[] bytes = dta.toByteArray();
-            outputterDS.write(bytes);
-            outputterDS.flush();
-            
-            if(bytes.length >= 4){
-                byte[] bytes_head = new byte[4];
-                bytes_head[0] = bytes[0];
-                bytes_head[1] = bytes[1];
-                bytes_head[2] = bytes[2];
-                bytes_head[3] = bytes[3];
-                String header = new String(bytes_head);
-                if(SHOW_DEBUG)
-                    System.out.println("SEND::: "+header);
+        if(isConnected()){
+            ByteArrayOutputStream outputter = new ByteArrayOutputStream();
+            DataOutputStream outputterDS = new DataOutputStream(outputter);
+            if(dta.size() == 0)
+                return;
+            try {
+                outputterDS.writeInt(MAGIC);
+                outputterDS.writeInt(dta.size());
+                byte[] bytes = dta.toByteArray();
+                outputterDS.write(bytes);
+                outputterDS.flush();
+
+                if(bytes.length >= 4){
+                    byte[] bytes_head = new byte[4];
+                    bytes_head[0] = bytes[0];
+                    bytes_head[1] = bytes[1];
+                    bytes_head[2] = bytes[2];
+                    bytes_head[3] = bytes[3];
+                    String header = new String(bytes_head);
+                    if(SHOW_DEBUG)
+                        System.out.println("SEND::: "+header);
+                }
+
+                out.write(outputter.toByteArray());
+                out.flush();
+            }catch (IOException ex) {
+                onConnectionDrop();
             }
-            
-            out.write(outputter.toByteArray());
-            out.flush();
-        } catch (IOException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -282,10 +279,11 @@ public class ServerConnection {
     }
     
     public synchronized boolean isConnected(){
-        if(sock == null || out == null)
+        
+        if(sock == null || out == null || sock.isConnected() == false || sock.isClosed()){
+            onConnectionDrop();
             return false;
-        if(sock.isConnected() == false || sock.isClosed())
-            return false;
+        }
         return true;
     }
     

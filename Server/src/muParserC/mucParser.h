@@ -30,7 +30,6 @@
 
 //--- Parser includes --------------------------------------------------------------------------
 #include "mucParserBase.h"
-#include "mucParserTemplateMagic.h"
 
 /** \file
     \brief Definition of the standard floating point parser.

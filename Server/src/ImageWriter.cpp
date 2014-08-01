@@ -10,7 +10,7 @@
 
 #define cimg_display 0 // Disable X11 Library Requirements
 #define cimg_use_png 1
-#include "CImg.h"
+#include "CImg/CImg.h"
 using namespace cimg_library;
 
 #define MIN(x,y,z) std::min(x, std::min(y, z))

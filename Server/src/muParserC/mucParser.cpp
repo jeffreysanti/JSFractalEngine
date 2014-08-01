@@ -24,12 +24,12 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 #include "mucParser.h"
-#include "mucParserTemplateMagic.h"
 
 //--- Standard includes ------------------------------------------------------------------------
 #include <cmath>
 #include <algorithm>
 #include <numeric>
+#include <complex>
 
 /** \brief Pi (what else?). */
 #define PARSER_CONST_PI  3.141592653589793238462643
@@ -52,18 +52,18 @@ namespace muc
 
   //---------------------------------------------------------------------------
   // Trigonometric function
-  value_type Parser::Sin(value_type v)   { return MathImpl<value_type>::Sin(v);  }
-  value_type Parser::Cos(value_type v)   { return MathImpl<value_type>::Cos(v);  }
-  value_type Parser::Tan(value_type v)   { return MathImpl<value_type>::Tan(v);  }
-  value_type Parser::ASin(value_type v)  { return MathImpl<value_type>::ASin(v); }
-  value_type Parser::ACos(value_type v)  { return MathImpl<value_type>::ACos(v); }
-  value_type Parser::ATan(value_type v)  { return MathImpl<value_type>::ATan(v); }
-  value_type Parser::Sinh(value_type v)  { return MathImpl<value_type>::Sinh(v); }
-  value_type Parser::Cosh(value_type v)  { return MathImpl<value_type>::Cosh(v); }
-  value_type Parser::Tanh(value_type v)  { return MathImpl<value_type>::Tanh(v); }
-  value_type Parser::ASinh(value_type v) { return MathImpl<value_type>::ASinh(v); }
-  value_type Parser::ACosh(value_type v) { return MathImpl<value_type>::ACosh(v); }
-  value_type Parser::ATanh(value_type v) { return MathImpl<value_type>::ATanh(v); }
+  value_type Parser::Sin(value_type v)   { return std::sin(v);  }
+  value_type Parser::Cos(value_type v)   { return std::cos(v);  }
+  value_type Parser::Tan(value_type v)   { return std::tan(v);  }
+  value_type Parser::ASin(value_type v)  { return std::asin(v); }
+  value_type Parser::ACos(value_type v)  { return std::acos(v); }
+  value_type Parser::ATan(value_type v)  { return std::atan(v); }
+  value_type Parser::Sinh(value_type v)  { return std::sinh(v); }
+  value_type Parser::Cosh(value_type v)  { return std::cosh(v); }
+  value_type Parser::Tanh(value_type v)  { return std::tanh(v); }
+  value_type Parser::ASinh(value_type v) { return std::asinh(v); }
+  value_type Parser::ACosh(value_type v) { return std::acosh(v); }
+  value_type Parser::ATanh(value_type v) { return std::atanh(v); }
 
   //---------------------------------------------------------------------------
   // Logarithm functions
@@ -76,7 +76,7 @@ namespace muc
           throw ParserError(ecDOMAIN_ERROR, _T("Log2"));
     #endif
 
-    return MathImpl<value_type>::Log2(v);  
+    return std::log(v) / std::log(2);
   }  
 
   // Logarithm base 10
@@ -87,7 +87,7 @@ namespace muc
           throw ParserError(ecDOMAIN_ERROR, _T("Log10"));
     #endif
 
-    return MathImpl<value_type>::Log10(v); 
+    return std::log10(v);
   } 
 
 // Logarithm base e (natural logarithm)
@@ -98,13 +98,13 @@ namespace muc
           throw ParserError(ecDOMAIN_ERROR, _T("Ln"));
     #endif
 
-    return MathImpl<value_type>::Log(v);   
+    return std::log(v);
   } 
 
   //---------------------------------------------------------------------------
   //  misc
-  value_type Parser::Exp(value_type v)  { return MathImpl<value_type>::Exp(v);  }
-  value_type Parser::Abs(value_type v)  { return MathImpl<value_type>::Abs(v);  }
+  value_type Parser::Exp(value_type v)  { return std::exp(v);  }
+  value_type Parser::Abs(value_type v)  { return std::abs(v);  }
   value_type Parser::Sqrt(value_type v) 
   { 
     #ifdef MUP_MATH_EXCEPTIONS
@@ -112,7 +112,7 @@ namespace muc
           throw ParserError(ecDOMAIN_ERROR, _T("sqrt"));
     #endif
 
-    return MathImpl<value_type>::Sqrt(v); 
+    return std::sqrt(v);
   }
 
   //---------------------------------------------------------------------------
@@ -205,7 +205,7 @@ namespace muc
   */
   int Parser::IsVal(const char_type* a_szExpr, int *a_iPos, value_type *a_fVal)
   {
-    value_type fVal(0);
+    value_type fVal;
     std::string strExpr(a_szExpr);
 
     stringstream_type stream(a_szExpr);
@@ -269,47 +269,36 @@ namespace muc
   /** \brief Initialize the default functions. */
   void Parser::InitFun()
   {
-    if (muc::TypeInfo<muc::value_type>::IsInteger())
-    {
-      // When setting MUP_BASETYPE to an integer type
-      // Place functions for dealing with integer values here
-      // ...
-      // ...
-      // ...
-    }
-    else
-    {
-      // trigonometric functions
-      DefineFun(_T("sin"), Sin);
-      DefineFun(_T("cos"), Cos);
-      DefineFun(_T("tan"), Tan);
-      // arcus functions
-      DefineFun(_T("asin"), ASin);
-      DefineFun(_T("acos"), ACos);
-      DefineFun(_T("atan"), ATan);
-      // hyperbolic functions
-      DefineFun(_T("sinh"), Sinh);
-      DefineFun(_T("cosh"), Cosh);
-      DefineFun(_T("tanh"), Tanh);
-      // arcus hyperbolic functions
-      DefineFun(_T("asinh"), ASinh);
-      DefineFun(_T("acosh"), ACosh);
-      DefineFun(_T("atanh"), ATanh);
-      // Logarithm functions
-      DefineFun(_T("log2"), Log2);
-      DefineFun(_T("log10"), Log10);
-      DefineFun(_T("log"), Log10);
-      DefineFun(_T("ln"), Ln);
-      // misc
-      DefineFun(_T("exp"), Exp);
-      DefineFun(_T("sqrt"), Sqrt);
-      DefineFun(_T("abs"), Abs);
-      // Functions with variable number of arguments
-      DefineFun(_T("sum"), Sum);
-      DefineFun(_T("avg"), Avg);
-      DefineFun(_T("min"), Min);
-      DefineFun(_T("max"), Max);
-    }
+	  // trigonometric functions
+	  DefineFun(_T("sin"), Sin);
+	  DefineFun(_T("cos"), Cos);
+	  DefineFun(_T("tan"), Tan);
+	  // arcus functions
+	  DefineFun(_T("asin"), ASin);
+	  DefineFun(_T("acos"), ACos);
+	  DefineFun(_T("atan"), ATan);
+	  // hyperbolic functions
+	  DefineFun(_T("sinh"), Sinh);
+	  DefineFun(_T("cosh"), Cosh);
+	  DefineFun(_T("tanh"), Tanh);
+	  // arcus hyperbolic functions
+	  DefineFun(_T("asinh"), ASinh);
+	  DefineFun(_T("acosh"), ACosh);
+	  DefineFun(_T("atanh"), ATanh);
+	  // Logarithm functions
+	  DefineFun(_T("log2"), Log2);
+	  DefineFun(_T("log10"), Log10);
+	  DefineFun(_T("log"), Log10);
+	  DefineFun(_T("ln"), Ln);
+	  // misc
+	  DefineFun(_T("exp"), Exp);
+	  DefineFun(_T("sqrt"), Sqrt);
+	  DefineFun(_T("abs"), Abs);
+	  // Functions with variable number of arguments
+	  DefineFun(_T("sum"), Sum);
+	  DefineFun(_T("avg"), Avg);
+	  DefineFun(_T("min"), Min);
+	  DefineFun(_T("max"), Max);
   }
 
   //---------------------------------------------------------------------------

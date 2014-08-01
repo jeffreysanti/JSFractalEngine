@@ -1,0 +1,5 @@
+
+CC=/usr//gcc -c -Wall -O3 
+CP=/usr//g++ -c -Wall -O3 -w -std=c++0x  
+LD=/usr//gcc -ldl -lpthread -lpng -D_GLIBCXX_USE_NANOSLEEP 
+/home/jeffrey/dev/JSFracals/Serverbuild//./src/sqlite3/sqlite3.c.o : ./src/sqlite3/sqlite3.c

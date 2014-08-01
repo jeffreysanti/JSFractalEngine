@@ -4,4 +4,9 @@ javaclient/dist
 javaclient/build
 Debug/
 Release/
+db
+.settings
+Server/Debug
+Server/Release
+Server/build
 

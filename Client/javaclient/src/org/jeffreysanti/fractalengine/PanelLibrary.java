@@ -174,6 +174,8 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
             }
             T.clear();
             int deferTimer = 0;
+            
+            deferTimer += REQUEST_GAP; // wait for initial request
             for(String s : arr){
                 int jid = Integer.parseInt(s);
 
