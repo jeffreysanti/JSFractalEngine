@@ -28,7 +28,8 @@ pwd
 
 echo "Calling CMake..."
 
-
+export CC=$GCC
+export CXX=$GXX
 cmake -DEXFLAG=$FLAG -DCMAKE_CXX_COMPILER=$GXX -DCMAKE_CC_COMPILER=$GCC -DCMAKE_LINKER=$GXX ../
 
 

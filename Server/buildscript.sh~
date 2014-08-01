@@ -5,7 +5,7 @@ FLAG=""
 
 GCC=$1
 GXX=$2
-LD=$3
+LD=$2
 
 if [ "$4" == "32" ]; then
 	FLAG=" -m32 "
