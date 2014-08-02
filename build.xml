@@ -75,7 +75,7 @@
 		<zip destfile="${dist}/server.${build.number}.win32.zip" basedir="${dist}/server.win32" />
 	</target>
 
-	<target name="buildall" depends="javaClient,server64linux,server32linux">
+	<target name="buildall" depends="javaClient,server64linux,server32windows">
 		
 	</target>
 	<target name="dist" depends="buildall">

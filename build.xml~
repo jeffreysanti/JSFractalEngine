@@ -36,9 +36,9 @@
 	<target name="server64linux" depends="init">
 		<mkdir dir="${dist}/server.amd64.linux" />
 		<exec executable="Server/buildscript.sh">
+			<arg value="lin64"/>
 			<arg value="${linuxgcc}"/>
 			<arg value="${linuxgxx}"/>
-		    	<arg value="64"/>
 	  	</exec>
 		<copy file="Server/build/fractServ" todir="${dist}/server.amd64.linux" />
 		<copy todir="${dist}/server.amd64.linux">
@@ -50,9 +50,9 @@
 	<target name="server32linux" depends="init">
 		<mkdir dir="${dist}/server.intel32.linux" />
 		<exec executable="Server/buildscript.sh">
+			<arg value="lin32"/>
 			<arg value="${linuxgcc}"/>
 			<arg value="${linuxgxx}"/>
-		    	<arg value="32"/>
 	  	</exec>
 		<copy file="Server/build/fractServ" todir="${dist}/server.intel32.linux" />
 		<copy todir="${dist}/server.intel32.linux">
