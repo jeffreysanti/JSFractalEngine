@@ -1,6 +1,0 @@
-type:S/N|noVal
-imgWidth:W/N(0,99999)|400
-imgHeight:W/N(0,99999)|200
-timeOut:W/Y[0,99999]|120
-author:S/N|Unknown Author
-title:S/N|Untitled
