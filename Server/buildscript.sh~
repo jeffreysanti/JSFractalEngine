@@ -8,10 +8,10 @@ GCC=$2
 GXX=$3
 LD=$3
 
-if [ "TYPE" == "lin32" ]; then
+if [ $TYPE == "lin32" ]; then
 	FLAG="-m32 "
 	echo "Building 32-Bit Linux Version"
-elif [ "TYPE" == "win32" ]; then
+elif [ $TYPE == "win32" ]; then
 	FLAG="-m32 "
 	echo "Building 32-Bit Windows Version"
 else
@@ -35,7 +35,13 @@ echo "Calling CMake..."
 
 export CC=$GCC
 export CXX=$GXX
-cmake -DEXFLAG=$FLAG -DBUILD_TYP=$TYPE -DCMAKE_CXX_COMPILER=$GXX -DCMAKE_C_COMPILER=$GCC -DCMAKE_LINKER=$GXX ../
+
+if [ $TYPE == "win32" ]; then
+	cmake -DEXFLAG=$FLAG -DBUILD_TYP=$TYPE -DCMAKE_CXX_COMPILER=$GXX -DCMAKE_C_COMPILER=$GCC -DCMAKE_LINKER=$GXX ../
+else
+	cmake -DEXFLAG=$FLAG -DBUILD_TYP=$TYPE -DCMAKE_CXX_COMPILER=$GXX -DCMAKE_C_COMPILER=$GCC -DCMAKE_LINKER=$GXX ../
+fi
+
 
 
 echo "Ready To Build..."
