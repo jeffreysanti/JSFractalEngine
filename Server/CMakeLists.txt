@@ -28,9 +28,11 @@ target_link_libraries(fractServ ${PNG_LIBRARY})
 target_link_libraries(fractServ ${CMAKE_DL_LIBS})
 
 IF(${BUILD_TYP} MATCHES "lin64")
-	target_link_libraries(fractServ ${CMAKE_HOME_DIRECTORY}/lib/sqlite3_64.a)
+        target_link_libraries(fractServ ${CMAKE_HOME_DIRECTORY}/lib/sqlite3_64.a)
 ELSEIF(${BUILD_TYP} MATCHES "lin32")
-	target_link_libraries(fractServ ${CMAKE_HOME_DIRECTORY}/lib/sqlite3_32.a)
+        target_link_libraries(fractServ ${CMAKE_HOME_DIRECTORY}/lib/sqlite3_32.a)
+ELSE()
+        target_link_libraries(fractServ ${CMAKE_HOME_DIRECTORY}/lib/sqlite3_win32.lib ws2_32)
 ENDIF(${BUILD_TYP} MATCHES "lin64")
 
 

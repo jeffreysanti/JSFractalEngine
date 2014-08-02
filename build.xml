@@ -68,7 +68,7 @@
 			<arg value="${wingcc}"/>
 			<arg value="${wingxx}"/>
 	  	</exec>
-		<copy file="Server/build/fractServ" todir="${dist}/server.win32" />
+		<copy file="Server/build/fractServ.exe" todir="${dist}/server.win32" />
 		<copy todir="${dist}/server.win32">
 			<fileset dir="Server/etc/" />
 		</copy>
