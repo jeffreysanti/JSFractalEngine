@@ -72,6 +72,9 @@
 		<copy todir="${dist}/server.win32">
 			<fileset dir="Server/etc/" />
 		</copy>
+		<copy todir="${dist}/server.win32">
+			<fileset dir="Server/native_win32/" />
+		</copy>
 		<zip destfile="${dist}/server.${build.number}.win32.zip" basedir="${dist}/server.win32" />
 	</target>
 
