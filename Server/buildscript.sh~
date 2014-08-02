@@ -3,16 +3,21 @@
 GCCROOT=""
 FLAG=""
 
-GCC=$1
-GXX=$2
-LD=$2
+TYPE=$1
+GCC=$2
+GXX=$3
+LD=$3
 
-if [ "$4" == "32" ]; then
+if [ "TYPE" == "lin32" ]; then
 	FLAG="-m32 "
-	echo "Building 32-Bit Version"
+	echo "Building 32-Bit Linux Version"
+elif [ "TYPE" == "win32" ]; then
+	FLAG="-m32 "
+	echo "Building 32-Bit Windows Version"
 else
+	TYPE="lin64"
 	FLAG="-m64 "
-	echo "Building 64-Bit Version"
+	echo "Building 64-Bit Linux Version"
 fi
 
 # Get Directory
@@ -30,7 +35,7 @@ echo "Calling CMake..."
 
 export CC=$GCC
 export CXX=$GXX
-cmake -DEXFLAG=$FLAG -DCMAKE_CXX_COMPILER=$GXX -DCMAKE_CC_COMPILER=$GCC -DCMAKE_LINKER=$GXX ../
+cmake -DEXFLAG=$FLAG -DBUILD_TYP=$TYPE -DCMAKE_CXX_COMPILER=$GXX -DCMAKE_C_COMPILER=$GCC -DCMAKE_LINKER=$GXX ../
 
 
 echo "Ready To Build..."

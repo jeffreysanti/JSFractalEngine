@@ -64,9 +64,9 @@
 	<target name="server32windows" depends="init">
 		<mkdir dir="${dist}/server.win32" />
 		<exec executable="Server/buildscript.sh">
+			<arg value="win32"/>			
 			<arg value="${wingcc}"/>
 			<arg value="${wingxx}"/>
-		    	<arg value="32"/>
 	  	</exec>
 		<copy file="Server/build/fractServ" todir="${dist}/server.win32" />
 		<copy todir="${dist}/server.win32">
