@@ -11,6 +11,7 @@
 #include <chrono>
 #include "SocketClient.h"
 #include <Ice/Ice.h>
+#include "json/json.h"
 
 std::vector<SocketClient> C;
 
@@ -23,7 +24,11 @@ void sendToAll(const char *dta, unsigned int len){
 
 int main(int argc, char** argv)
 {
-	Ice::ObjectAdapterPtr adapter;
+	Ice::collectGarbage();
+	Json::Reader rdr;
+	rdr.getFormatedErrorMessages();
+
+
 
 	FractalGen gen(&sendToAll);
 
