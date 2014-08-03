@@ -17,5 +17,6 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-include_directories(/usr/local/include)
+include_directories( ${include_directories} /usr/local/include )
+LINK_DIRECTORIES( ${LINK_DIRECTORIES} /usr/local/lib )
 
