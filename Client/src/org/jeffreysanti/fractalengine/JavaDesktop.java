@@ -4,6 +4,7 @@
  */
 package org.jeffreysanti.fractalengine;
 
+import Ice.Communicator;
 import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.traces.Trace2DSimple;
@@ -26,6 +27,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class JavaDesktop extends JFrame {
     
     public static void main(String[] args) {
+        
+        Communicator ic = Ice.Util.initialize(args);
         
         try {
         UIManager.setLookAndFeel(

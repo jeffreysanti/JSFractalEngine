@@ -9,4 +9,5 @@ db
 Server/Debug
 Server/Release
 Server/build
+*~
 

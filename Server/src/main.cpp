@@ -10,6 +10,7 @@
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>
 #include "SocketClient.h"
+#include <Ice/Ice.h>
 
 std::vector<SocketClient> C;
 
@@ -22,6 +23,8 @@ void sendToAll(const char *dta, unsigned int len){
 
 int main(int argc, char** argv)
 {
+	Ice::ObjectAdapterPtr adapter;
+
 	FractalGen gen(&sendToAll);
 
 	int portno = 14860;
