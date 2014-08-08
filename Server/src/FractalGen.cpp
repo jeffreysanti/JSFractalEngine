@@ -20,7 +20,7 @@ FractalGen::FractalGen() {
 
 
 #ifdef _WIN32
-	CreateDirectory(saveDir.c_str());
+	CreateDirectoryA(saveDir.c_str(), NULL);
 #else
 	mkdir(saveDir.c_str(), 0700);
 #endif
