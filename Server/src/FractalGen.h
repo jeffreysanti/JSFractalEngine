@@ -27,11 +27,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
 #include <errno.h>
 #include "Fractal.h"
-#include "DBSystem.h"
+#include "DBManager.h"
+#include "FractalGenTrackManager.h"
 
 int dummy();
 
@@ -44,6 +47,7 @@ struct RenderingJob{
 		params = NULL;
 		fract = NULL;
 		timeStart = 1; // zero for completed
+		success = false;
 	}
 
 	unsigned int jid;
@@ -59,36 +63,16 @@ struct RenderingJob{
 
 class FractalGen {
 public:
-	FractalGen(void (*ret)(const char *dta, unsigned int len));
+	FractalGen();
 	virtual ~FractalGen();
 
 	static std::string getSaveDir();
 
-	bool cancelJob(unsigned int id, int uid, bool admin);
-
-	int postJob(Paramaters *p, int uid, bool daemon);
-	int postJob(std::string fl, int uid, bool daemon);
+	int postJob(FractalContainer f);
 
 	void update();
 
-	int remainingJobs();
-	std::vector<unsigned int> currentJobIDs();
-	int currentJobExecutionTime(unsigned int jid);
-	int ownerOfCurrentJob(unsigned int jid);
 
-	int jobsInManualQueue();
-	int jobsInAutoQueue();
-
-	std::string getJobQueue(unsigned int uid);
-
-	User authenticateUser(std::string user, std::string pass);
-
-	DBSystem *getDB();
-
-	void fillMDUDRequest(int jid, char **sz, int &len);
-	void fillRCTXRequest(int jid, char **sz, int &len);
-
-	void (*sendToAll)(const char *dta, unsigned int len);
 
 private:
 	static std::string saveDir;
@@ -98,7 +82,11 @@ private:
 
 	void deleteRunningJob(RenderingJob *job);
 
+	bool cancelJob(unsigned int id);
+
 	unsigned short maxThreads;
+
+	void sendUpdateToTracker();
 
 
 
@@ -108,7 +96,6 @@ private:
 	std::list<Paramaters*> JQ;
 	std::list<Paramaters*> JQManual;
 
-	DBSystem db;
 };
 
 int runGen(RenderingJob *r);

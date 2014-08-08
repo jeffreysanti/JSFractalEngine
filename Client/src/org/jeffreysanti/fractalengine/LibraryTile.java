@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -143,7 +144,7 @@ public class LibraryTile extends javax.swing.JPanel {
             updateTimer.setInitialDelay(deferTime);
             updateTimer.start();
         }else{
-            ServerConnection.getInst().sendPacket("RJIF"+job); // request job info
+            ServerConnection.getInst().addPacketToQueue("RJIF", ""+job, null);
         }
     }
     
@@ -174,7 +175,7 @@ public class LibraryTile extends javax.swing.JPanel {
             return false;
         if(ServerConnection.getInst().isConnected() && ServerConnection.getInst().isAdmin())
             return true;
-        if(ServerConnection.getInst().getUID() == uid)
+        if(ServerConnection.getInst().getUserID() == uid)
             return true;
         return false;
     }
@@ -189,7 +190,7 @@ public class LibraryTile extends javax.swing.JPanel {
                     String old = lblTitle.getText();
                     String newVal = JOptionPane.showInputDialog("Fractal Title?", old);
                     if(newVal.length() > 0){
-                        ServerConnection.getInst().sendPacket("SFTI"+job+"|"+newVal);
+                        ServerConnection.getInst().addPacketToQueue("SFTI", job+"|"+newVal, null);
                     }
                 }
             });
@@ -202,7 +203,7 @@ public class LibraryTile extends javax.swing.JPanel {
                     String old = lblAuthor.getText();
                     String newVal = JOptionPane.showInputDialog("Fractal Author?", old);
                     if(newVal.length() > 0){
-                        ServerConnection.getInst().sendPacket("SFAU"+job+"|"+newVal);
+                        ServerConnection.getInst().addPacketToQueue("SFAU", job+"|"+newVal, null);
                     }
                 }
             });

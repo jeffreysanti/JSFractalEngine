@@ -5,13 +5,14 @@
  *      Author: jeffrey
  */
 
-#ifndef AUTHENTICATION_H_
-#define AUTHENTICATION_H_
+#ifndef USERMAN_H_
+#define USERMAN_H_
 
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "DirectoryManager.h"
 
 struct User{
 
@@ -31,19 +32,28 @@ struct User{
 };
 
 
-class Authentication {
+class UserManager {
 public:
-	Authentication(std::string fl);
-	virtual ~Authentication();
+
+	void initialize();
 
 	User getById(unsigned int id);
 	User getByName(std::string name);
 
 	std::string dumpAuthDetails();
 
+	User getNoSocketsAccount();
+
+	static UserManager *getSingleton();
+
 private:
+
+	UserManager();
+	~UserManager();
+
+	static UserManager singleton;
 
 	std::vector<User> U;
 };
 
-#endif /* AUTHENTICATION_H_ */
+#endif /* USERMAN_H_ */

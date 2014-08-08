@@ -9,10 +9,103 @@
 #include "stdio.h"
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>
-#include "SocketClient.h"
+//#include "SocketClient.h"
 #include <Ice/Ice.h>
 #include "json/json.h"
+#include "slices/PrinterI.h"
 
+#include "ConnectionManager.h"
+#include "DirectoryManager.h"
+#include "UserManager.h"
+#include "FractalGen.h"
+
+
+
+#include <Ice/Ice.h>
+
+/*
+class FractalServer : virtual public Ice::Application {
+public:
+    virtual int run(int, char*[]) {
+
+        // Server code here...
+
+    	this->communicator()->
+
+		Ice::ObjectAdapterPtr adapter =
+			this->communicator()->createObjectAdapterWithEndpoints("SimplePrinterAdapter", "default -p 10000");
+		Ice::ObjectPtr object = new Demo::PrinterI;
+		adapter->add(object, this->communicator()->stringToIdentity("SimplePrinter"));
+		adapter->activate();
+
+
+    	while(true){
+    		std::cout << "Time\n";
+    		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    		if(this->interrupted()){
+    			onShutDown();
+    			return 0;
+    		}
+    	}
+
+        return 0;
+    }
+
+    void onShutDown()
+    {
+    	std::cout << "Shutting Down...\n";
+
+    	_exit(0);
+    }
+};
+
+int main(int argc, char* argv[])
+{
+	FractalServer app;
+    return app.main(argc, argv);
+}
+
+
+*/
+
+
+void sendToAll(const char *dta, unsigned int len){
+
+}
+
+
+
+int main(int argc, char* argv[])
+{
+	DirectoryManager::getSingleton()->initialize(std::string(argv[0]));
+	UserManager::getSingleton()->initialize();
+	DBManager::getSingleton()->initialize();
+	FractalGenTrackManager::getSingleton()->initialize();
+	ConnectionManager::getSingleton()->initialize();
+
+	FractalGen gen;
+
+	unsigned long start = time(NULL);
+	while(true){
+		gen.update();
+
+		/*if(time(NULL) - start > 20){
+			std::cout << "Time's up!\n";
+			exit(0);
+			return 0;
+		}*/
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
+	return 0;
+}
+
+
+
+
+
+
+/*
 std::vector<SocketClient> C;
 
 void sendToAll(const char *dta, unsigned int len){
@@ -24,7 +117,10 @@ void sendToAll(const char *dta, unsigned int len){
 
 int main(int argc, char** argv)
 {
-	Ice::collectGarbage();
+	Ice::CommunicatorPtr ic = Ice::initialize(argc, argv);
+
+
+
 	Json::Reader rdr;
 	rdr.getFormatedErrorMessages();
 
@@ -173,5 +269,5 @@ int main(int argc, char** argv)
 #endif
 
 	return 0;
-}
+}*/
 

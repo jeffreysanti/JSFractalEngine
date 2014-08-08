@@ -21,7 +21,7 @@ import javax.swing.Timer;
  *
  * @author jeffrey
  */
-public class PanelViewer extends JPanel implements ASyncPoolAcceptor {
+public class PanelViewer extends JPanel implements ServerReplyer {
     
     PanelViewer(PanelProperties p){
         c = null;
@@ -74,8 +74,7 @@ public class PanelViewer extends JPanel implements ASyncPoolAcceptor {
         if(c == null)
             return;
         if(c.getJobID() >= 0 && c.isUpdateableState()){
-            ServerConnection.getInst().sendPacket("RCTX" + c.getJobID()); // request all avali info
-            ServerConnection.getInst().getASyncPool().addASyncAcceptor("RCTX", this);
+            ServerConnection.getInst().addPacketToQueue("RCTX", ""+c.getJobID(), this); // request all avali info
         }
     }
     
@@ -86,26 +85,24 @@ public class PanelViewer extends JPanel implements ASyncPoolAcceptor {
     private ArrayList<ViewPaneAbstract> P;
     
     @Override
-    public boolean poolDataReceived(String head, DataInputStream ds) {
+    public void onReceiveReply(String head, int len, DataInputStream data) {
         if(c == null || c.getJobID() < 0)
-            return false;
+            return;
         
         if(head.equals("RCTX")){
             try {
-                if(ds.available() >=4){
-                    int j = ds.readInt();
+                if(data.available() >=4){
+                    int j = data.readInt();
                     if(j == c.getJobID()){
-                        c.updateInfoFromRCTX(ds);
+                        c.updateInfoFromRCTX(data);
                         for(ViewPaneAbstract p : P){
                             p.contextDataReceieved();
                         }
-                        return true;
                     }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(PanelViewer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return false;
     }
 }

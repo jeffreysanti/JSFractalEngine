@@ -23,7 +23,7 @@ import javax.swing.JPanel;
  *
  * @author jeffrey
  */
-public class PanelProperties extends JPanel implements ASyncPoolAcceptor {
+public class PanelProperties extends JPanel implements ServerReplyer {
     
     PanelProperties(){
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -139,8 +139,7 @@ public class PanelProperties extends JPanel implements ASyncPoolAcceptor {
             p.setEnabled(false);
         }
         
-        ServerConnection.getInst().sendPacket("SJOB" + c.getParams().dumpToString()); // request all avali info
-        ServerConnection.getInst().getASyncPool().addASyncAcceptor("SJOB", this);
+        ServerConnection.getInst().addPacketToQueue("SJOB",c.getParams().dumpToString(), this); // request all avali info
     }
     
     
@@ -149,10 +148,9 @@ public class PanelProperties extends JPanel implements ASyncPoolAcceptor {
     private JButton btnSubmit;
 
     @Override
-    public boolean poolDataReceived(String head, DataInputStream ds) {
-        int jid = Integer.parseInt(ServerConnection.extractString(ds));
+    public void onReceiveReply(String head, int len, DataInputStream ds) {
+        int jid = Integer.parseInt(ServerPacket.extractString(ds, len));
         System.out.println("Submitted JOB: " + jid);
         c.becameSubmittedJob(jid);
-        return true;
     }
 }

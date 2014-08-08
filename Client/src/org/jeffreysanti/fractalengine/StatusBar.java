@@ -9,18 +9,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.DataInputStream;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
 /**
  *
  * @author jeffrey
  */
-public class StatusBar extends JPanel implements ActionListener, MouseListener {
+public class StatusBar extends JPanel implements MouseListener, ServerMessageListener {
     
     public StatusBar(){        
         setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -39,15 +41,8 @@ public class StatusBar extends JPanel implements ActionListener, MouseListener {
         lblServer.addMouseListener(this);
         add(lblServer);
         
-        
+        ServerConnection.getInst().addServerMessageListener("UPDT", this);
     }
-
-    @Override
-    public void actionPerformed(ActionEvent arg0) {
-        lblJobs.setText(ServerConnection.getInst().getJobsMessage());
-        lblServer.setText(ServerConnection.getInst().getServerMessage());
-    }
-    
 
     @Override
     public void mouseClicked(MouseEvent arg0) {
@@ -74,4 +69,19 @@ public class StatusBar extends JPanel implements ActionListener, MouseListener {
     
     private JLabel lblServer;
     private JLabel lblJobs;
+
+    @Override
+    public void onReceivePacket(String head, int len, DataInputStream data) {
+        lblJobs.setText(ServerPacket.extractString(data, len));
+    }
+    
+    public void setConnectionString(final String host){
+        SwingUtilities.invokeLater(new Runnable(){
+            @Override
+            public void run() {
+                lblServer.setText(host);
+            }
+        });
+    }
+    
 }

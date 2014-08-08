@@ -72,7 +72,7 @@ public class PanelContextLibrary extends JPanel {
     }
     
     public Context openNewContextFromScratch(){
-        Context cont = new Context(-1, "", "", ServerConnection.getInst().getUID(), 
+        Context cont = new Context(-1, "", "", ServerConnection.getInst().getUserID(), 
                 LibraryTile.FDBS_UNLINKED, null);
         
         // add context to list

@@ -5,20 +5,34 @@
  *      Author: jeffrey
  */
 
-#ifndef SOCKETCLIENT_H_
-#define SOCKETCLIENT_H_
+#ifndef CLIENT_H_
+#define CLIENT_H_
 
 #include "FractalGen.h"
+#include "ClientCommunicator.h"
 
-#define MAGIC   0xFA42AB
-
-class SocketClient {
+class Client {
 public:
-	SocketClient(int s, sockaddr_in a, FractalGen *g);
-	virtual ~SocketClient();
+	Client(ClientCommunicator *com);
+	virtual ~Client();
+
+	bool updateClient();
+
+	void handlePacket(std::string &head, unsigned int &len, unsigned int &replyTo,
+						char *data, std::string &str);
+
+
+	void writeServerMessage(std::string msg);
+	void writeServerFractalUpdate(unsigned int jid);
+
+private:
+
+	ClientCommunicator *C;
+	User U;
+
 
 	// returns false if client has disconnected
-	bool update();
+	/*bool update();
 	void close();
 
 	void sendStatusUpdate();
@@ -41,7 +55,7 @@ private:
 	FractalGen *gen;
 	sockaddr_in addr;
 
-	User u;
+	User u;*/
 };
 
 #endif /* SOCKETCLIENT_H_ */

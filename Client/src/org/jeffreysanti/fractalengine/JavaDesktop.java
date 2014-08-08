@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.json.simple.JSONValue;
 
 /**
  *
@@ -27,9 +28,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class JavaDesktop extends JFrame {
     
     public static void main(String[] args) {
-        
-        Communicator ic = Ice.Util.initialize(args);
-        
         try {
         UIManager.setLookAndFeel(
             UIManager.getSystemLookAndFeelClassName());
@@ -47,21 +45,10 @@ public class JavaDesktop extends JFrame {
            // handle exception
         }
         
-        //PaletteEditor edit = new PaletteEditor();
-        //edit.setVisible(true);
-        
         getInst().setVisible(true);
         
-        ServerConnectionDialog.openDialog();
-        
-        while(true){
-            try {
-                Thread.sleep(200);
-            } catch(InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-            ServerConnection.getInst().update();
-        }
+        Thread networkThread = new Thread(ServerConnection.getInst());
+        networkThread.run();
     }
     
     private JavaDesktop(){

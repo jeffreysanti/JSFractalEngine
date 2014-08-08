@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 // it holds the image of an old render, paramaters (either modified or not),
 //      log info, histograms, etc
 
-public class Context implements ASyncPoolAcceptor {
+public class Context implements ServerReplyer {
     
     Context(int job, String nm, String auth, int userid, int stat, BufferedImage full){
         jid = job;
@@ -37,8 +37,7 @@ public class Context implements ASyncPoolAcceptor {
         
         if(jid >= 0){
             //isFetched = false;
-            ServerConnection.getInst().sendPacket("RCTX" + jid); // request all avali info
-            ServerConnection.getInst().getASyncPool().addASyncAcceptor("RCTX", this);
+            ServerConnection.getInst().addPacketToQueue("RCTX", ""+jid, this); // request all avali info
             isUpdated = false;
         }else
             isUpdated = true;
@@ -162,7 +161,7 @@ public class Context implements ASyncPoolAcceptor {
     
     public void becameSubmittedJob(int j){
         jid = j;
-        uid = ServerConnection.getInst().getUID();
+        uid = ServerConnection.getInst().getUserID();
         status = LibraryTile.FDBS_RENDER_SUBMITTED;
         name = params.getValue("title", "[Just Submitted]");
         author = params.getValue("author", "...");
@@ -193,20 +192,17 @@ public class Context implements ASyncPoolAcceptor {
     private boolean isUpdated;
 
     @Override
-    public boolean poolDataReceived(String head, DataInputStream ds) {
+    public void onReceiveReply(String head, int len, DataInputStream data) {
         try {
-            if(ds.available() >=4){
-                int j = ds.readInt();
+            if(data.available() >=4){
+                int j = data.readInt();
                 if(j == jid){
-                    onReceiveRCTX(ds);
-                    return true;
+                    onReceiveRCTX(data);
                 }
-                
             }
         } catch (IOException ex) {
             Logger.getLogger(Context.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return false;
     }
     
 }

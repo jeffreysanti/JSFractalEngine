@@ -14,7 +14,7 @@ import javax.swing.Timer;
  *
  * @author jeffrey
  */
-public class ServerStatusDialog extends javax.swing.JFrame implements ASyncPoolAcceptor {
+public class ServerStatusDialog extends javax.swing.JFrame implements ServerMessageListener {
 
     /**
      * Creates new form ServerStatusDialog
@@ -24,6 +24,8 @@ public class ServerStatusDialog extends javax.swing.JFrame implements ASyncPoolA
         
         lstQueue.setModel(new DefaultListModel());
         lstRendering.setModel(new DefaultListModel());
+        
+        ServerConnection.getInst().addServerMessageListener("STAT", this);
         
         timer = new javax.swing.Timer(2000, new ActionListener() {
             @Override
@@ -160,15 +162,13 @@ public class ServerStatusDialog extends javax.swing.JFrame implements ASyncPoolA
         txt = txt.replaceAll("A", "");
         txt = txt.replaceAll("!", "");
         if(ServerConnection.getInst().isConnected()){
-            ServerConnection.getInst().sendPacket("CJOB"+txt);
-            ServerConnection.getInst().getASyncPool().addASyncAcceptor("STAT", this);
+            ServerConnection.getInst().addPacketToQueue("CJOB", txt, null);
         }
     }//GEN-LAST:event_btnCancelActionPerformed
 
     public void update(){
         if(ServerConnection.getInst().isConnected()){
-            ServerConnection.getInst().sendPacket("STAT");
-            ServerConnection.getInst().getASyncPool().addASyncAcceptor("STAT", this);
+            ServerConnection.getInst().addPacketToQueue("STAT", "", null);
         }
     }
     
@@ -188,28 +188,20 @@ public class ServerStatusDialog extends javax.swing.JFrame implements ASyncPoolA
     private Timer timer;
 
     @Override
-    public boolean poolDataReceived(String head, DataInputStream ds) {
-        String resp = ServerConnection.extractString(ds);
+    public void onReceivePacket(String head, int len, DataInputStream ds) {
+        String resp = ServerPacket.extractString(ds, len);
         
         if(!resp.contains("#"))
-            return true;
+            return;
         
         ((DefaultListModel)lstQueue.getModel()).clear();
-        String jobQueue = resp.substring(0, resp.indexOf("|"));
+        String jobQueue = resp.substring(0, resp.indexOf("#"));
         String [] jobsInQueue = jobQueue.split(",");
         for(String j : jobsInQueue){
             j = j.replaceAll(",", "");
             if(j.length() == 0)
                 continue;
-            ((DefaultListModel)lstQueue.getModel()).addElement("M"+j);
-        }
-        jobQueue = resp.substring(resp.indexOf("|")+1, resp.indexOf("#"));
-        jobsInQueue = jobQueue.split(",");
-        for(String j : jobsInQueue){
-            j = j.replaceAll(",", "");
-            if(j.length() == 0)
-                continue;
-            ((DefaultListModel)lstQueue.getModel()).addElement("A"+j);
+            ((DefaultListModel)lstQueue.getModel()).addElement(j);
         }
         
         String rendering = resp.substring(resp.indexOf("#")+1);
@@ -221,6 +213,6 @@ public class ServerStatusDialog extends javax.swing.JFrame implements ASyncPoolA
                 continue;
             ((DefaultListModel)lstRendering.getModel()).addElement(j);
         }
-        return true; // any stat belongs here
+        return;
     }
 }

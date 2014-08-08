@@ -24,15 +24,15 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
  *
  * @author jeffrey
  */
-public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
+public class PanelLibrary extends JPanel implements ServerReplyer, ServerMessageListener {
     
-    private final int REQUEST_GAP = 1000;
     private final long REQUEST_GAP_SSLT = 2000L;
     private final int REQUEST_GAP_RE_SSLT = 60000;
     private final int REQUEST_GAP_REREQ = 10000;
@@ -85,16 +85,19 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
         });
         timer2.start();
         timer2.setRepeats(true);
+        
+        ServerConnection.getInst().addServerMessageListener("MDUD", this);
     }
     
-    public void handleServerPackets(String head, DataInputStream ds){
+    @Override
+    public void onReceivePacket(String head, int len, DataInputStream ds){
         int jid = 0;
         if(head.equals("MDUD")){ // we received an update
             try {
                 jid = ds.readInt();
                 int uid = ds.readInt();
-                String title = ServerConnection.extractString(ds, ds.readInt());
-                String author = ServerConnection.extractString(ds, ds.readInt());
+                String title = ServerPacket.extractString(ds, ds.readInt());
+                String author = ServerPacket.extractString(ds, ds.readInt());
                 int status = ds.readInt();
                 byte[] imgData = null;
                 int sz = ds.readInt();
@@ -130,8 +133,7 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
             System.out.println("Requesting Library Refresh!!!");
             timer.restart(); // so that we do not auto update right after manually updating
             if(ServerConnection.getInst().isConnected()){
-                ServerConnection.getInst().sendPacket("SSLT20|" + txtSearch.getText());
-                ServerConnection.getInst().getASyncPool().addASyncAcceptor("SSLT", this);
+                ServerConnection.getInst().addPacketToQueue("SSLT", "20|"+txtSearch.getText(), this);
             }
             lastUpdate = now;
             timer.setDelay(REQUEST_GAP_RE_SSLT);
@@ -145,11 +147,9 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
     
     // send any nessesary re-requests if they failed to come at first
     public void updateReRequest(){
-        int deferTimer = 0;
         for(LibraryTile t : T){
             if(t.getStatus() == LibraryTile.FDBS_UNLINKED){
-                t.updateData(deferTimer);
-                deferTimer += REQUEST_GAP;
+                t.updateData(0);
             }
         }
     }
@@ -162,7 +162,7 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
     private Timer timer2;
     private long lastUpdate;
 
-    @Override
+    /*@Override
     public boolean poolDataReceived(String head, DataInputStream ds) {
         String resp = ServerConnection.extractString(ds);
         if(resp.length() > 0){
@@ -195,5 +195,54 @@ public class PanelLibrary extends JPanel implements ASyncPoolAcceptor {
             this.revalidate();
         }
         return true;
+    }*/
+    
+    public void onReceiveSLSTReply(int len, DataInputStream data){
+        String resp = ServerPacket.extractString(data, len);
+        if(!resp.isEmpty()){
+            String[] arr = resp.split(",");
+            
+            // Make list of old entries so we do not have to re-request them
+            HashMap<Integer, LibraryTile> old = new HashMap();
+            for(LibraryTile t : T){
+                old.put(t.getJobID(), t);
+                this.remove(t);
+            }
+            
+            // Clear Library Panel
+            T.clear();
+            
+            for(String s : arr){
+                int jid = Integer.parseInt(s);
+
+                // if we already have info (inc. title) -> do not recheck for it
+                if(old.containsKey(jid) && ! old.get(jid).isUpdatableStatus()){
+                    T.add(old.get(jid));
+                    this.add(old.get(jid));
+                }else{
+                    LibraryTile t = new LibraryTile(jid);
+                    t.updateData(0);
+                    this.add(t);
+                    T.add(t);
+                }
+            }
+            old.clear();
+            this.revalidate();
+        }
+    }
+    /*public void onReceiveSLSTReply(int len, DataInputStream data){
+        
+    }*/
+
+    @Override
+    public void onReceiveReply(String head, int len, DataInputStream data) {
+            
+        if(head.equals("SSLT")){
+            onReceiveSLSTReply(len, data);
+        }
+
+        // Recevied list of components
+        
+        
     }
 }

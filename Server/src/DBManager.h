@@ -9,9 +9,12 @@
 #define DBSYSTEM_H_
 
 #include "sqlite3.h"
-#include "Authentication.h"
+#include "UserManager.h"
 #include <sstream>
 #include <string>
+#include <mutex>
+#include "ClientCommunicator.h"
+#include "ParamaterSchema.h"
 
 enum FractalDBState{
 	FDBS_RENDERING = 0,
@@ -28,6 +31,7 @@ struct FractalMeta{
 		jobID = -1;
 		userID = -1;
 		status = FDBS_ERR;
+		manualQueue = true;
 	}
 
 	int jobID;
@@ -35,15 +39,20 @@ struct FractalMeta{
 	std::string name;
 	std::string author;
 	FractalDBState status;
+	bool manualQueue;
+};
+
+struct FractalContainer{
+	FractalMeta m;
+	Paramaters *p;
 };
 
 
-class DBSystem {
+class DBManager {
 public:
-	DBSystem(std::string dbDir);
-	virtual ~DBSystem();
 
-	Authentication auth;
+	//Authentication auth;
+	void initialize();
 
 	std::string getJobSearchResult(std::string query);
 
@@ -51,16 +60,31 @@ public:
 	void insertFractal(FractalMeta f);
 	void updateFractal(FractalMeta f);
 
-	unsigned int getNextID();
+	void fillMDUDRequest(int jid, char **sz, int &len);
+	void fillRCTXRequest(int jid, char **sz, int &len);
+
+	unsigned int submitJob(FractalMeta meta, Paramaters *p);
+	std::vector<FractalContainer> fetchSubmittedJobs();
+
+	static DBManager *getSingleton();
 
 private:
+
+	DBManager();
+	virtual ~DBManager();
 
 	void executeSql(std::string cmd);
 	void dbVerify(int res);
 
+	static DBManager singleton;
+
 
 	sqlite3 *s;
 	unsigned int lastID;
+
+	std::mutex mtx;
+
+	std::vector<FractalContainer> Submitted;
 
 };
 

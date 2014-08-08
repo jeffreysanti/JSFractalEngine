@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author jeffrey
  */
-public class ServerConnectionDialog extends javax.swing.JFrame {
+public class ServerConnectionDialog extends javax.swing.JDialog {
 
     /** Creates new form ServerConnectionDialog */
     public ServerConnectionDialog() {
@@ -38,7 +38,6 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         txtAddr = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        txtPort = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         btnOkay = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -47,6 +46,7 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         btnLocal = new javax.swing.JButton();
+        txtPort = new javax.swing.JSpinner();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connection Dialog");
@@ -99,6 +99,8 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
             }
         });
 
+        txtPort.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(14860), Integer.valueOf(1), null, Integer.valueOf(1)));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -119,18 +121,21 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel2))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtPort, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel3))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtUser, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel4))
-                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(txtPass, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel5))
-                            .addComponent(btnLocal, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnLocal, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(txtPort)
+                                    .addComponent(txtUser, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel4))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel3)))))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -144,9 +149,9 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel3)
+                    .addComponent(txtPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
@@ -159,25 +164,13 @@ public class ServerConnectionDialog extends javax.swing.JFrame {
                     .addComponent(btnCancel)
                     .addComponent(btnOkay)
                     .addComponent(btnLocal))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnOkayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkayActionPerformed
-    // send info to server connection to connect
-    int portno = 0;
-    try{
-        portno = Integer.parseInt(txtPort.getText());
-    }catch(Exception e){
-        return;
-    }
-    if(portno < 1)
-        return;
-    
-    ServerConnection.getInst().connectNow(txtAddr.getText(), portno, txtUser.getText(), txtPass.getText());
-    
     dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 }//GEN-LAST:event_btnOkayActionPerformed
 
@@ -186,17 +179,7 @@ private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_btnCancelActionPerformed
 
 private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
-    if(ServerConnection.getInst().isConnected()){
-        btnOkay.setEnabled(false);
-        btnLocal.setEnabled(false);
-        return;
-    }
-    txtAddr.setText(ServerConnection.getInst().getAddress());
-    txtPort.setText(Integer.toString(ServerConnection.getInst().getPort()));
-    txtUser.setText(ServerConnection.getInst().getUser());
-    txtPass.setText(ServerConnection.getInst().getPassword());
-    btnOkay.setEnabled(true);
-    btnLocal.setEnabled(false);
+    
 }//GEN-LAST:event_formWindowGainedFocus
 
     private void btnLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLocalActionPerformed
@@ -204,24 +187,41 @@ private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:
     }//GEN-LAST:event_btnLocalActionPerformed
 
 private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-    JavaDesktop.getInst().getWorkspacePanel().setVisible(false);
-    JavaDesktop.getInst().getLibraryPanel().setVisible(false);
-    insts ++;
+
 }//GEN-LAST:event_formWindowOpened
 
 private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-    JavaDesktop.getInst().getWorkspacePanel().setVisible(true);
-    JavaDesktop.getInst().getLibraryPanel().setVisible(true);
-    insts --;
+    bOpen = false;
 }//GEN-LAST:event_formWindowClosing
     
-public static void openDialog(){
-    if(insts < 1){
-        ServerConnectionDialog dlg = new ServerConnectionDialog();
-        dlg.setVisible(true);
-    }
+public void openDialog(String addr, int portno, String usr, String pass){
+    bOpen = true;
+    txtAddr.setText(addr);
+    txtPort.setValue((Integer)portno);
+    txtUser.setText(usr);
+    txtPass.setText(pass);
+    this.setModal(true);
+    this.setVisible(true);
 }
-private static int insts = 0;
+
+public int getPort(){
+    return (Integer)txtPort.getValue();
+}
+public String getAddress(){
+    return txtAddr.getText();
+}
+public String getUser(){
+    return txtUser.getText();
+}
+public String getPass(){
+    return txtPass.getText();
+}
+
+public boolean isOpen(){
+    return bOpen;
+}
+
+    private volatile boolean bOpen;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
@@ -234,7 +234,7 @@ private static int insts = 0;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField txtAddr;
     private javax.swing.JTextField txtPass;
-    private javax.swing.JTextField txtPort;
+    private javax.swing.JSpinner txtPort;
     private javax.swing.JTextField txtUser;
     // End of variables declaration//GEN-END:variables
 }
