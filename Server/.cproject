@@ -34,7 +34,8 @@
 								<option id="gnu.c.compiler.exe.debug.option.debugging.level.1758268126" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.dialect.std.1197471539" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" value="gnu.c.compiler.dialect.c11" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.213302521" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/opt/Ice-3.5.1/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FractServ/src/sqlite3}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FractServ/src/muParserC}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1886076741" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -43,10 +44,8 @@
 								<option id="gnu.cpp.link.option.libs.1619207457" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="jsoncpp"/>
-									<listOptionValue builtIn="false" value="IceUtil"/>
 									<listOptionValue builtIn="false" value="dl"/>
 									<listOptionValue builtIn="false" value="png"/>
-									<listOptionValue builtIn="false" value="Ice"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.1849763558" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/opt/Ice-3.5.1/lib64/"/>
@@ -102,7 +101,8 @@
 								<option id="gnu.c.compiler.exe.release.option.debugging.level.885873709" name="Debug Level" superClass="gnu.c.compiler.exe.release.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.dialect.std.1693159844" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" value="gnu.c.compiler.dialect.c11" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.898324596" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/opt/Ice-3.5.1/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FractServ/src/sqlite3}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FractServ/src/muParserC}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.857551923" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -150,6 +150,9 @@
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/FractServ"/>
+		</configuration>
+		<configuration configurationName="Multiple configurations">
 			<resource resourceType="PROJECT" workspacePath="/FractServ"/>
 		</configuration>
 		<configuration configurationName="Debug">
