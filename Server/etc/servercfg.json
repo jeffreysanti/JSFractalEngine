@@ -1,0 +1,22 @@
+// JSFractalEngine Server Configuration File
+{
+	// Empty means that data directory will same as binary file [Absolute Path]
+	"directory.data" : "",
+
+	// Port number
+	"portno" : 14860,
+
+	// Last Resort alternative to sockets [if firewall prevents their use]
+	"nosockets" : false,
+
+	// max connections at a time
+	"maxclients" : 30,
+
+	// User accounts to gain access for a session
+	// each user pair has "id" "name" "pass" "admin" and "automated"
+	"users" : [
+		
+		{"id": 1, "name": "", "pass": "", "admin": true, "automated": false}
+
+	]
+}
