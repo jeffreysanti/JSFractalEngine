@@ -11,6 +11,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -39,6 +43,8 @@ public class ServerConnection implements Runnable {
     private DataOutputStream out = null;
     private DataInputStream in = null;
     
+    String noSocketsPath;
+    
     private int portno;
     private String addr, pass, user;
     private int uid;
@@ -66,19 +72,69 @@ public class ServerConnection implements Runnable {
     }
     
     synchronized private void readSocket(){
-        int ret = Pin.readOperation(in);
-        if(ret == 2){
-            connectionDropped("Read Operation Failed");
-        }else if(ret == 1){
-            R.addFirst(Pin);
-            Pin = new ServerPacket();
+        
+        if(nosockets){
+            File f = new File(noSocketsPath + "/sout.lck");
+            if(f.exists()){
+                f = new File(noSocketsPath + "/sout.sck");
+                if(f.exists()){
+                    FileInputStream input;
+                    try {
+                        input = new FileInputStream(noSocketsPath + "/sout.sck");
+                        int ret = Pin.readOperation(new DataInputStream(input));
+                        if(ret == 2){
+                            connectionDropped("Read Operation Failed");
+                        }else if(ret == 1){
+                            R.addFirst(Pin);
+                            Pin = new ServerPacket();
+                        }
+                        input.close();
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                f = new File(noSocketsPath + "/sout.lck");
+                f.delete();
+            }
+        }else{
+            int ret = Pin.readOperation(in);
+            if(ret == 2){
+                connectionDropped("Read Operation Failed");
+            }else if(ret == 1){
+                R.addFirst(Pin);
+                Pin = new ServerPacket();
+            }
         }
     }
     synchronized private void writeSocket(){
         if(Pout == null && O.size() > 0){
             Pout = O.removeFirst();
         }
-        if(Pout != null){
+        if(Pout != null && nosockets){
+            File f = new File(noSocketsPath + "/sin.lck");
+            if(!f.exists()){ 
+                try {
+                    // lock must be gone to write
+                    FileOutputStream output = new FileOutputStream(noSocketsPath + "/sin.sck");
+                    int ret = Pout.writeOperation(new DataOutputStream(output));
+                    if(ret == 2){
+                        connectionDropped("Write Operation Failed");
+                        return;
+                    }
+                    output.close();
+                    output = new FileOutputStream(noSocketsPath + "/sin.lck"); // write lock
+                    output.write(new byte[0]);
+                    output.close();
+                    Pout = null;
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }else if(Pout != null){
             int ret = Pout.writeOperation(out);
             if(ret == 2){
                 connectionDropped("Write Operation Failed");
@@ -106,6 +162,7 @@ public class ServerConnection implements Runnable {
             
             if(!L.containsKey(head)){
                 System.err.println("Lost Packet Received HEAD: "+head);
+                return;
             }
             HashSet<ServerMessageListener> list = L.get(head);
             for(ServerMessageListener listener : list){
@@ -125,11 +182,12 @@ public class ServerConnection implements Runnable {
     }
     
     synchronized public boolean isConnected(){
-        return sock != null;
+        return (nosockets && !noSocketsPath.isEmpty()) || (sock != null);
     }
     
     synchronized private void connectionDropped(String reason){
         try {
+            if(sock != null)
                 sock.close();
         } catch (IOException ex) {}
         sock = null;
@@ -146,8 +204,86 @@ public class ServerConnection implements Runnable {
     }
     
     synchronized private void forcePushEntirePacket(ServerPacket pkt) throws IOException{
-        out.write(pkt.toByteArray());
-        out.flush();
+        
+        if(nosockets){
+            FileOutputStream out = new FileOutputStream(noSocketsPath + "/sin.sck");
+            out.write(pkt.toByteArray());
+            out.close();
+            
+            out = new FileOutputStream(noSocketsPath + "/sin.lck");
+            out.close();
+        }else{
+            out.write(pkt.toByteArray());
+            out.flush();
+        }
+    }
+    
+    private void authenticate() throws IOException{
+        
+        if(nosockets){
+            // Delete any locks in place [From Previous Connections]
+            File f = new File(noSocketsPath + "/sout.lck");
+            f.delete();
+            f = new File(noSocketsPath + "/sin.lck");
+            f.delete();
+            
+            f = new File(noSocketsPath + "/sin.sck");
+            f.delete();
+        }
+        
+        ServerPacket authPkt = new ServerPacket();
+        authPkt.head.pckType = new byte[] {'A', 'U', 'T', 'H'};
+        authPkt.head.replyAddr = 1;
+        authPkt.data = ServerPacket.strToByteArray(user+":"+pass);
+        forcePushEntirePacket(authPkt);
+
+        boolean ret = false;
+        if(nosockets){
+            File f = new File(noSocketsPath + "/sout.lck");
+            int attempts = 0;
+            while(!f.exists()){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                attempts ++;
+                if(attempts > 60){
+                    connectionDropped("AUTH Packet not received");
+                    return;
+                }
+            }
+            // now read message
+            f = new File(noSocketsPath + "/sout.sck");
+            if(!f.exists()){
+                connectionDropped("AUTH Packet not received");
+                return;
+            }
+            FileInputStream input = new FileInputStream(noSocketsPath + "/sout.sck");
+            ret = authPkt.forceReadPacket(new DataInputStream(input));
+            input.close();
+            
+            f = new File(noSocketsPath + "/sout.lck");
+            f.delete();
+        }else{
+            ret = authPkt.forceReadPacket(in);
+        }
+        if(ret && ServerPacket.byteArrayToStr(authPkt.head.pckType).equals("AUTH")){
+            String resp = ServerPacket.byteArrayToStr(authPkt.data);
+            if(resp.contains("YESADMIN")){
+                admin = true;
+                uid = Integer.parseInt(resp.substring(resp.indexOf('/')+1));
+                System.out.println("Authenticated: Admin Rights "+uid+"\n");
+            }else if(resp.contains("YES")){
+                admin = false;
+                uid = Integer.parseInt(resp.substring(resp.indexOf('/')+1));
+                System.out.println("Authenticated: Standard User "+uid+"\n");
+            }else{
+                connectionDropped("AUTH denied");
+            }
+        }else{
+            connectionDropped("AUTH Packet not received");
+        }
     }
     
     synchronized private void attemptConnection() throws IOException{
@@ -161,7 +297,7 @@ public class ServerConnection implements Runnable {
             }
         }
         // now try to connect to it
-        nosockets = false;
+        nosockets = dlg.isNoSockets();
         portno = dlg.getPort();
         addr = dlg.getAddress();
         user = dlg.getUser();
@@ -175,31 +311,11 @@ public class ServerConnection implements Runnable {
             out = new DataOutputStream(sock.getOutputStream());
             in = new DataInputStream(sock.getInputStream());
             
+            authenticate();
             
-            ServerPacket authPkt = new ServerPacket();
-            authPkt.head.pckType = new byte[] {'A', 'U', 'T', 'H'};
-            authPkt.head.replyAddr = 1;
-            authPkt.data = ServerPacket.strToByteArray(user+":"+pass);
-            forcePushEntirePacket(authPkt);
-            
-            if(authPkt.forceReadPacket(in) && ServerPacket.byteArrayToStr(authPkt.head.pckType).equals("AUTH")){
-                String resp = ServerPacket.byteArrayToStr(authPkt.data);
-                if(resp.contains("YESADMIN")){
-                    admin = true;
-                    uid = Integer.parseInt(resp.substring(resp.indexOf('/')+1));
-                    System.out.println("Authenticated: Admin Rights "+uid+"\n");
-                }else if(resp.contains("YES")){
-                    admin = false;
-                    uid = Integer.parseInt(resp.substring(resp.indexOf('/')+1));
-                    System.out.println("Authenticated: Standard User "+uid+"\n");
-                }else{
-                    connectionDropped("AUTH denied");
-                }
-            }else{
-                connectionDropped("AUTH Packet not received");
-            }
         }else{
-            
+            noSocketsPath = dlg.getNoSocketsDir();
+            authenticate();
         }
     }
     
@@ -228,16 +344,18 @@ public class ServerConnection implements Runnable {
         while(true){
             try{
                 // First make sure that we are connected
-                if(sock == null){ // force new connection
+                if(sock == null && !nosockets){ // force new connection
+                    attemptConnection();
+                    continue;
+                }
+                if(nosockets && noSocketsPath.isEmpty()){
                     attemptConnection();
                     continue;
                 }
 
                 // now, take care of any data
-                if(!nosockets){
-                    readSocket();
-                    writeSocket();
-                }
+                readSocket();
+                writeSocket();
                 
                 // now send server update messages
                 SwingUtilities.invokeLater(new Runnable(){

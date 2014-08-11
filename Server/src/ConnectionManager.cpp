@@ -182,15 +182,6 @@ void ConnectionManager::threadMain()
 	while(true){
 
 		// first remove any disconnected clients and update them
-		/*unsigned int i = 0;
-		while ( i < singleton.C.size() ) {
-		    if (!singleton.C[i].updateClient()){
-		        singleton.C.erase(singleton.C.begin() + i);
-		    }else {
-		        ++i;
-		    }
-		}*/
-		//std::cout << getSingleton()->C.size() << " -> ";
 		auto it=getSingleton()->C.begin();
 		while(it != getSingleton()->C.end()){
 			if(!(*it)->updateClient()){

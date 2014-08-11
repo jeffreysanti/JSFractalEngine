@@ -14,6 +14,8 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -45,8 +47,8 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
         txtPass = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        btnLocal = new javax.swing.JButton();
         txtPort = new javax.swing.JSpinner();
+        btnNoSockets = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connection Dialog");
@@ -91,15 +93,14 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
 
         jLabel5.setText("Password");
 
-        btnLocal.setText("Start Local");
-        btnLocal.setEnabled(false);
-        btnLocal.addActionListener(new java.awt.event.ActionListener() {
+        txtPort.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(14860), Integer.valueOf(1), null, Integer.valueOf(1)));
+
+        btnNoSockets.setText("Connect To NoSocket Server");
+        btnNoSockets.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLocalActionPerformed(evt);
+                btnNoSocketsActionPerformed(evt);
             }
         });
-
-        txtPort.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(14860), Integer.valueOf(1), null, Integer.valueOf(1)));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -107,25 +108,20 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnNoSockets, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(btnOkay, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(131, 131, 131))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addGroup(layout.createSequentialGroup()
+                        .addGap(100, 100, 100)
+                        .addComponent(btnCancel, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(txtAddr, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel2))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtPass, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel5))
-                            .addComponent(btnLocal, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(txtPort)
                                     .addComponent(txtUser, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
@@ -135,8 +131,13 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
                                         .addComponent(jLabel4))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addGap(18, 18, 18)
-                                        .addComponent(jLabel3)))))
-                        .addContainerGap())))
+                                        .addComponent(jLabel3))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(txtPass, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel5)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addGap(24, 24, 24))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -162,15 +163,17 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
-                    .addComponent(btnOkay)
-                    .addComponent(btnLocal))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnOkay))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
+                .addComponent(btnNoSockets)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnOkayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkayActionPerformed
+    noSockets = false;
     dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 }//GEN-LAST:event_btnOkayActionPerformed
 
@@ -182,10 +185,6 @@ private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:
     
 }//GEN-LAST:event_formWindowGainedFocus
 
-    private void btnLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLocalActionPerformed
-
-    }//GEN-LAST:event_btnLocalActionPerformed
-
 private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
 
 }//GEN-LAST:event_formWindowOpened
@@ -193,6 +192,30 @@ private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event
 private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
     bOpen = false;
 }//GEN-LAST:event_formWindowClosing
+
+    private void btnNoSocketsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNoSocketsActionPerformed
+        
+        JFileChooser chooser = new JFileChooser();
+        
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Server NoSocket File", "sck");
+        chooser.setFileFilter(filter);
+        int ret = chooser.showOpenDialog(this);
+        if(ret == JFileChooser.APPROVE_OPTION) {
+            String dir = chooser.getSelectedFile().getParentFile().getAbsolutePath();
+            noSocketsPath = dir;
+            noSockets = true;
+            dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        }
+    }//GEN-LAST:event_btnNoSocketsActionPerformed
+    
+
+    public boolean isNoSockets(){
+        return noSockets;
+    }
+    
+    public String getNoSocketsDir(){
+        return noSocketsPath;
+    }
     
 public void openDialog(String addr, int portno, String usr, String pass){
     bOpen = true;
@@ -222,10 +245,13 @@ public boolean isOpen(){
 }
 
     private volatile boolean bOpen;
+    
+    private boolean noSockets;
+    private String noSocketsPath;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
-    private javax.swing.JButton btnLocal;
+    private javax.swing.JButton btnNoSockets;
     private javax.swing.JButton btnOkay;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

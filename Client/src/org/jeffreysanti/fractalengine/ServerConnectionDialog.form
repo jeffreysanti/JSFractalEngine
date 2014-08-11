@@ -31,27 +31,21 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="btnNoSockets" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="btnOkay" min="-2" pref="102" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btnCancel" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="131" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="100" max="-2" attributes="0"/>
+                      <Component id="btnCancel" pref="94" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="txtAddr" min="-2" pref="195" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="txtPass" min="-2" pref="195" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="btnLocal" alignment="1" min="-2" pref="107" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="txtPort" max="32767" attributes="0"/>
@@ -68,10 +62,16 @@
                                   </Group>
                               </Group>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="txtPass" min="-2" pref="195" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,9 +104,10 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btnCancel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnOkay" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnLocal" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="76" max="32767" attributes="0"/>
+              <Component id="btnNoSockets" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -162,21 +163,20 @@
         <Property name="text" type="java.lang.String" value="Password"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="btnLocal">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Start Local"/>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnLocalActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JSpinner" name="txtPort">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
           <SpinnerModel initial="14860" minimum="1" numberType="java.lang.Integer" stepSize="1" type="number"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnNoSockets">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Connect To NoSocket Server"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnNoSocketsActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

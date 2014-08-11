@@ -29,6 +29,10 @@
 #include <cerrno>
 #include <cassert>
 
+#include "DirectoryManager.h"
+#include "UserManager.h"
+#include "DBManager.h"
+
 #define MAGIC   0xFA42AB
 #define MAXSZ 33554432 /* 32MB */
 
@@ -77,6 +81,8 @@ public:
 
 	void addPacketToQueue(std::string head, unsigned int len, char *data, unsigned int replyTo=0);
 	void addPacketToQueue(std::string head, std::string str, unsigned int replyTo=0);
+
+	void sendNoSocketAuthorization();
 
 	bool isNoSockets();
 

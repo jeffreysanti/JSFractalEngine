@@ -40,9 +40,10 @@ bool Client::updateClient(){
 
 		if(head == "AUTH" && C->isNoSockets()){
 			std::cout << "Client " << C->getID() << " Requested Authentication\n";
-			U = UserManager::getSingleton()->getNoSocketsAccount();
 			std::cout << "   Granted [Admin Rights]  [NoSocket AUTH]\n";
 			std::cout << "   Priority Queue\n";
+			C->sendNoSocketAuthorization();
+			U = UserManager::getSingleton()->getNoSocketsAccount();
 		}
 		else if(head == "AUTH"){
 			std::cout << "Client " << C->getID() << " Requested Authentication\n";
