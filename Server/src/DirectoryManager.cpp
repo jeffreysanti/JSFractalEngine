@@ -40,7 +40,7 @@ inline std::string GetExecutableLocation()
    memset(&buf, 0, 1024);
 
 #ifdef _WIN32
-   GetModuleFileNameA(buf, sizeof(buf));
+   GetModuleFileNameA(NULL, buf, sizeof(buf));
 #else
    readlink("/proc/self/exe", buf, sizeof(buf));
 #endif
