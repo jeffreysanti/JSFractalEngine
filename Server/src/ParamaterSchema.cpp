@@ -7,8 +7,12 @@
 
 #include "ParamaterSchema.h"
 #include "ColorPalette.h"
+#include "DirectoryManager.h"
 
 ParamaterSchema::ParamaterSchema(std::string schemaFile) {
+
+	// relative to config path
+	schemaFile = DirectoryManager::getSingleton()->getRootDirectory() + "/" + schemaFile;
 
 	std::fstream fp;
 	fp.open(schemaFile.c_str(), std::ios::in);

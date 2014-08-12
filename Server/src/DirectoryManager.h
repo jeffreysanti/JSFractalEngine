@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <cstring>
 #include "json/json.h"
 
 class DirectoryManager {
