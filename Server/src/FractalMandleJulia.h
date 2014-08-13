@@ -1,12 +1,12 @@
 /*
- * FractalMultibrot.h
+ * FractalMandleJulia.h
  *
  *  Created on: Apr 29, 2014
  *      Author: jeffrey
  */
 
-#ifndef FRACTALMULTIBROT_H_
-#define FRACTALMULTIBROT_H_
+#ifndef FRACTALMANDLEJULIA_H_
+#define FRACTALMANDLEJULIA_H_
 
 #include "FractalGen.h"
 #include <complex>
@@ -15,10 +15,10 @@
 #include "muParserC/mucParser.h"
 #include "Fractal.h"
 
-class FractalMultibrot : public Fractal {
+class FractalMandleJulia : public Fractal {
 public:
-	FractalMultibrot(unsigned int id, Paramaters *p, Paramaters *paramsOut, ImageWriter *i);
-	virtual ~FractalMultibrot();
+	FractalMandleJulia(unsigned int id, Paramaters *p, Paramaters *paramsOut, ImageWriter *i);
+	virtual ~FractalMandleJulia();
 
 	virtual void render(int maxTime);
 	virtual void processParams();
@@ -55,6 +55,9 @@ protected:
 	double multX;
 	double multY;
 	std::string funct;
+	bool zeroZ;
+	std::complex<double> Kj, Kk, Kl, Km, Kn; // constants
+
 
 	// shading
 	std::string shading;

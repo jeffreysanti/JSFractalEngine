@@ -1,13 +1,13 @@
 /*
- * FractalMultibrot.cpp
+ * FractalMandleJulia.cpp
  *
  *  Created on: Apr 29, 2014
  *      Author: jeffrey
  */
 
-#include "FractalMultibrot.h"
+#include "FractalMandleJulia.h"
 
-FractalMultibrot::FractalMultibrot(unsigned int id, Paramaters *p, Paramaters *paramsOut, ImageWriter *i)
+FractalMandleJulia::FractalMandleJulia(unsigned int id, Paramaters *p, Paramaters *paramsOut, ImageWriter *i)
 						: Fractal(id, p, paramsOut, i), schem("SCHEMA_MULTIBROT") {
 	I = NULL;
 	histogram = NULL;
@@ -17,7 +17,7 @@ FractalMultibrot::FractalMultibrot(unsigned int id, Paramaters *p, Paramaters *p
 
 }
 
-FractalMultibrot::~FractalMultibrot() {
+FractalMandleJulia::~FractalMandleJulia() {
 	if(I != NULL){
 		for(unsigned int x=0; x<width; x++){
 			delete [] I[x];
@@ -32,7 +32,7 @@ FractalMultibrot::~FractalMultibrot() {
 	}
 }
 
-void FractalMultibrot::render(int maxTime)
+void FractalMandleJulia::render(int maxTime)
 {
 	if(!isOkay())
 		return;
@@ -48,7 +48,7 @@ void FractalMultibrot::render(int maxTime)
 	Fractal::postRender();
 }
 
-void FractalMultibrot::processParams()
+void FractalMandleJulia::processParams()
 {
 	Fractal::processParams();
 
@@ -81,7 +81,20 @@ void FractalMultibrot::processParams()
 	}
 }
 
-void FractalMultibrot::processParamsAlgorithm()
+inline std::complex<double> getComplexParam(std::string val, FractalMandleJulia* here){
+	try{
+		muc::Parser p;
+		p.SetExpr(val);
+		std::complex<double> z = p.Eval();
+		return z;
+	}catch (muc::Parser::exception_type &e)
+	{
+		here->err("Complex Value Invalid: "+e.GetMsg());
+		return std::complex<double>(0,0); // if failed
+	}
+}
+
+void FractalMandleJulia::processParamsAlgorithm()
 {
 	algoCopy = schem.getInt(*p, "algocopy");
 	if(algoCopy > -1){
@@ -104,6 +117,12 @@ void FractalMultibrot::processParamsAlgorithm()
 			p->setValue("radR", pCopy.getValue("radR"));
 			p->setValue("radI", pCopy.getValue("radI"));
 			p->setValue("iters", pCopy.getValue("iters"));
+			p->setValue("Kj", pCopy.getValue("Kj"));
+			p->setValue("Kk", pCopy.getValue("Kk"));
+			p->setValue("Kl", pCopy.getValue("Kl"));
+			p->setValue("Km", pCopy.getValue("Km"));
+			p->setValue("Kn", pCopy.getValue("Kn"));
+			p->setValue("zInitial", pCopy.getValue("zInitial"));
 		}else{
 			err("algocopy job either does not exist or is inconsistent with specified image size!\n");
 			return;
@@ -112,6 +131,20 @@ void FractalMultibrot::processParamsAlgorithm()
 
 	funct = schem.getString(*p, "funct");
 	threshold = schem.getDouble(*p, "threshold");
+
+	if(schem.getString(*p, "zInitial") == "zero"){
+		zeroZ = true;
+	}else{
+		zeroZ = false;
+	}
+
+	// constants
+	Kj = getComplexParam(schem.getString(*p, "Kj"), this);
+	Kk = getComplexParam(schem.getString(*p, "Kk"), this);
+	Kl = getComplexParam(schem.getString(*p, "Kl"), this);
+	Km = getComplexParam(schem.getString(*p, "Km"), this);
+	Kn = getComplexParam(schem.getString(*p, "Kn"), this);
+
 
 	double centerX = schem.getDouble(*p, "centR");
 	double centerY = schem.getDouble(*p, "centI");
@@ -133,7 +166,7 @@ void FractalMultibrot::processParamsAlgorithm()
 	applyTransformations(sizeX, sizeY, centerX, centerY);
 }
 
-void FractalMultibrot::applyTransformations(double sizeX, double sizeY, double centerX, double centerY){
+void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double centerX, double centerY){
 	// now handle transformations :)
 	double transX = schem.getDouble(*p, "translateX");
 	double transY = schem.getDouble(*p, "translateY");
@@ -165,7 +198,7 @@ void FractalMultibrot::applyTransformations(double sizeX, double sizeY, double c
 	p->writeToFile();
 }
 
-void FractalMultibrot::processParamsGraphics()
+void FractalMandleJulia::processParamsGraphics()
 {
 	width = img->getWidth();
 	height = img->getHeight();
@@ -174,7 +207,7 @@ void FractalMultibrot::processParamsGraphics()
 	imgSharpen = schem.getDouble(*p, "imgSharpen");
 }
 
-void FractalMultibrot::processParamsShading()
+void FractalMandleJulia::processParamsShading()
 {
 	shading = schem.getString(*p, "shading");
 		if(shading != "none" && shading != "histogram" && shading != "linear" &&
@@ -190,7 +223,7 @@ void FractalMultibrot::processParamsShading()
 	palette.loadPaletteFromParams(*p, schem, "fillColPal");
 }
 
-void FractalMultibrot::processParamsTracing()
+void FractalMandleJulia::processParamsTracing()
 {
 	tracingMethod = schem.getString(*p, "tracing");
 	if(tracingMethod != "none" && tracingMethod != "blend" && tracingMethod != "solid")
@@ -202,7 +235,7 @@ void FractalMultibrot::processParamsTracing()
 	traceOpacity = schem.getDouble(*p, "traceOpacity");
 }
 
-void FractalMultibrot::passAlgoritm()
+void FractalMandleJulia::passAlgoritm()
 {
 	if(updateStatus("Algo 1/5", 0))
 		return;
@@ -214,6 +247,14 @@ void FractalMultibrot::passAlgoritm()
 			std::complex<double> z,c;
 			p.DefineVar("z", &z);
 			p.DefineVar("c", &c);
+
+			// constants
+			p.DefineVar("j", &Kj);
+			p.DefineVar("k", &Kk);
+			p.DefineVar("l", &Kl);
+			p.DefineVar("m", &Km);
+			p.DefineVar("n", &Kn);
+
 			p.SetExpr(funct);
 
 			for(unsigned int x=0; x<width; x++){
@@ -222,7 +263,12 @@ void FractalMultibrot::passAlgoritm()
 					// Simulate This Pixel
 
 					c = std::complex<double>((double)x*multX + cornerX, (double)y*multY + cornerY);
-					z = std::complex<double>(0.0, 0.0);
+
+					// inital z value
+					if(zeroZ)
+						std::complex<double>(0.0, 0.0);
+					else
+						z = c;
 
 					int iteration = -1;
 
@@ -232,6 +278,8 @@ void FractalMultibrot::passAlgoritm()
 
 						iteration ++;
 					}
+					if(iteration < 0)
+						iteration = 0;
 					I[x][y] = iteration;
 					histogram[iteration] ++;
 				}
@@ -264,7 +312,7 @@ void FractalMultibrot::passAlgoritm()
 }
 
 
-void FractalMultibrot::passShade()
+void FractalMandleJulia::passShade()
 {
 	if(updateStatus("Shade 2/5", 0))
 			return;
@@ -348,7 +396,7 @@ void FractalMultibrot::passShade()
 					rankOrder.push_back(ro);
 				}
 			}
-			std::sort(rankOrder.begin(), rankOrder.end(), FractalMultibrot::RankOrderSort);
+			std::sort(rankOrder.begin(), rankOrder.end(), FractalMandleJulia::RankOrderSort);
 
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
@@ -373,7 +421,7 @@ void FractalMultibrot::passShade()
 	}
 }
 
-void FractalMultibrot::passTrace()
+void FractalMandleJulia::passTrace()
 {
 	if(updateStatus("Trace 2/5", 0))
 		return;
@@ -410,7 +458,7 @@ void FractalMultibrot::passTrace()
 	img->overlayImage(imgOverlay, traceOpacity);
 }
 
-void FractalMultibrot::passEffect()
+void FractalMandleJulia::passEffect()
 {
 	if(updateStatus("Effects 3/5", 0))
 		return;
@@ -424,7 +472,7 @@ void FractalMultibrot::passEffect()
 	unsigned long end = time(NULL);
 }
 
-void FractalMultibrot::passEvaluate()
+void FractalMandleJulia::passEvaluate()
 {
 	if(updateStatus("Eval 5/5", 0))
 		return;

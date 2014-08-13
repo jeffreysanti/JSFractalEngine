@@ -6,8 +6,7 @@
  */
 
 #include "FractalGen.h"
-#include "FractalMultibrot.h"
-#include "FractalJulia.h"
+#include "FractalMandleJulia.h"
 
 std::string FractalGen::saveDir = "./renders";
 
@@ -301,17 +300,8 @@ int runGen(RenderingJob *r)
 			return 0;
 		}
 
-		if(type == "multibrot"){
-			r->fract = new FractalMultibrot(r->params->getID(), r->params, pOut, img);
-			r->fract->processParams();
-			if(!r->fract->isOkay()){
-				std::cerr << r->fract->getErrors();
-				r->timeStart = TIMESTART_COMPLETE;
-				return 0;
-			}
-			r->fract->render(timeOut);
-		}else if(type == "julia"){
-			r->fract = new FractalJulia(r->params->getID(), r->params, pOut, img);
+		if(type == "mj"){
+			r->fract = new FractalMandleJulia(r->params->getID(), r->params, pOut, img);
 			r->fract->processParams();
 			if(!r->fract->isOkay()){
 				std::cerr << r->fract->getErrors();

@@ -47,8 +47,7 @@ public class PanelProperties extends JPanel implements ServerReplyer {
             addProperty(new LinkedTextField(cont, "imgHeight", "Height (px)"));
 
             HashMap<String, String> types = new HashMap();
-            types.put("multibrot", "Mandlebrot Type");
-            types.put("julia", "Julia Type");
+            types.put("mj", "Mandlebrot/Julia Type");
             addProperty(new LinkedComboBox(cont, "type", "Fractal Type", types));
 
             addProperty(Box.createVerticalStrut(20));
@@ -59,10 +58,19 @@ public class PanelProperties extends JPanel implements ServerReplyer {
             addProperty(new LinkedTextField(cont, "radI", "Y-Radius"));
             addProperty(new LinkedTextField(cont, "iters", "Iteration Count"));
             addProperty(new LinkedTextField(cont, "funct", "Function"));
+            
+            types = new HashMap();
+            types.put("zero", "Zero [Mandlebrot]");
+            types.put("c", "C [Julia Set]");
+            addProperty(new LinkedComboBox(cont, "zInitial", "Inital Z-Value", types));
+            
             addProperty(new LinkedTextField(cont, "threshold", "Escape Threshold"));
-            addProperty(new JLabel("Julia Set Only:"));
-            addProperty(new LinkedTextField(cont, "Cr", "C (Real)"));
-            addProperty(new LinkedTextField(cont, "Ci", "C (Imag)"));
+
+            addProperty(new LinkedTextField(cont, "Kj", "Constant j"));
+            addProperty(new LinkedTextField(cont, "Kk", "Constant k"));
+            addProperty(new LinkedTextField(cont, "Kl", "Constant l"));
+            addProperty(new LinkedTextField(cont, "Km", "Constant m"));
+            addProperty(new LinkedTextField(cont, "Kn", "Constant n"));
 
             addProperty(Box.createVerticalStrut(20));
 

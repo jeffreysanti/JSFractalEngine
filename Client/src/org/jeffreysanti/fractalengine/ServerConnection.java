@@ -126,7 +126,7 @@ public class ServerConnection implements Runnable {
                     output.close();
                     output = new FileOutputStream(noSocketsPath + "/sin.lck"); // write lock
                     output.write(new byte[0]);
-                    output.close();
+                    output.close(); 
                     Pout = null;
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);

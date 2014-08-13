@@ -1,6 +1,6 @@
-type:S/N|julia
-imgWidth:W/N(0,99999)|400
-imgHeight:W/N(0,99999)|200
+type:S/N|mj
+imgWidth:W/N(0,10000)|400
+imgHeight:W/N(0,10000)|200
 timeOut:W/Y[0,99999]|120
 author:S/N|Unknown Author
 title:S/N|Untitled
@@ -9,8 +9,11 @@ imgSharpen:R/Y[0,300]|0.0
 threshold:R/N[4,9999999999999]|25
 centR:R/Y|-0.623716
 centI:R/Y|-0.627102
-Cr:R/Y|-0.623716
-Ci:R/Y|-0.627102
+Kj:S/N|0+0i
+Kk:S/N|0+0i
+Kl:S/N|0+0i
+Km:S/N|0+0i
+Kn:S/N|0+0i
 radR:R/N(0,9999999999999)|0.0645052
 radI:R/N(0,9999999999999)|0.0645052
 iters:W/N[2,9999999999999]|50
@@ -29,7 +32,7 @@ traceCol:C/N|RGB255,255,255
 traceOpacity:R/Y[0,1]|1.0
 algocopy:W/Y[-1,9999999999999]|-1
 funct:S/N|z^2+c
-
+zInitial:S/N|zero
 translateX:W/Y[-999999999,999999999]|0
 translateY:W/Y[-999999999,999999999]|0
 scaleX:R/N(0,20)|1.0
