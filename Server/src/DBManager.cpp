@@ -355,8 +355,8 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		p.loadFromFile(basePath + ".job");
 		std::string params = p.asString();
 
-		ParamaterSchema schemBase(DirectoryManager::getSingleton()->getRootDirectory()+"SCHEMA_BASE");
-		ParamaterSchema schemMandl(DirectoryManager::getSingleton()->getRootDirectory()+"SCHEMA_MULTIBROT");
+		ParamaterSchema schemBase("SCHEMA_BASE");
+		ParamaterSchema schemMandl("SCHEMA_MULTIBROT");
 
 		// histo
 		int dtaSkip = schemBase.getInt(p, "imgWidth") * schemBase.getInt(p, "imgHeight") * 4;

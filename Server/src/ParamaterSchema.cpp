@@ -12,7 +12,7 @@
 ParamaterSchema::ParamaterSchema(std::string schemaFile) {
 
 	// relative to config path
-	schemaFile = DirectoryManager::getSingleton()->getRootDirectory() + "/" + schemaFile;
+	schemaFile = DirectoryManager::getSingleton()->getRootDirectory() + schemaFile;
 
 	std::fstream fp;
 	fp.open(schemaFile.c_str(), std::ios::in);
