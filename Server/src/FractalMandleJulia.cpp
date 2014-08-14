@@ -257,6 +257,8 @@ void FractalMandleJulia::passAlgoritm()
 
 			p.SetExpr(funct);
 
+			threshold = threshold * threshold; // square it so roots are not needed for comparison
+
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
 
@@ -266,22 +268,27 @@ void FractalMandleJulia::passAlgoritm()
 
 					// inital z value
 					if(zeroZ)
-						std::complex<double>(0.0, 0.0);
+						z = std::complex<double>(0.0, 0.0);
 					else
 						z = c;
 
-					int iteration = -1;
+					int iteration = 1;
 
 					// Iteration on [0, iters]
-					while((int)iteration+1 < (int)iters && abs(z) < threshold){
+					while(norm(z) < threshold){
+						if(iteration > iters)
+							break;
+
 						z = p.Eval();
 
 						iteration ++;
 					}
-					if(iteration < 0)
-						iteration = 0;
-					I[x][y] = iteration;
-					histogram[iteration] ++;
+					if(iteration > iters){
+						I[x][y] = iters;
+					}else{
+						I[x][y] = iteration - 1;
+						histogram[iteration-1] ++;
+					}
 				}
 				if(updateStatus("Algo 1/5", (double)x/width * 100))
 					return;
@@ -332,7 +339,10 @@ void FractalMandleJulia::passShade()
 		if(palette.isUsingMaxIterMethod()){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Manual(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Manual(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -340,7 +350,10 @@ void FractalMandleJulia::passShade()
 		}else if(shading=="linear"){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Linear(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Linear(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -348,7 +361,10 @@ void FractalMandleJulia::passShade()
 		}else if(shading=="simplin"){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_SimpleLinear(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_SimpleLinear(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -356,7 +372,10 @@ void FractalMandleJulia::passShade()
 		}else if(shading=="root2"){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Root2(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Root2(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -364,7 +383,10 @@ void FractalMandleJulia::passShade()
 		}else if(shading=="root3"){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Root3(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Root3(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -372,7 +394,10 @@ void FractalMandleJulia::passShade()
 		}else if(shading=="root4"){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Root4(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Root4(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -380,7 +405,10 @@ void FractalMandleJulia::passShade()
 		}else if(shading=="log"){
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Log(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Log(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -400,7 +428,10 @@ void FractalMandleJulia::passShade()
 
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_RankOrder(I[x][y], rankOrder));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_RankOrder(I[x][y], rankOrder));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;
@@ -408,7 +439,10 @@ void FractalMandleJulia::passShade()
 		}else{ // histogram
 			for(unsigned int x=0; x<width; x++){
 				for(unsigned int y=0; y<height; y++){
-					img->setPixel(x, y, getColor_Histogram(I[x][y]));
+					if(I[x][y] == iters)
+						img->setPixel(x, y, palette.getBackgroundColor());
+					else
+						img->setPixel(x, y, getColor_Histogram(I[x][y]));
 				}
 				if(updateStatus("Shade 2/5", (double)x/width * 100))
 					return;

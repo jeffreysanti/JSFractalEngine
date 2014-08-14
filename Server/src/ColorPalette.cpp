@@ -48,6 +48,11 @@ Color ColorPalette::getColorByIterations(unsigned int iters)
 	}
 }
 
+Color ColorPalette::getBackgroundColor(){
+	return bg;
+}
+
+
 Color ColorPalette::getColorOn1Scale(double val)
 {
 	if(isUsingMaxIterMethod()){
@@ -89,6 +94,8 @@ Color ColorPalette::getColorOn1Scale(double val)
 
 void ColorPalette::fillDefaultHSVPalette(double saturation, double value)
 {
+	bg = Color(0,0,0); // black bg
+
 	C.clear();
 
 	// Default palette filled with [0,320] hue values
@@ -101,7 +108,7 @@ void ColorPalette::fillDefaultHSVPalette(double saturation, double value)
 bool ColorPalette::loadPaletteFromParams(Paramaters &p, ParamaterSchema &schem, std::string prefix)
 {
 	int numOfColors = schem.getInt(p, prefix+"Count");
-	if(numOfColors < 2) // need at least 2 colors
+	if(numOfColors < 3) // need at least 3 colors [one of which is the background]
 		return false;
 
 	std::string tmp = schem.getString(p, "fillColPalType");
@@ -112,7 +119,7 @@ bool ColorPalette::loadPaletteFromParams(Paramaters &p, ParamaterSchema &schem, 
 
 	C.clear();
 	I.clear();
-	for(int i=1; i<= numOfColors; i++){
+	for(int i=1; i< numOfColors; i++){
 		Color col = schem.getColor(p, concat(prefix+"$", i));
 		C.push_back(col);
 		if(type == "iterMax"){
@@ -120,6 +127,9 @@ bool ColorPalette::loadPaletteFromParams(Paramaters &p, ParamaterSchema &schem, 
 			I.push_back(maxIter);
 		}
 	}
+
+	bg = schem.getColor(p, concat(prefix+"$", numOfColors));
+
 	return true;
 }
 

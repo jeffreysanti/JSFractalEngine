@@ -45,11 +45,15 @@ public:
 	static Color fromParam(Paramaters &p, std::string prefix, Color def);
 	static Color fromParam(std::string str, Color def);
 
+	Color getBackgroundColor();
+
 private:
 
 	std::vector<Color> C;
 	std::vector<int> I;
 	std::string type;
+
+	Color bg;
 
 };
 
