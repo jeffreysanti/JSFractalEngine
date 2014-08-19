@@ -49,6 +49,7 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         txtPort = new javax.swing.JSpinner();
         btnNoSockets = new javax.swing.JButton();
+        btnExit = new javax.swing.JToggleButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connection Dialog");
@@ -102,13 +103,21 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
             }
         });
 
+        btnExit.setText("Exit");
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnNoSockets, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(btnOkay, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -164,8 +173,10 @@ public class ServerConnectionDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnOkay))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
+                .addGap(35, 35, 35)
                 .addComponent(btnNoSockets)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
+                .addComponent(btnExit)
                 .addContainerGap())
         );
 
@@ -207,6 +218,10 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
             dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
     }//GEN-LAST:event_btnNoSocketsActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btnExitActionPerformed
     
 
     public boolean isNoSockets(){
@@ -251,6 +266,7 @@ public boolean isOpen(){
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
+    private javax.swing.JToggleButton btnExit;
     private javax.swing.JButton btnNoSockets;
     private javax.swing.JButton btnOkay;
     private javax.swing.JLabel jLabel1;

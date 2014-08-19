@@ -46,6 +46,10 @@ public class ParamaterSchema {
     }
     
     ParamaterSchema(String schemaFile) {
+        
+        // correct schema file name: Fix Windows Bug
+        schemaFile = System.getProperty("user.dir") + "/" + schemaFile;
+        
         C = new HashMap();
         try{
             BufferedReader br = new BufferedReader(new FileReader(schemaFile));
