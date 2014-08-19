@@ -5,6 +5,7 @@
 package org.jeffreysanti.fractalengine;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 
@@ -48,7 +49,11 @@ public class ParamaterSchema {
     ParamaterSchema(String schemaFile) {
         
         // correct schema file name: Fix Windows Bug
-        schemaFile = System.getProperty("user.dir") + "/" + schemaFile;
+        String path = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        File f = new File(path);
+        path = f.getParent();
+        
+        schemaFile = path + "/" + schemaFile;
         
         C = new HashMap();
         try{
