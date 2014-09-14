@@ -35,15 +35,15 @@ private:
 #endif
 
 
-	std::thread *networkThread = nullptr;
+	std::thread *networkThread;
 
 
 	static void threadMain();
 	static ConnectionManager singleton;
-	bool nosockets = false;
-	unsigned int maxConnections = 25;
+	bool nosockets;
+	unsigned int maxConnections;
 
-	unsigned int nextClientID=1;
+	unsigned int nextClientID;
 
 	std::vector<Client*> C;
 };

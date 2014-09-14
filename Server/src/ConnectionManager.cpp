@@ -12,6 +12,9 @@ ConnectionManager ConnectionManager::singleton;
 ConnectionManager::ConnectionManager() {
 	sock = 0;
 	networkThread = nullptr;
+	nosockets = false;
+	maxConnections = 25;
+	nextClientID=1;
 }
 
 ConnectionManager::~ConnectionManager() {

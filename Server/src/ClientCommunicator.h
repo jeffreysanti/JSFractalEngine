@@ -93,8 +93,8 @@ private:
 	std::deque<Packet*> O;
 	std::deque<Packet*> R;
 
-	Packet *Pin=nullptr; // currently receiving packet
-	Packet *Pout=nullptr; // currently receiving packet
+	Packet *Pin; // currently receiving packet
+	Packet *Pout; // currently receiving packet
 
 	unsigned int bytesIn;
 	unsigned int bytesOut;
