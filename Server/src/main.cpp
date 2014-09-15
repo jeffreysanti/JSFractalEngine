@@ -15,21 +15,35 @@
 #include "ConnectionManager.h"
 #include "DirectoryManager.h"
 #include "UserManager.h"
+#include "SchemaManager.h"
 #include "FractalGen.h"
 
 
 
+int manualSubmit(Paramaters *p){
+	FractalMeta f;
+	f.userID = 0;
+	f.status = FDBS_QUEUED;
+	f.manualQueue = true;
+	int jid = DBManager::getSingleton()->submitJob(f, p);
+	return jid;
+}
 
 
 int main(int argc, char* argv[])
 {
 	DirectoryManager::getSingleton()->initialize(std::string(argv[0]));
+	SchemaManager::getSingleton()->initialize();
 	UserManager::getSingleton()->initialize();
 	DBManager::getSingleton()->initialize();
 	FractalGenTrackManager::getSingleton()->initialize();
-	ConnectionManager::getSingleton()->initialize();
+	//ConnectionManager::getSingleton()->initialize();
 
 	FractalGen gen;
+
+	Paramaters *p = new Paramaters();
+	std::cout << "JOB: " << manualSubmit(p) << "\n";
+
 
 	//unsigned long start = time(NULL);
 	while(true){
