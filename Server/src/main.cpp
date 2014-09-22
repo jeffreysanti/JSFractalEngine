@@ -15,7 +15,7 @@
 #include "ConnectionManager.h"
 #include "DirectoryManager.h"
 #include "UserManager.h"
-#include "SchemaManager.h"
+#include "ParamsFile.h"
 #include "FractalGen.h"
 
 
@@ -41,9 +41,10 @@ int main(int argc, char* argv[])
 
 	FractalGen gen;
 
-	Paramaters *p = new Paramaters();
-	std::cout << "JOB: " << manualSubmit(p) << "\n";
+	//Paramaters *p = new Paramaters();
+	//std::cout << "JOB: " << manualSubmit(p) << "\n";
 
+	ParamsFile p("test.json");
 
 	//unsigned long start = time(NULL);
 	while(true){
