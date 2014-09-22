@@ -1,0 +1,33 @@
+// Fractals JSON Schema
+{ "groups" : [
+	{
+		"caption" : "Baiscs",
+		"id" : "basic",
+		"elms" : [
+			{
+				"id" : "id",
+				"hidden" : true,
+				"type" : "integer",
+				"allowNull" : false
+			},
+			{
+				"id" : "title",
+				"desc" : "Fractal's Title",
+				"type" : "text",
+				"allowNull" : true,
+				"default" : "Untilted",
+				"min" : 0,
+				"max" : 40
+			},
+			{
+				"id" : "author",
+				"desc" : "Fractal's Author",
+				"type" : "text",
+				"allowNull" : true,
+				"default" : "None",
+				"min" : 0,
+				"max" : 40
+			}
+		]
+	}
+] }
