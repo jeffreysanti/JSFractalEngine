@@ -44,6 +44,7 @@ void SchemaManager::initialize()
 		exit(EXIT_FAILURE);
 		return;
 	}
+
 	for(auto grp : root["groups"]){
 		std::string gname = grp["id"].asString();
 		auto it = G.find(gname);
