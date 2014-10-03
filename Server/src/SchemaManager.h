@@ -8,8 +8,9 @@
 #ifndef SCHEMAMANAGER_H_
 #define SCHEMAMANAGER_H_
 
-#include "DirectoryManager.h"
+#include "SchemaElement.h"
 
+/*
 enum ElmType{
 	ELM_VOID,
 	ELM_STRING,
@@ -51,9 +52,12 @@ public:
 	}
 };
 
-struct Group{
-	std::vector<Element> E;
+
+class GroupConstraint{
+
 };
+*/
+
 
 class SchemaManager {
 public:
@@ -68,11 +72,13 @@ private:
 	SchemaManager();
 	~SchemaManager();
 
-	Element parseElement(Json::Value elm);
+	//Element parseElement(Json::Value elm);
 
 	Json::Value root;
 
-	std::map <std::string, Group> G;
+	std::map <std::string, Json::Value> G;
+
+	void findConditionlessGroups(std::deque<std::string> &lst);
 
 	static SchemaManager singleton;
 };

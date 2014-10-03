@@ -39,7 +39,7 @@ void SchemaManager::initialize()
 	stream.close();
 
 	// now load the schema
-	if(!root.isMember("groups") || !root["groups"].isArray() || root["groups"].empty()){
+	if(!root.isObject() || !root.isMember("groups") || !root["groups"].isArray() || root["groups"].empty()){
 		std::cerr << "Schema must contain array of groups\n";
 		exit(EXIT_FAILURE);
 		return;
@@ -47,21 +47,14 @@ void SchemaManager::initialize()
 
 	for(auto grp : root["groups"]){
 		std::string gname = grp["id"].asString();
-		auto it = G.find(gname);
-		if(it != G.end()){
-			for(auto elm : grp["elms"]){
-				(*it).second.E.push_back(parseElement(elm));
-			}
-		}else{
-			Group g;
-			for(auto elm : grp["elms"]){
-				g.E.push_back(parseElement(elm));
-			}
-			G[gname] = g;
-		}
+
+		if(!grp.isObject() || !grp.isMember("elms") || grp["elms"].size() < 1)
+			continue;
+
+		G[gname] = grp;
 	}
 }
-
+/*
 Element SchemaManager::parseElement(Json::Value elm)
 {
 	std::string id = elm["id"].asString();
@@ -114,10 +107,68 @@ Element SchemaManager::parseElement(Json::Value elm)
 	e.allowNull = allowNull;
 	return e;
 }
+*/
+void SchemaManager::findConditionlessGroups(std::deque<std::string> &lst)
+{
+	for(auto it=G.begin(); it!=G.end(); ++it){
+		if((*it).second.isMember("active") && (*it).second.asBool()){
+			lst.push_back((*it).first);
+		}
+	}
+}
 
 std::string SchemaManager::validateParamaters(Json::Value paramRoot)
 {
+	// different element types
+	SchemaElementIntegral Eint;
+	SchemaElementText Etxt;
+
 	std::string ret = ""; // no errors
+	std::deque<std::string> queue;
+	std::set<std::string> parsed; // store already evaluated groups
+	findConditionlessGroups(queue); // get initial search list
+
+	for(std::string ent : queue){
+		parsed.insert(ent);
+	}
+
+	while(queue.size() > 0){
+		std::string id = queue.front();
+		queue.pop_front();
+
+		// validate this group
+		if(!paramRoot.isObject() || !paramRoot.isMember(id) || !paramRoot[id].isObject()){
+			ret = "Necessary Group: " + id + " does not exist!\n";
+			return ret;
+		}
+		if(G.find(id) == G.end()){
+			ret = "Group: " + id + " does not exist in schema!\n";
+			return ret;
+		}
+		Json::Value group = G[id]["elms"];
+		for(auto elm : group){
+			// validate this element
+			std::set<std::string> actuators;
+
+			if(elm["type"].asString() == "integer"){
+				Eint.verifyElement(elm, paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "text"){
+				Etxt.verifyElement(elm, paramRoot[id], ret, actuators);
+			}else{
+				return "Unknown element type: " + elm["type"].asString();
+			}
+
+			if(ret != ""){
+				return ret;
+			}
+			for(std::string readGroup: actuators){
+				if(parsed.find(readGroup) != parsed.end()){
+					queue.push_back(readGroup);
+					parsed.insert(readGroup);
+				}
+			}
+		}
+	}
 
 	return ret;
 }

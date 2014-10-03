@@ -3,6 +3,7 @@
 	{
 		"caption" : "Baiscs",
 		"id" : "basic",
+		"active" : true,
 		"elms" : [
 			{
 				"id" : "id",
@@ -27,6 +28,22 @@
 				"default" : "None",
 				"min" : 0,
 				"max" : 40
+			},
+			{
+				"id" : "imgWidth",
+				"desc" : "Image Width (px)",
+				"type" : "integer",
+				"allowNull" : false,
+				"min" : 10,
+				"max" : 4098
+			},
+			{
+				"id" : "imgHeight",
+				"desc" : "Image Height (px)",
+				"type" : "integer",
+				"allowNull" : false,
+				"min" : 10,
+				"max" : 4098
 			}
 		]
 	}
