@@ -48,66 +48,13 @@ void SchemaManager::initialize()
 	for(auto grp : root["groups"]){
 		std::string gname = grp["id"].asString();
 
-		if(!grp.isObject() || !grp.isMember("elms") || grp["elms"].size() < 1)
+		if(!grp.isObject() || !grp.isMember("elms") || !grp["elms"].isArray())
 			continue;
 
 		G[gname] = grp;
 	}
 }
-/*
-Element SchemaManager::parseElement(Json::Value elm)
-{
-	std::string id = elm["id"].asString();
-	std::string type = elm["type"].asString();
-	bool allowNull = elm["allowNull"].asBool();
 
-	NumericConstraintIntegral NC_i;
-	if(elm.isMember("min")){
-		NC_i.minimized = true;
-		NC_i.min = elm["min"].asLargestInt();
-	}else
-		NC_i.minimized = false;
-	if(elm.isMember("max")){
-		NC_i.maximized = true;
-		NC_i.max = elm["max"].asLargestInt();
-	}else
-		NC_i.maximized = false;
-
-	NumericConstraintIntegral NC_r;
-	if(elm.isMember("min")){
-		NC_r.minimized = true;
-		NC_r.min = elm["min"].asDouble();
-	}else
-		NC_r.minimized = false;
-	if(elm.isMember("max")){
-		NC_r.maximized = true;
-		NC_r.max = elm["max"].asDouble();
-	}else
-		NC_r.maximized = false;
-
-
-	if(type == "text"){
-		ElementText e;
-		e.name = id;
-		e.allowNull = allowNull;
-		e.NC = NC_i;
-
-		return e;
-	}else if(type == "integer"){
-		ElementInteger e;
-		e.name = id;
-		e.allowNull = allowNull;
-		e.NC = NC_i;
-
-		return e;
-	}
-
-	Element e;
-	e.name = id;
-	e.allowNull = allowNull;
-	return e;
-}
-*/
 void SchemaManager::findConditionlessGroups(std::deque<std::string> &lst)
 {
 	for(auto it=G.begin(); it!=G.end(); ++it){
@@ -117,24 +64,61 @@ void SchemaManager::findConditionlessGroups(std::deque<std::string> &lst)
 	}
 }
 
-std::string SchemaManager::validateParamaters(Json::Value paramRoot)
-{
-	// different element types
-	SchemaElementIntegral Eint;
-	SchemaElementText Etxt;
+inline void insertMatchesFromGroupList(const std::map<std::string, Json::Value> &G,
+		std::deque<std::string> &queue, std::set<std::string> &set, std::vector<SchemaActuator> &A){
+	std::set<std::string> R;
+	for(SchemaActuator act : A){
+		if(act.action == "hide"){
+			if(act.match.at(act.match.length()-1) != '*'){
+				R.insert(act.match);
+				continue;
+			}
+			std::string tmp = act.match.substr(0, act.match.length()-1);
+			for(auto it : G){
+				if(it.first.find(tmp) != std::string::npos){
+					R.insert(it.first);
+				}
+			}
+		}
+	}
+	// now find the "adds"
+	for(SchemaActuator act : A){
+		if(act.action == "show"){
+			if(act.match.at(act.match.length()-1) != '*'){
+				queue.push_back(act.match);
+				R.erase(act.match);
+				continue;
+			}
+			std::string tmp = act.match.substr(0, act.match.length()-1);
+			for(auto it : G){
+				if(it.first.find(tmp) != std::string::npos){
+					queue.push_back(it.first);
+					R.erase(it.first);
+				}
+			}
+		}
+	}
 
+	// now truly remove remaining in R
+	for(std::string r : R){
+		set.insert(r);
+	}
+}
+
+std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
+{
 	std::string ret = ""; // no errors
 	std::deque<std::string> queue;
 	std::set<std::string> parsed; // store already evaluated groups
 	findConditionlessGroups(queue); // get initial search list
 
-	for(std::string ent : queue){
-		parsed.insert(ent);
-	}
-
 	while(queue.size() > 0){
 		std::string id = queue.front();
 		queue.pop_front();
+
+		if(parsed.find(id) != parsed.end()) // already seen this
+			continue;
+		parsed.insert(id);
 
 		// validate this group
 		if(!paramRoot.isObject() || !paramRoot.isMember(id) || !paramRoot[id].isObject()){
@@ -148,12 +132,23 @@ std::string SchemaManager::validateParamaters(Json::Value paramRoot)
 		Json::Value group = G[id]["elms"];
 		for(auto elm : group){
 			// validate this element
-			std::set<std::string> actuators;
+			std::vector<SchemaActuator> actuators;
 
 			if(elm["type"].asString() == "integer"){
-				Eint.verifyElement(elm, paramRoot[id], ret, actuators);
+				SchemaElementIntegral Eint(id, elm);
+				Eint.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "real"){
+				SchemaElementReal Erel(id, elm);
+				Erel.verifyElement(paramRoot[id], ret, actuators);
 			}else if(elm["type"].asString() == "text"){
-				Etxt.verifyElement(elm, paramRoot[id], ret, actuators);
+				SchemaElementText Etxt(id, elm);
+				Etxt.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "selector"){
+				SchemaElementSelector Esel(id, elm);
+				Esel.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "color"){
+				SchemaElementColor Ecol(id, elm);
+				Ecol.verifyElement(paramRoot[id], ret, actuators);
 			}else{
 				return "Unknown element type: " + elm["type"].asString();
 			}
@@ -161,12 +156,7 @@ std::string SchemaManager::validateParamaters(Json::Value paramRoot)
 			if(ret != ""){
 				return ret;
 			}
-			for(std::string readGroup: actuators){
-				if(parsed.find(readGroup) != parsed.end()){
-					queue.push_back(readGroup);
-					parsed.insert(readGroup);
-				}
-			}
+			insertMatchesFromGroupList(G, queue, parsed, actuators);
 		}
 	}
 

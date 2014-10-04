@@ -12,23 +12,72 @@
 #include <queue>
 #include <set>
 
+struct SchemaActuator{
+	std::string action; // either "hide" or "show"
+	std::string match;
+};
+
 class SchemaElement {
 public:
-	virtual bool verifyElement(Json::Value &elm, Json::Value &in, std::string &err, std::set<std::string> &actutators) = 0;
+	SchemaElement(std::string grpAddr, Json::Value &schema);
+	virtual ~SchemaElement();
 
-	template<class T> void numericConstraints(Json::Value &elm, bool &max, bool &min, T &maxv, T &minv, bool &zero);
-	bool verifyPresence(Json::Value &elm, Json::Value &in, std::string &err);
-	bool isPresent(Json::Value &elm, Json::Value &in);
-	bool allowNull(Json::Value &elm);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators) = 0;
+
+	template<class T> void numericConstraints(bool &max, bool &min, T &maxv, T &minv, bool &zero);
+	bool isPresent(Json::Value &in);
+	bool allowNull();
+
+protected:
+	std::string addr;
+	std::string elmid;
+	Json::Value &schm;
 };
 
 class SchemaElementIntegral : public SchemaElement {
 public:
-	virtual bool verifyElement(Json::Value &elm, Json::Value &in, std::string &err, std::set<std::string> &actutators);
+	SchemaElementIntegral(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	bool allowNullZero;
+	bool maximized, minimized;
+	long long min, max;
+	long long defVal;
+};
+class SchemaElementReal : public SchemaElement {
+public:
+	SchemaElementReal(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	bool allowNullZero;
+	bool maximized, minimized;
+	long double min, max;
+	long double defVal;
 };
 class SchemaElementText : public SchemaElement {
 public:
-	virtual bool verifyElement(Json::Value &elm, Json::Value &in, std::string &err, std::set<std::string> &actutators);
+	SchemaElementText(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	bool allowNullZero;
+	bool maximized, minimized;
+	unsigned int min, max;
+	std::string defVal;
+};
+class SchemaElementSelector : public SchemaElement {
+public:
+	SchemaElementSelector(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	std::map<std::string, std::vector<SchemaActuator>> O;
+	std::string defVal;
+};
+class SchemaElementColor : public SchemaElement {
+public:
+	SchemaElementColor(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	unsigned char defR, defG, defB;
 };
 
 #endif /* SCHEMAELEMENT_H_ */

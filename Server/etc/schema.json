@@ -9,13 +9,13 @@
 				"id" : "id",
 				"hidden" : true,
 				"type" : "integer",
-				"allowNull" : false
+				"allowZero" : false
 			},
 			{
 				"id" : "title",
 				"desc" : "Fractal's Title",
 				"type" : "text",
-				"allowNull" : true,
+				"allowZero" : true,
 				"default" : "Untilted",
 				"min" : 0,
 				"max" : 40
@@ -24,7 +24,7 @@
 				"id" : "author",
 				"desc" : "Fractal's Author",
 				"type" : "text",
-				"allowNull" : true,
+				"allowZero" : true,
 				"default" : "None",
 				"min" : 0,
 				"max" : 40
@@ -33,7 +33,7 @@
 				"id" : "imgWidth",
 				"desc" : "Image Width (px)",
 				"type" : "integer",
-				"allowNull" : false,
+				"allowZero" : false,
 				"min" : 10,
 				"max" : 4098
 			},
@@ -41,9 +41,160 @@
 				"id" : "imgHeight",
 				"desc" : "Image Height (px)",
 				"type" : "integer",
-				"allowNull" : false,
+				"allowZero" : false,
 				"min" : 10,
 				"max" : 4098
+			},
+			{
+				"id" : "timeout",
+				"desc" : "Maximum Execution Time (sec)",
+				"type" : "integer",
+				"allowZero" : true,
+				"min" : 1,
+				"max" : 300,
+				"default" : 120
+			},
+			{
+				"id" : "type",
+				"desc" : "Fractal Type",
+				"type" : "selector",
+				"choices" : [
+					{
+						"id": "mandlejulia", 
+						"caption" : "Mandlebrot/Julia Set",
+						"hide" : ["type.*"], 
+						"show" : ["type.juliamandle"]
+					},
+					{
+						"id": "none", 
+						"caption" : "None"
+					}
+				],
+				"default" : "mandlejulia"
+			}
+		]
+	},
+	{
+		"caption" : "Julia/Mandlebrot Sets",
+		"id" : "type.juliamandle",
+		"elms" : [
+			{
+				"id" : "centR",
+				"type" : "real",
+				"caption" : "Center(R)",
+				"allowZero" : true,
+				"default" : -0.623716
+			},
+			{
+				"id" : "centI",
+				"type" : "real",
+				"caption" : "Center(I)",
+				"allowZero" : true,
+				"default" : -0.627102
+			},
+			{
+				"id" : "radR",
+				"type" : "real",
+				"caption" : "Radius(R)",
+				"allowZero" : false,
+				"default" : 0.0645052,
+				"min" : 0
+			},
+			{
+				"id" : "radI",
+				"type" : "real",
+				"caption" : "Radius(I)",
+				"allowZero" : false,
+				"default" : 0.0645052,
+				"min" : 0
+			},
+			{
+				"id" : "func",
+				"desc" : "Function",
+				"type" : "text",
+				"allowZero" : false,
+				"default" : "z^2+c",
+				"min" : 1,
+				"max" : 100
+			},
+			{
+				"id" : "zInitial",
+				"desc" : "Initial Z Value",
+				"type" : "selector",
+				"choices" : [
+					{ "id": "zero", "caption" : "Zero (Mandlebrot)" },
+					{ "id": "c", "caption" : "c (Julia)" }
+				],
+				"default" : "zero"
+			},
+			{
+				"id" : "Kj",
+				"desc" : "Constant j",
+				"type" : "text",
+				"allowZero" : false,
+				"default" : "0+0i",
+				"min" : 1,
+				"max" : 100
+			},
+			{
+				"id" : "Kk",
+				"desc" : "Constant k",
+				"type" : "text",
+				"allowZero" : false,
+				"default" : "0+0i",
+				"min" : 1,
+				"max" : 100
+			},
+			{
+				"id" : "Kl",
+				"desc" : "Constant l",
+				"type" : "text",
+				"allowZero" : false,
+				"default" : "0+0i",
+				"min" : 1,
+				"max" : 100
+			},
+			{
+				"id" : "Km",
+				"desc" : "Constant m",
+				"type" : "text",
+				"allowZero" : false,
+				"default" : "0+0i",
+				"min" : 1,
+				"max" : 100
+			},
+			{
+				"id" : "Kn",
+				"desc" : "Constant n",
+				"type" : "text",
+				"allowZero" : false,
+				"default" : "0+0i",
+				"min" : 1,
+				"max" : 100
+			},
+			{
+				"id" : "iters",
+				"desc" : "Iteration Count",
+				"type" : "integer",
+				"allowZero" : false,
+				"min" : 1,
+				"max" : 1000000000,
+				"default" : 50
+			},
+			{
+				"id" : "threshold",
+				"desc" : "Escape Threshold",
+				"type" : "real",
+				"allowZero" : false,
+				"min" : 2,
+				"max" : 1000000000000000,
+				"default" : 25
+			},
+			{
+				"id" : "bgColor",
+				"desc" : "Background Color",
+				"type" : "color",
+				"default" : [23, 32, 64]
 			}
 		]
 	}

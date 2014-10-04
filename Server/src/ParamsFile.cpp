@@ -27,6 +27,10 @@ ParamsFile::ParamsFile(std::string fileName) {
 
 	std::cout << SchemaManager::getSingleton()->validateParamaters(root) << "\n";
 
+	Json::StyledWriter writer;
+	std::cout << writer.write(root) << "\n";
+	exit(0);
+	return;
 }
 
 ParamsFile::~ParamsFile() {
