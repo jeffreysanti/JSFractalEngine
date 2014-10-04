@@ -63,7 +63,7 @@
 						"id": "mandlejulia", 
 						"caption" : "Mandlebrot/Julia Set",
 						"hide" : ["type.*"], 
-						"show" : ["type.juliamandle"]
+						"show" : ["type.juliamandle*"]
 					},
 					{
 						"id": "none", 
@@ -78,6 +78,14 @@
 		"caption" : "Julia/Mandlebrot Sets",
 		"id" : "type.juliamandle",
 		"elms" : [
+			{
+				"id" : "algocopy",
+				"caption" : "Copy Algorithm Data From Job (-1 for no copying)",
+				"type" : "integer",
+				"allowZero" : true,
+				"min" : -1,
+				"default" : -1
+			},
 			{
 				"id" : "centR",
 				"type" : "real",
@@ -191,11 +199,149 @@
 				"default" : 25
 			},
 			{
+				"id" : "shading",
+				"desc" : "Shading Type",
+				"type" : "selector",
+				"choices" : [
+					{
+						"id": "none", 
+						"caption" : "No Shading",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.bg"]
+					},
+					{
+						"id": "histogram", 
+						"caption" : "Histogram",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "linear", 
+						"caption" : "Linear",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "root2", 
+						"caption" : "Square Root",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "root3", 
+						"caption" : "Cube Root",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "root4", 
+						"caption" : "Fourth Root",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "log", 
+						"caption" : "Logaritmic",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "rankorder", 
+						"caption" : "Rank Order",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					},
+					{
+						"id": "simplelin", 
+						"caption" : "Simple Linear",
+						"hide" : ["jmshader.*"],
+						"show" : ["jmshader.normal"]
+					}
+					
+				],
+				"default" : "histogram"
+			}
+		]
+	},
+	{
+		"caption" : "Shaders",
+		"id" : "jmshader.bg",
+		"elms" : [
+			{
 				"id" : "bgColor",
 				"desc" : "Background Color",
 				"type" : "color",
 				"default" : [23, 32, 64]
 			}
+		]
+	},
+	{
+		"caption" : "Shaders",
+		"id" : "jmshader.normal",
+		"elms" : [
+			{
+				"id" : "fillColPalType",
+				"desc" : "Palette Type",
+				"type" : "selector",
+				"choices" : [
+					{ "id": "discrete", "caption" : "Discrete Colors" },
+					{ "id": "continuous", "caption" : "Continuous Palette" },
+					{ "id": "iterMax", "caption" : "Manual Maximum Iteration" }
+				],
+				"default" : "discrete"
+			},
+			{
+				"id" : "tuppppple",
+				"type" : "tuple",
+				"caption" : "A Tuple",
+				"elms" : [
+					{
+						"id" : "tuppppplllleAAAA",
+						"desc" : "Background Color",
+						"type" : "color",
+						"default" : [23, 32, 64]
+					},
+					{
+						"id" : "tuppppplllleBBBB",
+						"desc" : "Iteration Count",
+						"type" : "integer",
+						"allowZero" : false,
+						"min" : 1,
+						"max" : 1000000000,
+						"default" : 50
+					},
+					{
+						"id" : "tuppppple",
+						"type" : "tuple",
+						"caption" : "A Tuple",
+						"elms" : [
+							{
+								"id" : "tuppppplllleAAAA",
+								"desc" : "Background Color",
+								"type" : "color",
+								"default" : [23, 32, 64]
+							},
+							{
+								"id" : "tuppppplllleBBBB",
+								"desc" : "Iteration Count",
+								"type" : "integer",
+								"allowZero" : false,
+								"min" : 1,
+								"max" : 1000000000,
+								"default" : 50
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"caption" : "Post Effects",
+		"id" : "posteffects",
+		"active" : true,
+		"elms" : [
+			
 		]
 	}
 ] }

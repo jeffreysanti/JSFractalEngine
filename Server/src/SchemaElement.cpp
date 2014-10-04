@@ -235,5 +235,90 @@ void SchemaElementColor::verifyElement(Json::Value &in, std::string &err, std::v
 	in[elmid][2] = val[2];
 }
 
+/*
+SchemaElementColorIterMax::SchemaElementColorIterMax(std::string grpAddr, Json::Value &schema) :
+		SchemaElement(grpAddr, schema)
+{
+}
+
+void SchemaElementColor::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
+{
+	if(!isPresent(in) || !in[elmid].isMember("col") || !in[elmid]["col"].isArray() ||
+			in[elmid]["col"].size() < 3 ||
+			!in[elmid].isMember("iterMax") || !in[elmid]["iterMax"].isNumeric()){
+		Json::Value val;
+		val["iterMax"] = -1;
+		Json::Value colArray;
+		colArray[0] = 128;
+		colArray[1] = 128;
+		colArray[2] = 128;
+		val["col"] = colArray;
+		in[elmid] = val;
+	}else{
+		if( !in[elmid]["col"][0].isNumeric() ||
+				!in[elmid]["col"][1].isNumeric() ||
+				!in[elmid]["col"][2].isNumeric() ||
+				!in[elmid]["maxIter"].isNumeric()){
+			err += "Invalid Values For " + addr + "\n";
+		}
+	}
+}
+*/
+
+
+SchemaElementTuple::SchemaElementTuple(std::string grpAddr, Json::Value &schema) :
+		SchemaElement(grpAddr, schema)
+{
+	if(schm.isMember("elms") && schm["elms"].isArray()){
+		for(auto elm : schm["elms"]){
+			if(elm["type"].asString() == "integer"){
+				SchemaElement *Eint = new SchemaElementIntegral(addr, elm);
+				E.push_back(Eint);
+			}else if(elm["type"].asString() == "real"){
+				SchemaElement * Erel = new SchemaElementReal(addr, elm);
+				E.push_back(Erel);
+			}else if(elm["type"].asString() == "text"){
+				SchemaElement * Etxt = new SchemaElementText(addr, elm);
+				E.push_back(Etxt);
+			}else if(elm["type"].asString() == "selector"){
+				SchemaElement * Esel = new SchemaElementSelector(addr, elm);
+				E.push_back(Esel);
+			}else if(elm["type"].asString() == "color"){
+				SchemaElement * Ecol = new SchemaElementColor(addr, elm);
+				E.push_back(Ecol);
+			}else if(elm["type"].asString() == "tuple"){
+				SchemaElement * Etup = new SchemaElementTuple(addr, elm);
+				E.push_back(Etup);
+			}else{
+				std::cerr << "Unknown element type: " << elm["type"].asString() << "\n";
+				exit(EXIT_FAILURE);
+				return;
+			}
+		}
+	}else{
+		std::cerr << "SchemaTupleElement Missing elms\n";
+		exit(EXIT_FAILURE);
+		return;
+	}
+}
+
+SchemaElementTuple::~SchemaElementTuple(){
+	for(SchemaElement *elm : E){
+		delete elm;
+	}
+}
+
+void SchemaElementTuple::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
+{
+	for(SchemaElement *elm : E){
+		if(in.isMember(elmid)){
+			elm->verifyElement(in[elmid], err, actutators);
+		}else{
+			Json::Value container;
+			elm->verifyElement(container, err, actutators);
+			in[elmid] = container;
+		}
+	}
+}
 
 

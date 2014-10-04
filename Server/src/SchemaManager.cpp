@@ -149,6 +149,9 @@ std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
 			}else if(elm["type"].asString() == "color"){
 				SchemaElementColor Ecol(id, elm);
 				Ecol.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "tuple"){
+				SchemaElementTuple Etup(id, elm);
+				Etup.verifyElement(paramRoot[id], ret, actuators);
 			}else{
 				return "Unknown element type: " + elm["type"].asString();
 			}

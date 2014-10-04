@@ -79,5 +79,21 @@ public:
 protected:
 	unsigned char defR, defG, defB;
 };
+/*class SchemaElementColorIterMax : public SchemaElement {
+public:
+	SchemaElementColorIterMax(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+};*/
+
+class SchemaElementTuple : public SchemaElement {
+public:
+	SchemaElementTuple(std::string grpAddr, Json::Value &schema);
+	virtual ~SchemaElementTuple();
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	std::vector<SchemaElement*> E;
+};
+
 
 #endif /* SCHEMAELEMENT_H_ */
