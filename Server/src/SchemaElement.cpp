@@ -235,37 +235,6 @@ void SchemaElementColor::verifyElement(Json::Value &in, std::string &err, std::v
 	in[elmid][2] = val[2];
 }
 
-/*
-SchemaElementColorIterMax::SchemaElementColorIterMax(std::string grpAddr, Json::Value &schema) :
-		SchemaElement(grpAddr, schema)
-{
-}
-
-void SchemaElementColor::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
-{
-	if(!isPresent(in) || !in[elmid].isMember("col") || !in[elmid]["col"].isArray() ||
-			in[elmid]["col"].size() < 3 ||
-			!in[elmid].isMember("iterMax") || !in[elmid]["iterMax"].isNumeric()){
-		Json::Value val;
-		val["iterMax"] = -1;
-		Json::Value colArray;
-		colArray[0] = 128;
-		colArray[1] = 128;
-		colArray[2] = 128;
-		val["col"] = colArray;
-		in[elmid] = val;
-	}else{
-		if( !in[elmid]["col"][0].isNumeric() ||
-				!in[elmid]["col"][1].isNumeric() ||
-				!in[elmid]["col"][2].isNumeric() ||
-				!in[elmid]["maxIter"].isNumeric()){
-			err += "Invalid Values For " + addr + "\n";
-		}
-	}
-}
-*/
-
-
 SchemaElementTuple::SchemaElementTuple(std::string grpAddr, Json::Value &schema) :
 		SchemaElement(grpAddr, schema)
 {
@@ -289,6 +258,9 @@ SchemaElementTuple::SchemaElementTuple(std::string grpAddr, Json::Value &schema)
 			}else if(elm["type"].asString() == "tuple"){
 				SchemaElement * Etup = new SchemaElementTuple(addr, elm);
 				E.push_back(Etup);
+			}else if(elm["type"].asString() == "array"){
+				SchemaElement * Earr = new SchemaElementArray(addr, elm);
+				E.push_back(Earr);
 			}else{
 				std::cerr << "Unknown element type: " << elm["type"].asString() << "\n";
 				exit(EXIT_FAILURE);
@@ -311,13 +283,82 @@ SchemaElementTuple::~SchemaElementTuple(){
 void SchemaElementTuple::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
 {
 	for(SchemaElement *elm : E){
-		if(in.isMember(elmid)){
+		if(in.isMember(elmid) && in[elmid].isObject()){
 			elm->verifyElement(in[elmid], err, actutators);
 		}else{
-			Json::Value container;
+			Json::Value container(Json::objectValue);
 			elm->verifyElement(container, err, actutators);
 			in[elmid] = container;
 		}
+	}
+}
+
+
+
+SchemaElementArray::SchemaElementArray(std::string grpAddr, Json::Value &schema) :
+		SchemaElement(grpAddr, schema)
+{
+	E = nullptr;
+	if(schm.isMember("elm") && schm["elm"].isObject()){
+		Json::Value elm = schm["elm"];
+		if(elm["type"].asString() == "integer"){
+			E = new SchemaElementIntegral(addr+"[]", elm);
+		}else if(elm["type"].asString() == "real"){
+			E = new SchemaElementReal(addr+"[]", elm);
+		}else if(elm["type"].asString() == "text"){
+			E = new SchemaElementText(addr+"[]", elm);
+		}else if(elm["type"].asString() == "selector"){
+			E = new SchemaElementSelector(addr+"[]", elm);
+		}else if(elm["type"].asString() == "color"){
+			E = new SchemaElementColor(addr+"[]", elm);
+		}else if(elm["type"].asString() == "tuple"){
+			E = new SchemaElementTuple(addr+"[]", elm);
+		}else if(elm["type"].asString() == "array"){
+			E = new SchemaElementArray(addr+"[]", elm);
+		}else{
+			std::cerr << "Unknown element type: " << elm["type"].asString() << "\n";
+			exit(EXIT_FAILURE);
+			return;
+		}
+	}else{
+		std::cerr << "SchemaArrayElement Missing elm\n";
+		exit(EXIT_FAILURE);
+		return;
+	}
+
+	bool b; // unused
+	numericConstraints(maximized, minimized, max, min, b);
+	minimized = true;
+	min = (min >= 0 ? min : 0); // make sure min is not negative
+}
+
+SchemaElementArray::~SchemaElementArray(){
+	if(E != nullptr)
+		delete E;
+}
+
+void SchemaElementArray::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
+{
+	if(!isPresent(in) && min == 0){
+		in[elmid] = Json::Value(Json::arrayValue);
+		return; // okay, no elements contained
+	}
+	if(!in[elmid].isArray()){
+		in[elmid] = Json::Value(Json::arrayValue); // so we can iterate
+	}
+
+	if(maximized && in[elmid].size() > max)
+			err += "Maximum Constraint on Array Length Violated at " + addr + "\n";
+	if(minimized && in[elmid].size() < min)
+		err += "Minimum Constraint on Array Length Violated at " + addr + "\n";
+
+	for(int i=0; i<in[elmid].size(); ++i){
+		// we need to encapsulate array object so when element references by elmid it works
+		Json::Value tmpObject(Json::objectValue);
+		tmpObject[E->getElementID()] = in[elmid][i];
+		E->verifyElement(tmpObject, err, actutators);
+		// now move it back
+		in[elmid][i] = tmpObject[E->getElementID()];
 	}
 }
 

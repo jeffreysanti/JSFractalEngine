@@ -28,6 +28,8 @@ public:
 	bool isPresent(Json::Value &in);
 	bool allowNull();
 
+	inline std::string getElementID() {return elmid;}
+
 protected:
 	std::string addr;
 	std::string elmid;
@@ -79,13 +81,6 @@ public:
 protected:
 	unsigned char defR, defG, defB;
 };
-/*class SchemaElementColorIterMax : public SchemaElement {
-public:
-	SchemaElementColorIterMax(std::string grpAddr, Json::Value &schema);
-	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
-protected:
-};*/
-
 class SchemaElementTuple : public SchemaElement {
 public:
 	SchemaElementTuple(std::string grpAddr, Json::Value &schema);
@@ -93,6 +88,16 @@ public:
 	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
 protected:
 	std::vector<SchemaElement*> E;
+};
+class SchemaElementArray : public SchemaElement {
+public:
+	SchemaElementArray(std::string grpAddr, Json::Value &schema);
+	virtual ~SchemaElementArray();
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	bool maximized, minimized;
+	long long min, max;
+	SchemaElement *E;
 };
 
 

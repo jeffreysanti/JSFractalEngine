@@ -152,6 +152,9 @@ std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
 			}else if(elm["type"].asString() == "tuple"){
 				SchemaElementTuple Etup(id, elm);
 				Etup.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "array"){
+				SchemaElementArray Earr(id, elm);
+				Earr.verifyElement(paramRoot[id], ret, actuators);
 			}else{
 				return "Unknown element type: " + elm["type"].asString();
 			}

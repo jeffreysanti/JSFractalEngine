@@ -291,48 +291,31 @@
 				"default" : "discrete"
 			},
 			{
-				"id" : "tuppppple",
-				"type" : "tuple",
-				"caption" : "A Tuple",
-				"elms" : [
-					{
-						"id" : "tuppppplllleAAAA",
-						"desc" : "Background Color",
-						"type" : "color",
-						"default" : [23, 32, 64]
-					},
-					{
-						"id" : "tuppppplllleBBBB",
-						"desc" : "Iteration Count",
-						"type" : "integer",
-						"allowZero" : false,
-						"min" : 1,
-						"max" : 1000000000,
-						"default" : 50
-					},
-					{
-						"id" : "tuppppple",
-						"type" : "tuple",
-						"caption" : "A Tuple",
-						"elms" : [
-							{
-								"id" : "tuppppplllleAAAA",
-								"desc" : "Background Color",
-								"type" : "color",
-								"default" : [23, 32, 64]
-							},
-							{
-								"id" : "tuppppplllleBBBB",
-								"desc" : "Iteration Count",
-								"type" : "integer",
-								"allowZero" : false,
-								"min" : 1,
-								"max" : 1000000000,
-								"default" : 50
-							}
-						]
-					}
-				]
+				"id" : "palette",
+				"type" : "array",
+				"caption" : "Color Palette",
+				"min" : 1,
+				"elm" :	{
+					"id" : "color-iter-pair",
+					"type" : "tuple",
+					"caption" : "Color / Max Iterations",
+					"elms" : [
+						{
+							"id" : "color",
+							"desc" : "",
+							"type" : "color",
+							"default" : [23, 32, 64]
+						},
+						{
+							"id" : "maxIter",
+							"desc" : "",
+							"type" : "integer",
+							"allowZero" : true,
+							"min" : -1,
+							"default" : -1
+						}
+					]
+				}
 			}
 		]
 	},
