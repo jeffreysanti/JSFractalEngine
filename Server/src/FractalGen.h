@@ -53,7 +53,7 @@ struct RenderingJob{
 	unsigned int jid;
 
 	std::thread gen;
-	Paramaters *params;
+	ParamsFile *params;
 	Fractal *fract;
 	unsigned long timeStart;
 	int uid;
@@ -77,7 +77,7 @@ public:
 private:
 	static std::string saveDir;
 
-	void runThread(Paramaters *p);
+	void runThread(ParamsFile *p);
 	bool isBusy(RenderingJob *job);
 
 	void deleteRunningJob(RenderingJob *job);
@@ -93,8 +93,8 @@ private:
 	std::vector<RenderingJob*> R;
 
 	// job stack
-	std::list<Paramaters*> JQ;
-	std::list<Paramaters*> JQManual;
+	std::list<ParamsFile*> JQ;
+	std::list<ParamsFile*> JQManual;
 
 };
 

@@ -17,7 +17,7 @@
 
 class FractalMandleJulia : public Fractal {
 public:
-	FractalMandleJulia(unsigned int id, Paramaters *p, Paramaters *paramsOut, ImageWriter *i);
+	FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut, ImageWriter *i);
 	virtual ~FractalMandleJulia();
 
 	virtual void render(int maxTime);

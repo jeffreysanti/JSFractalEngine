@@ -20,7 +20,7 @@
 
 
 
-int manualSubmit(Paramaters *p){
+int manualSubmit(ParamsFile *p){
 	FractalMeta f;
 	f.userID = 0;
 	f.status = FDBS_QUEUED;
@@ -41,10 +41,8 @@ int main(int argc, char* argv[])
 
 	FractalGen gen;
 
-	//Paramaters *p = new Paramaters();
-	//std::cout << "JOB: " << manualSubmit(p) << "\n";
-
-	ParamsFile p("test.json");
+	ParamsFile *p = new ParamsFile("test.json", true);
+	std::cout << "JOB: " << manualSubmit(p) << "\n";
 
 	//unsigned long start = time(NULL);
 	while(true){

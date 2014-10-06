@@ -7,7 +7,7 @@
 
 #include "FractalMandleJulia.h"
 
-FractalMandleJulia::FractalMandleJulia(unsigned int id, Paramaters *p, Paramaters *paramsOut, ImageWriter *i)
+FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut, ImageWriter *i)
 						: Fractal(id, p, paramsOut, i), schem("SCHEMA_MULTIBROT") {
 	I = NULL;
 	histogram = NULL;
@@ -89,19 +89,20 @@ inline std::complex<double> getComplexParam(std::string val, FractalMandleJulia*
 		return z;
 	}catch (muc::Parser::exception_type &e)
 	{
-		here->err("Complex Value Invalid: "+e.GetMsg());
+		here->err("Complex Value Invalid: "+e.GetMsg()+"\n");
 		return std::complex<double>(0,0); // if failed
 	}
 }
 
 void FractalMandleJulia::processParamsAlgorithm()
 {
-	algoCopy = schem.getInt(*p, "algocopy");
+	algoCopy = p->getJson()["type.juliamandle"]["algocopy"].asInt();
 	if(algoCopy > -1){
-		Paramaters pCopy;
-		if(pCopy.loadFromFile(FractalGen::getSaveDir() + concat("/", algoCopy)+".job") &&
-				pCopy.getValue("imgWidth")==p->getValue("imgWidth") &&
-				pCopy.getValue("imgHeight") == p->getValue("imgHeight")){
+		std::string errTmp;
+		ParamsFile pCopy(FractalGen::getSaveDir() + concat("/", algoCopy)+".job");
+		if(pCopy.validate(errTmp) &&
+				pCopy.getJson()["basic"]["imgWidth"].asInt()==p->getJson()["basic"]["imgWidth"].asInt() &&
+				pCopy.getJson()["basic"]["imgHeight"].asInt()==p->getJson()["basic"]["imgHeight"].asInt()){
 			std::string algoFl = FractalGen::getSaveDir() + concat("/", algoCopy)+".algo";
 			FILE *fp = fopen(algoFl.c_str(), "rb");
 			if(fp == NULL){
@@ -110,47 +111,47 @@ void FractalMandleJulia::processParamsAlgorithm()
 			}
 
 			// Copy all elements
-			p->setValue("funct", pCopy.getValue("funct"));
-			p->setValue("threshold", pCopy.getValue("threshold"));
-			p->setValue("centR", pCopy.getValue("centR"));
-			p->setValue("centI", pCopy.getValue("centI"));
-			p->setValue("radR", pCopy.getValue("radR"));
-			p->setValue("radI", pCopy.getValue("radI"));
-			p->setValue("iters", pCopy.getValue("iters"));
-			p->setValue("Kj", pCopy.getValue("Kj"));
-			p->setValue("Kk", pCopy.getValue("Kk"));
-			p->setValue("Kl", pCopy.getValue("Kl"));
-			p->setValue("Km", pCopy.getValue("Km"));
-			p->setValue("Kn", pCopy.getValue("Kn"));
-			p->setValue("zInitial", pCopy.getValue("zInitial"));
+			p->getJson()["type.juliamandle"]["func"] = pCopy.getJson()["type.juliamandle"]["func"];
+			p->getJson()["type.juliamandle"]["threshold"] = pCopy.getJson()["type.juliamandle"]["threshold"];
+			p->getJson()["type.juliamandle"]["centR"] = pCopy.getJson()["type.juliamandle"]["centR"];
+			p->getJson()["type.juliamandle"]["centI"] = pCopy.getJson()["type.juliamandle"]["centI"];
+			p->getJson()["type.juliamandle"]["radR"] = pCopy.getJson()["type.juliamandle"]["radR"];
+			p->getJson()["type.juliamandle"]["radI"] = pCopy.getJson()["type.juliamandle"]["radI"];
+			p->getJson()["type.juliamandle"]["iters"] = pCopy.getJson()["type.juliamandle"]["iters"];
+			p->getJson()["type.juliamandle"]["Kj"] = pCopy.getJson()["type.juliamandle"]["Kj"];
+			p->getJson()["type.juliamandle"]["Kk"] = pCopy.getJson()["type.juliamandle"]["Kk"];
+			p->getJson()["type.juliamandle"]["Kl"] = pCopy.getJson()["type.juliamandle"]["Kl"];
+			p->getJson()["type.juliamandle"]["Km"] = pCopy.getJson()["type.juliamandle"]["Km"];
+			p->getJson()["type.juliamandle"]["Kn"] = pCopy.getJson()["type.juliamandle"]["Kn"];
+			p->getJson()["type.juliamandle"]["zInitial"] = pCopy.getJson()["type.juliamandle"]["zInitial"];
 		}else{
 			err("algocopy job either does not exist or is inconsistent with specified image size!\n");
 			return;
 		}
 	}
 
-	funct = schem.getString(*p, "funct");
-	threshold = schem.getDouble(*p, "threshold");
+	funct = p->getJson()["type.juliamandle"]["func"].asString();
+	threshold = p->getJson()["type.juliamandle"]["threshold"].asDouble();
 
-	if(schem.getString(*p, "zInitial") == "zero"){
+	if(p->getJson()["type.juliamandle"]["zInitial"].asString() == "zero"){
 		zeroZ = true;
 	}else{
 		zeroZ = false;
 	}
 
 	// constants
-	Kj = getComplexParam(schem.getString(*p, "Kj"), this);
-	Kk = getComplexParam(schem.getString(*p, "Kk"), this);
-	Kl = getComplexParam(schem.getString(*p, "Kl"), this);
-	Km = getComplexParam(schem.getString(*p, "Km"), this);
-	Kn = getComplexParam(schem.getString(*p, "Kn"), this);
+	Kj = getComplexParam(p->getJson()["type.juliamandle"]["Kj"].asString(), this);
+	Kk = getComplexParam(p->getJson()["type.juliamandle"]["Kk"].asString(), this);
+	Kl = getComplexParam(p->getJson()["type.juliamandle"]["Kl"].asString(), this);
+	Km = getComplexParam(p->getJson()["type.juliamandle"]["Km"].asString(), this);
+	Kn = getComplexParam(p->getJson()["type.juliamandle"]["Kn"].asString(), this);
 
 
-	double centerX = schem.getDouble(*p, "centR");
-	double centerY = schem.getDouble(*p, "centI");
+	double centerX = p->getJson()["type.juliamandle"]["centR"].asDouble();
+	double centerY = p->getJson()["type.juliamandle"]["centI"].asDouble();
 
-	double sizeX = schem.getDouble(*p, "radR");
-	double sizeY = schem.getDouble(*p, "radI");
+	double sizeX = p->getJson()["type.juliamandle"]["radR"].asDouble();
+	double sizeY = p->getJson()["type.juliamandle"]["radI"].asDouble();
 
 	if(width == 0 || height == 0)
 		return;
@@ -161,17 +162,17 @@ void FractalMandleJulia::processParamsAlgorithm()
 	multX = sizeX*2/(double)width;
 	multY = -1 * sizeY*2/(double)height;
 
-	iters = schem.getInt(*p, "iters");
+	iters = p->getJson()["type.juliamandle"]["iters"].asInt();
 
 	applyTransformations(sizeX, sizeY, centerX, centerY);
 }
 
 void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double centerX, double centerY){
 	// now handle transformations :)
-	double transX = schem.getDouble(*p, "translateX");
-	double transY = schem.getDouble(*p, "translateY");
-	double scaleX = schem.getDouble(*p, "scaleX");
-	double scaleY = schem.getDouble(*p, "scaleY");
+	double transX = p->getJson()["type.juliamandle"]["translateX"].asDouble();
+	double transY = p->getJson()["type.juliamandle"]["translateY"].asDouble();
+	double scaleX = p->getJson()["type.juliamandle"]["scaleX"].asDouble();
+	double scaleY = p->getJson()["type.juliamandle"]["scaleY"].asDouble();
 	if(scaleX <= 0 || scaleY <= 0)
 		return;
 
@@ -187,15 +188,15 @@ void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double
 	centerX = cornerX + sizeX;
 	centerY = cornerY - sizeY;
 
-	p->setValue("radR", concat("",sizeX));
-	p->setValue("radI", concat("",sizeY));
-	p->setValue("centR", concat("",centerX));
-	p->setValue("centI", concat("",centerY));
-	p->setValue("translateX", "0");
-	p->setValue("translateY", "0");
-	p->setValue("scaleX", "1");
-	p->setValue("scaleY", "1");
-	p->writeToFile();
+	p->getJson()["type.juliamandle"]["radR"] = sizeX;
+	p->getJson()["type.juliamandle"]["radI"] = sizeY;
+	p->getJson()["type.juliamandle"]["centR"] = centerX;
+	p->getJson()["type.juliamandle"]["centI"] = centerY;
+	p->getJson()["type.juliamandle"]["translateX"] = 0;
+	p->getJson()["type.juliamandle"]["translateY"] = 0;
+	p->getJson()["type.juliamandle"]["scaleX"] = 1;
+	p->getJson()["type.juliamandle"]["scaleY"] = 1;
+	// TODO: DO i need to save here? p->saveToFile()
 }
 
 void FractalMandleJulia::processParamsGraphics()
@@ -203,36 +204,34 @@ void FractalMandleJulia::processParamsGraphics()
 	width = img->getWidth();
 	height = img->getHeight();
 
-	imgBlur = schem.getDouble(*p, "imgBlur");
-	imgSharpen = schem.getDouble(*p, "imgSharpen");
+	imgBlur = p->getJson()["posteffects"]["imgBlur"].asDouble();
+	imgSharpen = p->getJson()["posteffects"]["imgSharpen"].asDouble();
 }
 
 void FractalMandleJulia::processParamsShading()
 {
-	shading = schem.getString(*p, "shading");
-		if(shading != "none" && shading != "histogram" && shading != "linear" &&
-				shading != "root2" && shading != "root3" && shading != "root4" &&
-				shading != "log" && shading != "rankorder" && shading != "simplin")
-			err("Error: Invalid shading multibrot parameter: " + shading + "!\n");
+	shading = p->getJson()["type.juliamandle"]["shading"].asString();
 
-	double defSaturation = schem.getDouble(*p, "defColSat");
-	double defValue = schem.getDouble(*p, "defColVal");
-
-	bgColor = schem.getColor(*p, "bgColor");
-	palette.fillDefaultHSVPalette(defSaturation, defValue);
-	palette.loadPaletteFromParams(*p, schem, "fillColPal");
+	if(shading == "none"){
+		//bgColor = schem.getColor(*p, "bgColor");
+	}else{
+		palette.fillDefaultHSVPalette(0.8, 0.8);
+		//palette.loadPaletteFromParams(*p, schem, "fillColPal");
+	}
 }
 
 void FractalMandleJulia::processParamsTracing()
 {
-	tracingMethod = schem.getString(*p, "tracing");
-	if(tracingMethod != "none" && tracingMethod != "blend" && tracingMethod != "solid")
-		err("Error: Invalid tracing multibrot parameter: " + tracingMethod + "!\n");
+	tracingMethod = p->getJson()["type.juliamandle"]["tracing"].asString();
 
-	traceBrushRadius = schem.getInt(*p, "traceRadius");
-	traceBlur = schem.getDouble(*p, "traceBlur");
-	traceSolidColor = schem.getColor(*p, "traceCol");
-	traceOpacity = schem.getDouble(*p, "traceOpacity");
+	if(tracingMethod != "none"){
+		traceBrushRadius = p->getJson()["jmtracer.normal"]["traceRadius"].asInt();
+		traceBlur = p->getJson()["jmtracer.normal"]["traceBlur"].asDouble();
+		traceOpacity = p->getJson()["jmtracer.normal"]["traceOpacity"].asDouble();
+		if(tracingMethod == "solid"){
+			//traceSolidColor = schem.getColor(*p, "traceCol");
+		}
+	}
 }
 
 void FractalMandleJulia::passAlgoritm()
@@ -520,18 +519,18 @@ void FractalMandleJulia::passEvaluate()
 			uniqueIterCount ++;
 		sum += (i+1)*histogram[i];
 	}
-	pOut->setValue("uniqueSecs", concat("",uniqueIterCount));
+	pOut->getJson()["uniqueSecs"] = uniqueIterCount;
 
 	// get standard deviation
 	double avg = sum / (width*height);
-	pOut->setValue("avgIterCount", concat("",avg));
+	pOut->getJson()["avgIterCount"] = avg;
 	double variance = 0;
 	for(int i=0; i<iters; i++)
 	{
 		variance += histogram[i] * std::pow(avg - (i+1), 2);
 	}
 	variance = variance / (width * height);
-	pOut->setValue("stdDeviation", concat("",std::sqrt(variance)));
+	pOut->getJson()["stdDeviation"] = std::sqrt(variance);
 }
 
 

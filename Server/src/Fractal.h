@@ -17,7 +17,7 @@
 #include <stack>
 #include <list>
 #include <sstream>
-#include "ParamaterSchema.h"
+#include "ParamsFile.h"
 #include "ImageWriter.h"
 
 #define SAFE_DELETE(x) if(x != NULL){ delete x; x = NULL;}
@@ -43,7 +43,7 @@ enum FractalState{
 class Fractal{
 
 public:
-	Fractal(unsigned int id, Paramaters *params, Paramaters *paramsOut, ImageWriter *i);
+	Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut, ImageWriter *i);
 	virtual ~Fractal();
 
 	bool isEndedEarly();
@@ -64,8 +64,8 @@ public:
 	FractalState getState();
 
 protected:
-	Paramaters *p;
-	Paramaters *pOut;
+	ParamsFile *p;
+	ParamsFileNotSchema *pOut;
 	ImageWriter *img;
 	std::fstream flogFile;
 

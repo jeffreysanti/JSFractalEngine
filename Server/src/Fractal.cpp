@@ -9,7 +9,7 @@
 #include "FractalGen.h"
 
 
-Fractal::Fractal(unsigned int id, Paramaters *params, Paramaters *paramsOut, ImageWriter *i)
+Fractal::Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut, ImageWriter *i)
 {
 	fId = id;
 	p = params;
@@ -22,8 +22,8 @@ Fractal::Fractal(unsigned int id, Paramaters *params, Paramaters *paramsOut, Ima
 	time_t now = time(NULL);
 	char* dt = ctime(&now);
 
-	pOut->setValue("ID", concat("",id));
-	pOut->setValue("initTime", std::string(dt).substr(0, strlen(dt)-1)); // remove newline char
+	pOut->getJson()["id"] = id;
+	pOut->getJson()["initTime"] = std::string(dt).substr(0, strlen(dt)-1); // remove newline char
 	stageName = "";
 	state = FS_CONSTRUCTED;
 }
@@ -33,7 +33,7 @@ Fractal::~Fractal()
 	time_t now = time(NULL);
 	char* dt = ctime(&now);
 
-	pOut->setValue("freeTime", std::string(dt).substr(0, strlen(dt)-1));
+	pOut->getJson()["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
 	flogFile.flush();
 	flogFile.close();
 
@@ -64,12 +64,12 @@ bool Fractal::updateStatus(std::string stage, double percent)
 	}
 	if(state == FS_CANCEL)
 	{
-		pOut->setValue("Canceled", "YES");
+		pOut->getJson()["Canceled"] = "YES";
 		flogFile << "Canceled!\n";
 		return true;
 	}
 	if(state == FS_TIMEOUT || (timeMustStop != 0 && now > timeMustStop)){
-		pOut->setValue("TimedOut", "YES");
+		pOut->getJson()["TimedOut"] = "YES";
 		flogFile << "Timed Out!\n";
 		state = FS_TIMEOUT;
 		return true;
@@ -78,7 +78,7 @@ bool Fractal::updateStatus(std::string stage, double percent)
 	if(stage != stageName){
 		if(stageName != ""){
 			unsigned long len = now - lastStateTrans;
-			pOut->setValue("time"+stage, concat("", len));
+			pOut->getJson()["time"+stage] = (int)len;
 		}
 		stageName = stage;
 		if(stageName != "done")
@@ -118,8 +118,9 @@ void Fractal::postRender()
 	if(state == FS_RENDERING){
 		updateStatus("done", 100);
 		unsigned long end = time(NULL);
-		pOut->setValue("timeRender", concat("", (end-renderStart)));
-		pOut->setValue("complete", "YES");
+
+		pOut->getJson()["timeRender"] = int(end-renderStart);
+		pOut->getJson()["complete"] = "YES";
 		state = FS_DONE;
 	}
 }
@@ -131,9 +132,9 @@ void Fractal::processParams()
 
 void Fractal::postProcessParams()
 {
-	p->writeToFile(FractalGen::getSaveDir() + concat("/", getId())+".job");
+	p->saveToFile(FractalGen::getSaveDir() + concat("/", getId())+".job");
 	unsigned long end = time(NULL);
-	pOut->setValue("timeParamProcessing", concat("", (end-processParamStart)));
+	pOut->getJson()["timeParamProcessing"] = int(end-processParamStart);
 }
 
 unsigned int Fractal::getId()

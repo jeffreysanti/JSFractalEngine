@@ -335,9 +335,7 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		std::string basePath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", jid);
 
 		// pOut
-		Paramaters p;
-		p.loadFromFile(basePath + ".info");
-		std::string paramsOut = p.asString();
+		std::string paramsOut = ParamsFile::readAllFile(basePath + ".info");
 
 		// log
 		std::fstream fp;
@@ -352,28 +350,34 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		}
 
 		// params----
-		p.loadFromFile(basePath + ".job");
-		std::string params = p.asString();
-
-		ParamaterSchema schemBase("SCHEMA_BASE");
-		ParamaterSchema schemMandl("SCHEMA_MULTIBROT");
+		std::string params = ParamsFile::readAllFile(basePath + ".job");
 
 		// histo
-		int dtaSkip = schemBase.getInt(p, "imgWidth") * schemBase.getInt(p, "imgHeight") * 4;
-		int iters = schemMandl.getInt(p, "iters");
+		std::string err;
 		unsigned int *histogram = NULL;
-		FILE *fp2 = fopen(std::string(basePath + ".algo").c_str(), "rb");
-		if(iters > 0 && fp2 != NULL){
-			fseek(fp2, dtaSkip, SEEK_SET);
-			histogram = new unsigned int[iters];
-			for(int i=0; i<iters; i++){
-				int tmp;
-				fread(&tmp, sizeof(unsigned int), 1, fp2);
-				histogram[i] = htonl(tmp);
+		int dtaSkip = 0;
+		int iters = 0;
+		ParamsFile P(params, false);
+		if(P.validate(err)){
+			if(P.getJson()["basic"]["type"].asString() == "mandlejulia"){
+				dtaSkip = P.getJson()["basic"]["imgWidth"].asInt() *
+						P.getJson()["basic"]["imgHeight"].asInt() * 4;
+				iters = P.getJson()["type.juliamandle"]["iters"].asLargestUInt();
+
+				FILE *fp2 = fopen(std::string(basePath + ".algo").c_str(), "rb");
+				if(iters > 0 && fp2 != NULL){
+					fseek(fp2, dtaSkip, SEEK_SET);
+					histogram = new unsigned int[iters];
+					for(int i=0; i<iters; i++){
+						int tmp;
+						fread(&tmp, sizeof(unsigned int), 1, fp2);
+						histogram[i] = htonl(tmp);
+					}
+				}
+				if(fp2 != NULL)
+					fclose(fp2);
 			}
 		}
-		if(fp2 != NULL)
-			fclose(fp2);
 
 		len = 20 + paramsOut.length() + params.length() + log.length();
 		if(histogram != NULL)
@@ -422,7 +426,7 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 	}
 }
 
-unsigned int DBManager::submitJob(FractalMeta meta, Paramaters *p)
+unsigned int DBManager::submitJob(FractalMeta meta, ParamsFile *p)
 {
 	int jid = 0;
 	mtx.lock();

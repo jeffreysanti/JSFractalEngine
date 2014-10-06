@@ -142,8 +142,7 @@ void Client::handlePacket(std::string &head, unsigned int &len, unsigned int &re
 			f.userID = U.id;
 			f.status = FDBS_QUEUED;
 			f.manualQueue = !U.daemon;
-			Paramaters *p = new Paramaters();
-			p->loadFromString(str);
+			ParamsFile *p = new ParamsFile(str, false);
 			int jid = DBManager::getSingleton()->submitJob(f, p);
 			C->addPacketToQueue("SJOB", concat("",jid), replyTo);
 		}

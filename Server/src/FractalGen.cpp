@@ -8,7 +8,7 @@
 #include "FractalGen.h"
 #include "FractalMandleJulia.h"
 
-std::string FractalGen::saveDir = "./renders";
+std::string FractalGen::saveDir = "";
 
 int dummy(){
 	return 0;
@@ -72,12 +72,12 @@ bool FractalGen::cancelJob(unsigned int id)
 	}
 
 	for(auto it=JQManual.begin(); it!=JQManual.end(); it++){
-		if((*it)->getID() == id){
-			Paramaters *pOut = new Paramaters();
-			Fractal *fTmp = new Fractal((*it)->getID(), (*it), pOut, NULL);
+		if((*it)->getJson()["internal"]["id"].asUInt() == id){
+			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut, NULL);
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
-			pOut->writeToFile(concat(saveDir+"/", (*it)->getID())+".info");
+			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
 			delete fTmp;
 			JQManual.erase(it);
 			canceled(id, this);
@@ -85,12 +85,12 @@ bool FractalGen::cancelJob(unsigned int id)
 		}
 	}
 	for(auto it=JQ.begin(); it!=JQ.end(); it++){
-		if((*it)->getID() == id){
-			Paramaters *pOut = new Paramaters();
-			Fractal *fTmp = new Fractal((*it)->getID(), (*it), pOut, NULL);
+		if((*it)->getJson()["internal"]["id"].asUInt() == id){
+			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut, NULL);
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
-			pOut->writeToFile(concat(saveDir+"/", (*it)->getID())+".info");
+			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
 			delete fTmp;
 			JQ.erase(it);
 			canceled(id, this);
@@ -100,10 +100,10 @@ bool FractalGen::cancelJob(unsigned int id)
 	return false;
 }
 
-void FractalGen::runThread(Paramaters *p)
+void FractalGen::runThread(ParamsFile *p)
 {
 	// message that rendering stopped
-	FractalMeta m = DBManager::getSingleton()->getFractal(p->getID());
+	FractalMeta m = DBManager::getSingleton()->getFractal(p->getJson()["internal"]["id"].asInt());
 	m.status = FDBS_RENDERING;
 	DBManager::getSingleton()->updateFractal(m);
 	char *dta = NULL;
@@ -114,9 +114,9 @@ void FractalGen::runThread(Paramaters *p)
 	exh.uiParam1 = m.jobID;
 	FractalGenTrackManager::getSingleton()->postExchange(exh);
 
-	std::cout << "runThread(" << p->getID() << ")\n";
+	std::cout << "runThread(" << p->getJson()["internal"]["id"].asInt() << ")\n";
 	RenderingJob *r = new RenderingJob;
-	r->jid = p->getID();
+	r->jid = p->getJson()["internal"]["id"].asInt();
 	r->params = p;
 	r->timeStart = time(NULL);
 	r->fract = NULL;
@@ -136,20 +136,20 @@ bool FractalGen::isBusy(RenderingJob *job)
 int FractalGen::postJob(FractalContainer f)
 {
 	f.m.status = FDBS_QUEUED;
-	f.m.author = f.p->getValue("author", "Unknown");
-	f.m.name = f.p->getValue("title", "Untitled");
+	f.m.author = f.p->getJson()["basic"]["author"].asString();
+	f.m.name = f.p->getJson()["basic"]["title"].asString();
 	DBManager::getSingleton()->updateFractal(f.m);
 
-	f.p->setID(f.m.jobID);
-	f.p->setUID(f.m.userID);
+	f.p->getJson()["internal"]["id"] = f.m.jobID;
+	f.p->getJson()["internal"]["uid"] = f.m.userID;
 	if(f.m.manualQueue){
-		f.p->setValue("QUEUE", "MANUAL");
+		f.p->getJson()["internal"]["queue"] = "MANUAL";
 		JQManual.push_back(f.p);
 	}else{
-		f.p->setValue("QUEUE", "AUTO");
+		f.p->getJson()["internal"]["queue"] = "AUTO";
 		JQ.push_back(f.p);
 	}
-	f.p->writeToFile(concat(saveDir+"/", f.p->getID())+".job");
+	f.p->saveToFile(concat(saveDir+"/", f.m.jobID)+".job");
 	return f.m.jobID;
 }
 
@@ -197,11 +197,11 @@ void FractalGen::update()
 		if(JQ.size() > 0 || JQManual.size() > 0){
 			changeOccured = true;
 			if(JQManual.size() > 0){
-				Paramaters *p = JQManual.front();
+				ParamsFile *p = JQManual.front();
 				JQManual.pop_front();
 				runThread(p);
 			}else{
-				Paramaters *p = JQ.front();
+				ParamsFile *p = JQ.front();
 				JQ.pop_front();
 				runThread(p);
 			}
@@ -257,14 +257,14 @@ void FractalGen::sendUpdateToTracker()
 	jobs.clear();
 
 	for(auto it=JQManual.begin(); it!=JQManual.end(); it++){
-		j.jid = (*it)->getID();
-		j.owner = (*it)->getUID();
+		j.jid = (*it)->getJson()["internal"]["id"].asUInt();
+		j.owner = (*it)->getJson()["internal"]["uid"].asUInt();
 		j.type = 1;
 		jobs.push_back(j);
 	}
 	for(auto it=JQ.begin(); it!=JQ.end(); it++){
-		j.jid = (*it)->getID();
-		j.owner = (*it)->getUID();
+		j.jid = (*it)->getJson()["internal"]["id"].asUInt();
+		j.owner = (*it)->getJson()["internal"]["uid"].asUInt();
 		j.type = 2;
 		jobs.push_back(j);
 	}
@@ -277,31 +277,27 @@ void FractalGen::sendUpdateToTracker()
 int runGen(RenderingJob *r)
 {
 	try{
+		ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
 
-		//signal();
-
-		ParamaterSchema schem("SCHEMA_BASE");
-
-		std::string type = schem.getString(*r->params, "type");
-		int width = schem.getInt(*r->params, "imgWidth");
-		int height = schem.getInt(*r->params, "imgHeight");
-		int timeOut = schem.getInt(*r->params, "timeOut");
-
-		ImageWriter *img = new ImageWriter(width, height);
-		Paramaters *pOut = new Paramaters();
-
-		if(schem.isErr()){
-			Fractal *fTmp = new Fractal(r->params->getID(), r->params, pOut, img);
-			std::string errs = schem.clearErrors();
-			fTmp->err(errs);
-			std::cerr << errs;
+		std::string err = "";
+		if(!r->params->validate(err)){
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut, new ImageWriter(0, 0));
+			fTmp->err(err);
+			std::cerr << err;
 			delete fTmp;
 			r->timeStart = TIMESTART_COMPLETE;
 			return 0;
 		}
 
-		if(type == "mj"){
-			r->fract = new FractalMandleJulia(r->params->getID(), r->params, pOut, img);
+		std::string type = r->params->getJson()["basic"]["type"].asString();
+		int width = r->params->getJson()["basic"]["imgWidth"].asInt();
+		int height = r->params->getJson()["basic"]["imgHeight"].asInt();
+		int timeOut = r->params->getJson()["basic"]["timeout"].asInt();
+
+		ImageWriter *img = new ImageWriter(width, height);
+
+		if(type == "mandlejulia"){
+			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut, img);
 			r->fract->processParams();
 			if(!r->fract->isOkay()){
 				std::cerr << r->fract->getErrors();
@@ -310,7 +306,7 @@ int runGen(RenderingJob *r)
 			}
 			r->fract->render(timeOut);
 		}else{
-			Fractal *fTmp = new Fractal(r->params->getID(), r->params, pOut, img);
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut, img);
 			fTmp->err("Error: Unknown type parameter: " + type);
 			r->timeStart = TIMESTART_COMPLETE;
 			delete fTmp;
@@ -319,12 +315,12 @@ int runGen(RenderingJob *r)
 
 		if(!r->fract->isEndedEarly()){
 			r->fract->updateStatus("Complete!!!", 100);
-			pOut->setValue("Complete", "YES");
+			pOut->getJson()["Complete"] = "YES";
 		}
 
 		if(r->fract->isOkay()){
-			img->saveFile(concat(FractalGen::getSaveDir()+"/", r->params->getID())+".png");
-			pOut->writeToFile(concat(FractalGen::getSaveDir()+"/", r->params->getID())+".info");
+			img->saveFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".png");
+			pOut->saveToFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".info");
 		}
 		r->timeStart = TIMESTART_COMPLETE;
 	}catch(...){

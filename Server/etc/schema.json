@@ -260,6 +260,32 @@
 					
 				],
 				"default" : "histogram"
+			},
+			{
+				"id" : "tracing",
+				"desc" : "Tracing Type",
+				"type" : "selector",
+				"choices" : [
+					{
+						"id": "none", 
+						"caption" : "No Tracing",
+						"hide" : ["jmtracer.*"],
+						"show" : []
+					},
+					{
+						"id": "blend", 
+						"caption" : "Blend",
+						"hide" : ["jmtracer.*"],
+						"show" : ["jmtracer.normal"]
+					},
+					{
+						"id": "solid",
+						"caption" : "Solid",
+						"hide" : ["jmtracer.*"],
+						"show" : ["jmtracer.normal", "jmtracer.solid"]
+					}
+				],
+				"default" : "none"
 			}
 		]
 	},
@@ -320,11 +346,69 @@
 		]
 	},
 	{
+		"caption" : "Tracer",
+		"id" : "jmtracer.normal",
+		"elms" : [
+			{
+				"id" : "traceRadius",
+				"desc" : "Trace Radius (px)",
+				"type" : "integer",
+				"min" : 0,
+				"default" : 1,
+				"allowZero" : true
+			},
+			{
+				"id" : "traceBlur",
+				"desc" : "Trace Blur Factor",
+				"type" : "real",
+				"min" : 0,
+				"default" : 1,
+				"allowZero" : true
+			},
+			{
+				"id" : "traceOpacity",
+				"desc" : "Trace Opacity",
+				"type" : "real",
+				"min" : 0,
+				"max" : 1,
+				"default" : 1,
+				"allowZero" : true
+			}
+		]
+	},
+	{
+		"caption" : "Tracer",
+		"id" : "jmtracer.solid",
+		"elms" : [
+			{
+				"id" : "traceCol",
+				"desc" : "Trace Color",
+				"type" : "color",
+				"default" : [23, 32, 64]
+			}
+		]
+	},
+	{
 		"caption" : "Post Effects",
 		"id" : "posteffects",
 		"active" : true,
 		"elms" : [
-			
+			{
+				"id" : "imgBlur",
+				"type" : "real",
+				"caption" : "Image Blur Factor",
+				"allowZero" : true,
+				"default" : 0,
+				"min" : 0
+			},
+			{
+				"id" : "imgSharpen",
+				"type" : "real",
+				"caption" : "Image Sharpen Factor",
+				"allowZero" : true,
+				"default" : 0,
+				"min" : 0
+			}
 		]
 	}
 ] }

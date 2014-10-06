@@ -14,7 +14,7 @@
 #include <string>
 #include <mutex>
 #include "ClientCommunicator.h"
-#include "ParamaterSchema.h"
+#include "ParamsFile.h"
 
 enum FractalDBState{
 	FDBS_RENDERING = 0,
@@ -44,7 +44,7 @@ struct FractalMeta{
 
 struct FractalContainer{
 	FractalMeta m;
-	Paramaters *p;
+	ParamsFile *p;
 };
 
 
@@ -63,7 +63,7 @@ public:
 	void fillMDUDRequest(int jid, char **sz, int &len);
 	void fillRCTXRequest(int jid, char **sz, int &len);
 
-	unsigned int submitJob(FractalMeta meta, Paramaters *p);
+	unsigned int submitJob(FractalMeta meta, ParamsFile *p);
 	std::vector<FractalContainer> fetchSubmittedJobs();
 
 	static DBManager *getSingleton();
