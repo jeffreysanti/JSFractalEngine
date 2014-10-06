@@ -6,12 +6,6 @@
 		"active" : true,
 		"elms" : [
 			{
-				"id" : "id",
-				"hidden" : true,
-				"type" : "integer",
-				"allowZero" : false
-			},
-			{
 				"id" : "title",
 				"desc" : "Fractal's Title",
 				"type" : "text",
@@ -78,6 +72,36 @@
 		"caption" : "Julia/Mandlebrot Sets",
 		"id" : "type.juliamandle",
 		"elms" : [
+			{
+				"id" : "translateX",
+				"caption" : "",
+				"type" : "real",
+				"allowZero" : true,
+				"default" : 0
+			},
+			{
+				"id" : "translateY",
+				"caption" : "",
+				"type" : "real",
+				"allowZero" : true,
+				"default" : 0
+			},
+			{
+				"id" : "scaleX",
+				"caption" : "",
+				"type" : "real",
+				"allowZero" : false,
+				"min" : 0,
+				"default" : 1
+			},
+			{
+				"id" : "scaleY",
+				"caption" : "",
+				"type" : "real",
+				"allowZero" : false,
+				"min" : 0,
+				"default" : 1
+			},
 			{
 				"id" : "algocopy",
 				"caption" : "Copy Algorithm Data From Job (-1 for no copying)",
@@ -320,7 +344,7 @@
 				"id" : "palette",
 				"type" : "array",
 				"caption" : "Color Palette",
-				"min" : 1,
+				"min" : 3,
 				"elm" :	{
 					"id" : "color-iter-pair",
 					"type" : "tuple",

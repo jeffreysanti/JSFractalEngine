@@ -8,7 +8,7 @@
 #include "FractalMandleJulia.h"
 
 FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut, ImageWriter *i)
-						: Fractal(id, p, paramsOut, i), schem("SCHEMA_MULTIBROT") {
+						: Fractal(id, p, paramsOut, i) {
 	I = NULL;
 	histogram = NULL;
 	algoCopy = -1;
@@ -59,10 +59,9 @@ void FractalMandleJulia::processParams()
 
 	Fractal::postProcessParams();
 
-	if(schem.isErr()){
-		err(schem.clearErrors());
-		return;
-	}
+	if(!isOkay())
+			return;
+
 	try{
 		I = new int*[width];
 		for(int x=0; x<width; x++){
@@ -99,7 +98,7 @@ void FractalMandleJulia::processParamsAlgorithm()
 	algoCopy = p->getJson()["type.juliamandle"]["algocopy"].asInt();
 	if(algoCopy > -1){
 		std::string errTmp;
-		ParamsFile pCopy(FractalGen::getSaveDir() + concat("/", algoCopy)+".job");
+		ParamsFile pCopy(FractalGen::getSaveDir() + concat("/", algoCopy)+".job", true);
 		if(pCopy.validate(errTmp) &&
 				pCopy.getJson()["basic"]["imgWidth"].asInt()==p->getJson()["basic"]["imgWidth"].asInt() &&
 				pCopy.getJson()["basic"]["imgHeight"].asInt()==p->getJson()["basic"]["imgHeight"].asInt()){
@@ -213,10 +212,10 @@ void FractalMandleJulia::processParamsShading()
 	shading = p->getJson()["type.juliamandle"]["shading"].asString();
 
 	if(shading == "none"){
-		//bgColor = schem.getColor(*p, "bgColor");
+		bgColor = palette.fromParam(p->getJson()["jmshader.bg"]["bgColor"]);
 	}else{
-		palette.fillDefaultHSVPalette(0.8, 0.8);
-		//palette.loadPaletteFromParams(*p, schem, "fillColPal");
+		palette.loadPaletteFromParams(p->getJson()["jmshader.normal"]["palette"],
+				p->getJson()["jmshader.normal"]["fillColPalType"].asString());
 	}
 }
 

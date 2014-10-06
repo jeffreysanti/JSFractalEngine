@@ -105,32 +105,23 @@ void ColorPalette::fillDefaultHSVPalette(double saturation, double value)
 	}
 }
 
-bool ColorPalette::loadPaletteFromParams(Paramaters &p, ParamaterSchema &schem, std::string prefix)
+void ColorPalette::loadPaletteFromParams(Json::Value &colorArray, std::string paletteType)
 {
-	int numOfColors = schem.getInt(p, prefix+"Count");
-	if(numOfColors < 3) // need at least 3 colors [one of which is the background]
-		return false;
-
-	std::string tmp = schem.getString(p, "fillColPalType");
-	if(tmp != "discrete" && tmp != "continuous" && tmp != "iterMax"){
-		return false;
-	}
-	type = tmp;
+	int numOfColors = colorArray.size();
+	type = paletteType;
 
 	C.clear();
 	I.clear();
 	for(int i=1; i< numOfColors; i++){
-		Color col = schem.getColor(p, concat(prefix+"$", i));
+		Color col = fromParam(colorArray[i]["color"]);
 		C.push_back(col);
 		if(type == "iterMax"){
-			int maxIter = schem.getInt(p, concat(prefix+"IterMax"+"$", i));
+			int maxIter = colorArray[i]["maxIter"].asInt();
 			I.push_back(maxIter);
 		}
 	}
 
-	bg = schem.getColor(p, concat(prefix+"$", numOfColors));
-
-	return true;
+	bg = fromParam(colorArray[0]["color"]);
 }
 
 
@@ -192,70 +183,12 @@ Color ColorPalette::fromHSV(double h, double s, double v)
 	return c;
 }
 
-Color ColorPalette::fromParam(Paramaters &p, std::string prefix, Color def)
+Color ColorPalette::fromParam(Json::Value &val)
 {
-	std::string colorType = p.getValue(prefix+"Type", "rgb");
-	if(colorType != "rgb" && colorType != "hsv"){
-		std::cout << "Invalid Palette Color Type Parameter ("+prefix+"Type): " << colorType << "\n";
-		return def;
-	}
-	if(colorType == "rgb"){
-		int r = atoi(p.getValue(prefix+"R", "-1").c_str());
-		int g = atoi(p.getValue(prefix+"G", "-1").c_str());
-		int b = atoi(p.getValue(prefix+"B", "-1").c_str());
-		if(r < 0 || g < 0 || b < 0){
-			std::cout << "Invalid RGB Color Set For: " << prefix << "\n";
-			return def;
-		}
-		def.r = r;
-		def.g = g;
-		def.b = b;
-	}else{
-		int h = atoi(p.getValue(prefix+"H", "-1").c_str());
-		int s = atoi(p.getValue(prefix+"S", "-1").c_str());
-		int v = atoi(p.getValue(prefix+"V", "-1").c_str());
-		if(h < 0 || s < 0 || v < 0){
-			std::cout << "Invalid HSV Color Set For: " << prefix << "\n";
-			return def;
-		}
-		def = fromHSV(h/255.0, s/255.0, v/255.0);
-	}
-	return def;
+	int r = val[0].asInt();
+	int g = val[1].asInt();
+	int b = val[2].asInt();
+	return Color(r, g, b);
 }
 
-Color ColorPalette::fromParam(std::string str, Color def)
-{
-	std::string colorType = str.substr(0, 3);
-	str = str.substr(3);
-	if(colorType != "RGB" && colorType != "HSV"){
-		std::cerr << "Invalid Color Parameter " << str << "\n";
-		return def;
-	}
-	if(colorType == "RGB"){
-		int r = atoi(str.substr(0, str.find(',')).c_str());
-		str = str.substr(str.find(',')+1);
-		int g = atoi(str.substr(0, str.find(',')).c_str());
-		str = str.substr(str.find(',')+1);
-		int b = atoi(str.substr(0, str.find(',')).c_str());
-		if(r < 0 || g < 0 || b < 0){
-			std::cout << "Invalid RGB Color Set\n";
-			return def;
-		}
-		def.r = r;
-		def.g = g;
-		def.b = b;
-	}else{
-		int h = atoi(str.substr(0, str.find(',')).c_str());
-		str = str.substr(str.find(',')+1);
-		int s = atoi(str.substr(0, str.find(',')).c_str());
-		str = str.substr(str.find(',')+1);
-		int v = atoi(str.substr(0, str.find(',')).c_str());
-		if(h < 0 || s < 0 || v < 0){
-			std::cout << "Invalid HSV Color Set\n";
-			return def;
-		}
-		def = fromHSV(h/255.0, s/255.0, v/255.0);
-	}
-	return def;
-}
 

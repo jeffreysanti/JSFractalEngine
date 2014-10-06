@@ -13,7 +13,7 @@
 #include <cmath>
 #include <string>
 #include <sstream>
-#include "ParamaterSchema.h"
+#include "ParamsFile.h"
 
 struct Color{
 	Color(){
@@ -39,11 +39,10 @@ public:
 
 	void fillDefaultHSVPalette(double saturation=0.5, double value=0.5);
 
-	bool loadPaletteFromParams(Paramaters &p, ParamaterSchema &schem, std::string prefix);
+	void loadPaletteFromParams(Json::Value &colorArray, std::string paletteType);
 
 	static Color fromHSV(double, double s, double v);
-	static Color fromParam(Paramaters &p, std::string prefix, Color def);
-	static Color fromParam(std::string str, Color def);
+	static Color fromParam(Json::Value &val);
 
 	Color getBackgroundColor();
 

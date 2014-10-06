@@ -78,8 +78,6 @@ protected:
 	int **I; // For tracking iteration count of each pixel
 	unsigned int *histogram; // for tracking distribution of each iteration count
 
-	ParamaterSchema schem;
-
 
 	inline Color atEdge(unsigned int x, unsigned int y){
 		// Only check the top & left of the pixel
