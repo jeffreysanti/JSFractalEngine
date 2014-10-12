@@ -5,10 +5,15 @@
 package org.jeffreysanti.fractalengine;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -31,8 +36,8 @@ public class Context implements ServerReplyer {
         histo = new int[0];
         
         modified = false;
-        params = new Paramaters();
-        paramsOut = new Paramaters();
+        params = new JSONObject();
+        paramsOut = new JSONObject();
         //isFetched = true;
         
         if(jid >= 0){
@@ -67,11 +72,11 @@ public class Context implements ServerReplyer {
         return imgFull;
     }
     
-    public Paramaters getParams(){
+    public JSONObject getParams(){
         return params;
     }
     
-    public Paramaters getParamsOutput(){
+    public JSONObject getParamsOutput(){
         return paramsOut;
     }
     
@@ -106,13 +111,31 @@ public class Context implements ServerReplyer {
             if(len > 0){
                 byte[] tmp = new byte[len];
                 ds.readFully(tmp);
-                params.loadFromStream(tmp);
+                rawParams = new String(tmp);
+                JSONParser parser = new JSONParser();
+                Object t = null;
+                try {
+                    t = parser.parse(rawParams);
+                } catch (ParseException ex) {
+                    // all is okay
+                }
+                if(t instanceof JSONObject)
+                    params = (JSONObject)t;
             }
             len = ds.readInt();
             if(len > 0){
                 byte[] tmp = new byte[len];
                 ds.readFully(tmp);
-                paramsOut.loadFromStream(tmp);
+                rawParamsOut = new String(tmp);
+                JSONParser parser = new JSONParser();
+                Object t = null;
+                try {
+                    t = parser.parse(rawParamsOut);
+                } catch (ParseException ex) {
+                    // all is okay
+                }
+                if(t instanceof JSONObject)
+                    paramsOut = (JSONObject)t;
             }
             len = ds.readInt();
             if(len > 0){
@@ -163,8 +186,8 @@ public class Context implements ServerReplyer {
         jid = j;
         uid = ServerConnection.getInst().getUserID();
         status = LibraryTile.FDBS_RENDER_SUBMITTED;
-        name = params.getValue("title", "[Just Submitted]");
-        author = params.getValue("author", "...");
+        name = (String)((JSONObject)params.get("basic")).get("name");//params.getValue("title", "[Just Submitted]");
+        author = (String)((JSONObject)params.get("basic")).get("author");//params.getValue("author", "...");
         
         JavaDesktop.getInst().getWorkspacePanel().getContextLibrary().recievedFractalStatusUpdate(jid, 
                         LibraryTile.FDBS_QUEUED, name, author, uid, null);
@@ -176,7 +199,8 @@ public class Context implements ServerReplyer {
     private String name;
     private String author;
     private int uid;
-    private Paramaters params, paramsOut;
+    private JSONObject params, paramsOut;
+    private String rawParams, rawParamsOut;
     private String log;
     
     public ContextTile callBack = null;

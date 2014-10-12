@@ -110,10 +110,10 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
                 trans.getScaleX() != 1 || trans.getScaleY() != 1)
             context.markDirty(); // a change has been made
         
-        context.getParams().setValue("translateX", Long.toString(-Math.round(trans.getTranslateX())));
+        /*context.getParams().setValue("translateX", Long.toString(-Math.round(trans.getTranslateX())));
         context.getParams().setValue("translateY", Long.toString(-Math.round(trans.getTranslateY())));
         context.getParams().setValue("scaleX", Double.toString(trans.getScaleX()));
-        context.getParams().setValue("scaleY", Double.toString(trans.getScaleY()));
+        context.getParams().setValue("scaleY", Double.toString(trans.getScaleY()));*/
     }
     
     synchronized void saveImage(){

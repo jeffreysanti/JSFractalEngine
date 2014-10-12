@@ -21,6 +21,7 @@ ParamsFile::ParamsFile(const std::string &fileName, bool isFile) {
 						std::string("   File failed to parse: '") + fileName + std::string("'\n") +
 						std::string("   Does this file not exist, or is json invalid?\n") +
 						reader.getFormattedErrorMessages() + std::string("\n");
+			root = Json::Value(Json::objectValue);
 		}
 		if(stream.is_open())
 			stream.close();
@@ -31,7 +32,14 @@ ParamsFile::ParamsFile(const std::string &fileName, bool isFile) {
 						std::string("   String failed to parse:\n") +
 						std::string("   json invalid:\n") +
 						reader.getFormatedErrorMessages() + std::string("\n");
+			root = Json::Value(Json::objectValue);
 		}
+	}
+	if(!root.isObject()){
+		open_correct = false;
+		open_err = 	std::string("Error in paramater initialization!\n") +
+					std::string("   root is not object type\n");
+		root = Json::Value(Json::objectValue);
 	}
 }
 

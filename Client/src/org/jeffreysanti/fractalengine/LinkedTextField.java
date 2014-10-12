@@ -27,7 +27,7 @@ import javax.swing.JTextField;
  */
 public class LinkedTextField extends JPanel {    
     
-    LinkedTextField(Context cont, String paramname, String lbl){
+    /*LinkedTextField(Context cont, String paramname, String lbl){
         c = cont;
         pName = paramname;
         paramLbl = lbl;
@@ -83,5 +83,5 @@ public class LinkedTextField extends JPanel {
     private ParamaterSchema schem;
     private String pName;
     private String paramLbl;
-    private boolean isValid;
+    private boolean isValid;*/
 }

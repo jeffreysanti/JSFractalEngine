@@ -37,12 +37,9 @@ int main(int argc, char* argv[])
 	UserManager::getSingleton()->initialize();
 	DBManager::getSingleton()->initialize();
 	FractalGenTrackManager::getSingleton()->initialize();
-	//ConnectionManager::getSingleton()->initialize();
+	ConnectionManager::getSingleton()->initialize();
 
 	FractalGen gen;
-
-	ParamsFile *p = new ParamsFile("test.json", true);
-	std::cout << "JOB: " << manualSubmit(p) << "\n";
 
 	//unsigned long start = time(NULL);
 	while(true){

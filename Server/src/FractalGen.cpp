@@ -136,8 +136,14 @@ bool FractalGen::isBusy(RenderingJob *job)
 int FractalGen::postJob(FractalContainer f)
 {
 	f.m.status = FDBS_QUEUED;
-	f.m.author = f.p->getJson()["basic"]["author"].asString();
-	f.m.name = f.p->getJson()["basic"]["title"].asString();
+	f.m.author = "Unknown";
+	f.m.name = "Untitled";
+	if(f.p->getJson().isObject() && f.p->getJson().isMember("basic") && f.p->getJson()["basic"].isObject()){
+		if(f.p->getJson()["basic"].isMember("author"))
+			f.m.author = f.p->getJson()["basic"]["author"].asString();
+		if(f.p->getJson()["basic"].isMember("title"))
+			f.m.name = f.p->getJson()["basic"]["title"].asString();
+	}
 	DBManager::getSingleton()->updateFractal(f.m);
 
 	f.p->getJson()["internal"]["id"] = f.m.jobID;

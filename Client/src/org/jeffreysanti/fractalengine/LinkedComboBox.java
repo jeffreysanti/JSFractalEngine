@@ -22,7 +22,7 @@ import javax.swing.JTextField;
  */
 public class LinkedComboBox extends JPanel {
     
-    LinkedComboBox(Context cont, String paramname, String lbl, HashMap<String, String> vals){
+    /*LinkedComboBox(Context cont, String paramname, String lbl, HashMap<String, String> vals){
         c = cont;
         pName = paramname;
         paramLbl = lbl;
@@ -80,5 +80,5 @@ public class LinkedComboBox extends JPanel {
     private Context c;
     private ParamaterSchema schem;
     private String pName;
-    private String paramLbl;
+    private String paramLbl;*/
 }

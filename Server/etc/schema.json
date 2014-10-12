@@ -1,13 +1,12 @@
-// Fractals JSON Schema
 { "groups" : [
 	{
-		"caption" : "Baiscs",
+		"caption" : "Basics",
 		"id" : "basic",
 		"active" : true,
 		"elms" : [
 			{
 				"id" : "title",
-				"desc" : "Fractal's Title",
+				"caption" : "Fractal's Title",
 				"type" : "text",
 				"allowZero" : true,
 				"default" : "Untilted",
@@ -16,7 +15,7 @@
 			},
 			{
 				"id" : "author",
-				"desc" : "Fractal's Author",
+				"caption" : "Fractal's Author",
 				"type" : "text",
 				"allowZero" : true,
 				"default" : "None",
@@ -25,7 +24,7 @@
 			},
 			{
 				"id" : "imgWidth",
-				"desc" : "Image Width (px)",
+				"caption" : "Image Width (px)",
 				"type" : "integer",
 				"allowZero" : false,
 				"min" : 10,
@@ -33,7 +32,7 @@
 			},
 			{
 				"id" : "imgHeight",
-				"desc" : "Image Height (px)",
+				"caption" : "Image Height (px)",
 				"type" : "integer",
 				"allowZero" : false,
 				"min" : 10,
@@ -41,7 +40,7 @@
 			},
 			{
 				"id" : "timeout",
-				"desc" : "Maximum Execution Time (sec)",
+				"caption" : "Maximum Execution Time (sec)",
 				"type" : "integer",
 				"allowZero" : true,
 				"min" : 1,
@@ -50,7 +49,7 @@
 			},
 			{
 				"id" : "type",
-				"desc" : "Fractal Type",
+				"caption" : "Fractal Type",
 				"type" : "selector",
 				"choices" : [
 					{
@@ -60,6 +59,7 @@
 						"show" : ["type.juliamandle*"]
 					},
 					{
+						"hide" : ["type.*"], 
 						"id": "none", 
 						"caption" : "None"
 					}
@@ -142,7 +142,7 @@
 			},
 			{
 				"id" : "func",
-				"desc" : "Function",
+				"caption" : "Function",
 				"type" : "text",
 				"allowZero" : false,
 				"default" : "z^2+c",
@@ -151,7 +151,7 @@
 			},
 			{
 				"id" : "zInitial",
-				"desc" : "Initial Z Value",
+				"caption" : "Initial Z Value",
 				"type" : "selector",
 				"choices" : [
 					{ "id": "zero", "caption" : "Zero (Mandlebrot)" },
@@ -161,7 +161,7 @@
 			},
 			{
 				"id" : "Kj",
-				"desc" : "Constant j",
+				"caption" : "Constant j",
 				"type" : "text",
 				"allowZero" : false,
 				"default" : "0+0i",
@@ -170,7 +170,7 @@
 			},
 			{
 				"id" : "Kk",
-				"desc" : "Constant k",
+				"caption" : "Constant k",
 				"type" : "text",
 				"allowZero" : false,
 				"default" : "0+0i",
@@ -179,7 +179,7 @@
 			},
 			{
 				"id" : "Kl",
-				"desc" : "Constant l",
+				"caption" : "Constant l",
 				"type" : "text",
 				"allowZero" : false,
 				"default" : "0+0i",
@@ -188,7 +188,7 @@
 			},
 			{
 				"id" : "Km",
-				"desc" : "Constant m",
+				"caption" : "Constant m",
 				"type" : "text",
 				"allowZero" : false,
 				"default" : "0+0i",
@@ -197,7 +197,7 @@
 			},
 			{
 				"id" : "Kn",
-				"desc" : "Constant n",
+				"caption" : "Constant n",
 				"type" : "text",
 				"allowZero" : false,
 				"default" : "0+0i",
@@ -206,7 +206,7 @@
 			},
 			{
 				"id" : "iters",
-				"desc" : "Iteration Count",
+				"caption" : "Iteration Count",
 				"type" : "integer",
 				"allowZero" : false,
 				"min" : 1,
@@ -215,7 +215,7 @@
 			},
 			{
 				"id" : "threshold",
-				"desc" : "Escape Threshold",
+				"caption" : "Escape Threshold",
 				"type" : "real",
 				"allowZero" : false,
 				"min" : 2,
@@ -224,7 +224,7 @@
 			},
 			{
 				"id" : "shading",
-				"desc" : "Shading Type",
+				"caption" : "Shading Type",
 				"type" : "selector",
 				"choices" : [
 					{
@@ -287,7 +287,7 @@
 			},
 			{
 				"id" : "tracing",
-				"desc" : "Tracing Type",
+				"caption" : "Tracing Type",
 				"type" : "selector",
 				"choices" : [
 					{
@@ -319,7 +319,7 @@
 		"elms" : [
 			{
 				"id" : "bgColor",
-				"desc" : "Background Color",
+				"caption" : "Background Color",
 				"type" : "color",
 				"default" : [23, 32, 64]
 			}
@@ -331,7 +331,7 @@
 		"elms" : [
 			{
 				"id" : "fillColPalType",
-				"desc" : "Palette Type",
+				"caption" : "Palette Type",
 				"type" : "selector",
 				"choices" : [
 					{ "id": "discrete", "caption" : "Discrete Colors" },
@@ -352,13 +352,13 @@
 					"elms" : [
 						{
 							"id" : "color",
-							"desc" : "",
+							"caption" : "",
 							"type" : "color",
 							"default" : [23, 32, 64]
 						},
 						{
 							"id" : "maxIter",
-							"desc" : "",
+							"caption" : "",
 							"type" : "integer",
 							"allowZero" : true,
 							"min" : -1,
@@ -375,7 +375,7 @@
 		"elms" : [
 			{
 				"id" : "traceRadius",
-				"desc" : "Trace Radius (px)",
+				"caption" : "Trace Radius (px)",
 				"type" : "integer",
 				"min" : 0,
 				"default" : 1,
@@ -383,7 +383,7 @@
 			},
 			{
 				"id" : "traceBlur",
-				"desc" : "Trace Blur Factor",
+				"caption" : "Trace Blur Factor",
 				"type" : "real",
 				"min" : 0,
 				"default" : 1,
@@ -391,7 +391,7 @@
 			},
 			{
 				"id" : "traceOpacity",
-				"desc" : "Trace Opacity",
+				"caption" : "Trace Opacity",
 				"type" : "real",
 				"min" : 0,
 				"max" : 1,
@@ -406,7 +406,7 @@
 		"elms" : [
 			{
 				"id" : "traceCol",
-				"desc" : "Trace Color",
+				"caption" : "Trace Color",
 				"type" : "color",
 				"default" : [23, 32, 64]
 			}

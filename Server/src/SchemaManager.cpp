@@ -46,11 +46,10 @@ void SchemaManager::initialize()
 	}
 
 	for(auto grp : root["groups"]){
-		std::string gname = grp["id"].asString();
-
-		if(!grp.isObject() || !grp.isMember("elms") || !grp["elms"].isArray())
+		if(!grp.isObject() || !grp.isMember("elms") || !grp["elms"].isArray() || !grp.isMember("id"))
 			continue;
 
+		std::string gname = grp["id"].asString();
 		G[gname] = grp;
 	}
 }

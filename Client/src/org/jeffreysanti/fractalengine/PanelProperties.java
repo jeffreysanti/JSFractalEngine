@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -18,6 +19,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -27,132 +30,120 @@ public class PanelProperties extends JPanel implements ServerReplyer {
     
     PanelProperties(){
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        P = new ArrayList();
+        G = new HashMap();
     }
     
     public void switchContext(Context cont){
         c = cont;
         
-        for(Component p : P){
+        for(JPanel p : G.values()){
             this.remove(p);
         }
-        P.clear();
+        G.clear();
         
         if(cont.isDataImportedYet()){ // otherwise we need to wait
         
-            addProperty(new LinkedTextField(cont, "title", "Title"));
-            addProperty(new LinkedTextField(cont, "author", "Author"));
-            addProperty(new LinkedTextField(cont, "timeOut", "Time Out (sec)"));
-            addProperty(new LinkedTextField(cont, "imgWidth", "Width (px)"));
-            addProperty(new LinkedTextField(cont, "imgHeight", "Height (px)"));
-
-            HashMap<String, String> types = new HashMap();
-            types.put("mj", "Mandlebrot/Julia Type");
-            addProperty(new LinkedComboBox(cont, "type", "Fractal Type", types));
-
-            addProperty(Box.createVerticalStrut(20));
-
-            addProperty(new LinkedTextField(cont, "centR", "X-Center"));
-            addProperty(new LinkedTextField(cont, "centI", "Y-Center"));
-            addProperty(new LinkedTextField(cont, "radR", "X-Radius"));
-            addProperty(new LinkedTextField(cont, "radI", "Y-Radius"));
-            addProperty(new LinkedTextField(cont, "iters", "Iteration Count"));
-            addProperty(new LinkedTextField(cont, "funct", "Function"));
+            ArrayList<String> grps = new ArrayList();
+            SchemaManager.getInst().findConditionlessGroups(grps);
             
-            types = new HashMap();
-            types.put("zero", "Zero [Mandlebrot]");
-            types.put("c", "C [Julia Set]");
-            addProperty(new LinkedComboBox(cont, "zInitial", "Inital Z-Value", types));
-            
-            addProperty(new LinkedTextField(cont, "threshold", "Escape Threshold"));
-
-            addProperty(new LinkedTextField(cont, "Kj", "Constant j"));
-            addProperty(new LinkedTextField(cont, "Kk", "Constant k"));
-            addProperty(new LinkedTextField(cont, "Kl", "Constant l"));
-            addProperty(new LinkedTextField(cont, "Km", "Constant m"));
-            addProperty(new LinkedTextField(cont, "Kn", "Constant n"));
-
-            addProperty(Box.createVerticalStrut(20));
-
-            types = new HashMap();
-            types.put("histogram", "Histogram");
-            types.put("simplin", "Simple Linear");
-            types.put("linear", "Linear");
-            types.put("root2", "Square Root");
-            types.put("root3", "Cubic Root");
-            types.put("root4", "Quartic Root");
-            types.put("log", "Logarithmic (ln)");
-            types.put("rankorder", "Rank Order [Rearranges Palette]");
-            types.put("none", "No Shading");
-            addProperty(new LinkedComboBox(cont, "shading", "Color Algorithm", types));
-
-            // TODO: BG COLOR & COLORS
-
-            types = new HashMap();
-            types.put("discrete", "Discrete Coloring");
-            types.put("continuous", "Continuous Palette");
-            types.put("iterMax", "Manual Iteration Amounts");
-            addProperty(new LinkedComboBox(cont, "fillColPalType", "Color Palette Type", types));
-            
-            JButton colorDlgBtn = new JButton("Edit Color Palette");
-            colorDlgBtn.addActionListener(new ActionListener(){
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    PaletteEditor editor = new PaletteEditor(new ColorPalette(c.getParams()));
-                    editor.setVisible(true);
-                }
-            });
-            addProperty(colorDlgBtn);
-            
-            addProperty(Box.createVerticalStrut(20));
-
-            types = new HashMap();
-            types.put("none", "No Tracing");
-            types.put("blend", "Blend Surrounding Colors");
-            types.put("solid", "Solid Tracing (Set Color)");
-            addProperty(new LinkedComboBox(cont, "tracing", "Tracing Style", types));
-
-            // TODO: Trace Color
-
-            addProperty(new LinkedTextField(cont, "traceRadius", "Trace Radius"));
-            addProperty(new LinkedTextField(cont, "traceBlur", "Tracing Blur Factor"));
-            addProperty(new LinkedTextField(cont, "traceOpacity", "Trace Opacity"));
-
-            addProperty(Box.createVerticalStrut(20));
-
-            addProperty(new LinkedTextField(cont, "imgBlur", "Image Blur Factor"));
-            addProperty(new LinkedTextField(cont, "imgSharpen", "Image Sharpen Factor"));
-
-            btnSubmit = new JButton("Submit Job");
-            btnSubmit.addActionListener(new ActionListener(){
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    submit();
-                }
-            });
-
-            addProperty(btnSubmit);
+            for(String s : grps){
+                addGroup(s);
+            }
         }
         
         this.revalidate();
     }
     
-    public void addProperty(Component comp) {
-        this.add(comp);
-        P.add(comp);
-    }
-    
-    public void submit(){
-        for(Component p : P){
-            p.setEnabled(false);
+    public void addGroup(String nm){
+        JSONObject g = SchemaManager.getInst().getGroup(nm);
+        if(g == null)
+            return;
+        JPanel pnl = new JPanel();
+        pnl.setLayout(new BoxLayout(pnl, BoxLayout.PAGE_AXIS));
+        if(g.containsKey("caption")){
+            pnl.add(new JLabel((String)g.get("caption")));
         }
         
-        ServerConnection.getInst().addPacketToQueue("SJOB",c.getParams().dumpToString(), this); // request all avali info
+        // now prepare params file for group
+        JSONObject paramGroup;
+        if(c.getParams().containsKey(nm) && c.getParams().get(nm) instanceof JSONObject){
+            paramGroup = (JSONObject)c.getParams().get(nm);
+        }else{
+            paramGroup = new JSONObject();
+            c.getParams().put(nm, paramGroup);
+        }
+        
+        JSONArray elms = (JSONArray)g.get("elms");
+        for(Object o : elms){
+            JSONObject elm = (JSONObject)o;
+            String type = (String)elm.get("type");
+            ParamsElement E;
+            if(type.equals("text")){
+                E = new ParamsElementText(elm, paramGroup, this);
+            }else if(type.equals("integer")){
+                E = new ParamsElementIntegral(elm, paramGroup, this);
+            }else if(type.equals("selector")){
+                E = new ParamsElementSelector(elm, paramGroup, this);
+            }else{
+                continue;
+            }
+            pnl.add(E.getInnerElm());
+        }
+        
+        G.put(nm, pnl);
+        this.add(pnl);
+        this.revalidate();
+    }
+    
+    public void removeGroup(String nm){
+        JPanel pnl = G.get(nm);
+        if(pnl != null){
+            this.remove(pnl);
+            G.remove(nm);
+        }
+        this.revalidate();
+    }
+    
+    public void showActuator(HashSet<String> set){
+        for(String s : set){
+            if(!G.containsKey(s)){
+                addGroup(s);
+            }
+        }
+    }
+    public void hideActuator(HashSet<String> set){
+        boolean added = true;
+        while(added){ // used to prevent breaks from concurrent map access
+            added = false;
+            for(String g : G.keySet()){
+                if(set.contains(g)){
+                    removeGroup(g);
+                    added = true;
+                    break;
+                }
+            }
+        }
+    }
+    
+    /*public void addProperty(Component comp) {
+        this.add(comp);
+        P.add(comp);
+    }*/
+    
+    public void submit(){
+        /*for(Component p : P){
+            p.setEnabled(false);
+        }*/
+        
+        //ServerConnection.getInst().addPacketToQueue("SJOB",c.getParams().dumpToString(), this); // request all avali info
     }
     
     
     private Context c;
-    private ArrayList<Component> P;
+    //private ArrayList<Component> P;
+    
+    private HashMap<String, JPanel> G;
+    
     private JButton btnSubmit;
 
     @Override
@@ -160,5 +151,9 @@ public class PanelProperties extends JPanel implements ServerReplyer {
         int jid = Integer.parseInt(ServerPacket.extractString(ds, len));
         System.out.println("Submitted JOB: " + jid);
         c.becameSubmittedJob(jid);
+    }
+    
+    void markDirty(){
+        c.markDirty();
     }
 }
