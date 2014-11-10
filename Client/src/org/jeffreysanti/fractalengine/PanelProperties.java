@@ -84,6 +84,10 @@ public class PanelProperties extends JPanel implements ServerReplyer {
                 E = new ParamsElementIntegral(elm, paramGroup, this);
             }else if(type.equals("selector")){
                 E = new ParamsElementSelector(elm, paramGroup, this);
+            }else if(type.equals("color")){
+                E = new ParamsElementColor(elm, paramGroup, this);
+            }else if(type.equals("real")){
+                E = new ParamsElementReal(elm, paramGroup, this);
             }else{
                 continue;
             }

@@ -55,7 +55,7 @@ public class ParamsElementIntegral extends ParamsElement {
     {
         if(!grp.containsKey(id)){
             if(schem.containsKey("default"))
-                grp.put(id, (String)schem.get("efault"));
+                grp.put(id, schem.get("default").toString());
             else
                 grp.put(id, 0);
             callback.markDirty();

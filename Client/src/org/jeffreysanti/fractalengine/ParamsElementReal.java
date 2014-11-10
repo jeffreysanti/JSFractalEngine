@@ -19,8 +19,8 @@ import org.json.simple.JSONObject;
  *
  * @author jeffrey
  */
-public class ParamsElementText extends ParamsElement {
-    public ParamsElementText(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
+public class ParamsElementReal extends ParamsElement {
+    public ParamsElementReal(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
         super(schemaDefn, paramsContainer, cb);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
@@ -47,21 +47,32 @@ public class ParamsElementText extends ParamsElement {
          });
         
         verify(); // assures some value is inside text editor
-        txt.setText((String)grp.get(id));
+        txt.setText(grp.get(id).toString());
     }
     
     @Override
     public boolean verify()
     {
-        if(!grp.containsKey(id) || !(grp.get(id) instanceof String)){
+        if(!grp.containsKey(id)){
             if(schem.containsKey("default"))
-                grp.put(id, (String)schem.get("default"));
+                grp.put(id, schem.get("default").toString());
             else
-                grp.put(id, "");
+                grp.put(id, 0);
             callback.markDirty();
         }
-        String val = (String)grp.get(id);
-        return verifyMinMaxZero(val.length());
+        
+        
+        String val = grp.get(id).toString();
+        try{
+            double real = Double.parseDouble(val);
+            grp.put(id, real);
+            
+            // now verify it
+            return verifyMinMaxZero(real);
+        }catch(NumberFormatException e){
+            // okay
+        }
+        return false;
     }
     
     @Override
@@ -76,3 +87,4 @@ public class ParamsElementText extends ParamsElement {
     private JLabel lbl;
     private JTextField txt;
 }
+
