@@ -20,8 +20,8 @@ import org.json.simple.JSONObject;
  * @author jeffrey
  */
 public class ParamsElementReal extends ParamsElement {
-    public ParamsElementReal(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
-        super(schemaDefn, paramsContainer, cb);
+    public ParamsElementReal(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
+        super(schemaDefn, paramsContainer, cb, arrIndex);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -35,7 +35,7 @@ public class ParamsElementReal extends ParamsElement {
              @Override
              public void keyReleased(KeyEvent ke) {
                  String val = txt.getText();
-                 grp.put(id, val);
+                 setValue(val);
                  if(!verify()){
                      lbl.setForeground(Color.red);
                  }
@@ -47,25 +47,25 @@ public class ParamsElementReal extends ParamsElement {
          });
         
         verify(); // assures some value is inside text editor
-        txt.setText(grp.get(id).toString());
+        txt.setText(getValue().toString());
     }
     
     @Override
     public boolean verify()
     {
-        if(!grp.containsKey(id)){
+        if(!valueExists()){
             if(schem.containsKey("default"))
-                grp.put(id, schem.get("default").toString());
+                setValue(schem.get("default").toString());
             else
-                grp.put(id, 0);
+                setValue(0);
             callback.markDirty();
         }
         
         
-        String val = grp.get(id).toString();
+        String val = getValue().toString();
         try{
             double real = Double.parseDouble(val);
-            grp.put(id, real);
+            setValue(real);
             
             // now verify it
             return verifyMinMaxZero(real);

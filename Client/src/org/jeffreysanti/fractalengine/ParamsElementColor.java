@@ -29,8 +29,8 @@ import org.json.simple.JSONValue;
  * @author jeffrey
  */
 public class ParamsElementColor extends ParamsElement {
-    public ParamsElementColor(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
-        super(schemaDefn, paramsContainer, cb);
+    public ParamsElementColor(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
+        super(schemaDefn, paramsContainer, cb, arrIndex);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -63,7 +63,7 @@ public class ParamsElementColor extends ParamsElement {
                 arr.add(c.getRed());
                 arr.add(c.getGreen());
                 arr.add(c.getBlue());
-                grp.put(id, arr);
+                setValue(arr);
                 verify();
             }
         };
@@ -74,16 +74,19 @@ public class ParamsElementColor extends ParamsElement {
     @Override
     public boolean verify()
     {
-        if(!grp.containsKey(id) || !(grp.get(id) instanceof JSONArray) || 
-                ((JSONArray)grp.get(id)).size() < 3){
+        if(!valueExists() || !(getValue() instanceof JSONArray) || 
+                ((JSONArray)getValue()).size() < 3){
             if(schem.containsKey("default"))
-                grp.put(id, schem.get("default"));
-            else
-                grp.put(id, new int[] {0, 0, 0});
+                setValue(schem.get("default"));
+            else{
+                JSONArray arr = new JSONArray();
+                arr.add(0); arr.add(0); arr.add(0);
+                setValue(arr);
+            }
             callback.markDirty();
         }
         
-        JSONArray val = (JSONArray)grp.get(id);
+        JSONArray val = (JSONArray)getValue();
         try{
             for(int i=0; i<3; i++){
                 int v = Integer.parseInt(val.get(i).toString());
@@ -94,9 +97,9 @@ public class ParamsElementColor extends ParamsElement {
         }catch(NumberFormatException e){
             // okay
             if(schem.containsKey("default"))
-                grp.put(id, schem.get("default"));
+                setValue(schem.get("default"));
             else
-                grp.put(id, new int[] {0, 0, 0});
+                setValue(new int[] {0, 0, 0});
             callback.markDirty();
         }
         colBox.setBackground(new Color((Integer)val.get(0), (Integer)val.get(1), (Integer)val.get(2)));

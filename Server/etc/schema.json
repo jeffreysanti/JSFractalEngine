@@ -348,7 +348,7 @@
 				"elm" :	{
 					"id" : "color-iter-pair",
 					"type" : "tuple",
-					"caption" : "Color / Max Iterations",
+					"caption" : "",
 					"elms" : [
 						{
 							"id" : "color",

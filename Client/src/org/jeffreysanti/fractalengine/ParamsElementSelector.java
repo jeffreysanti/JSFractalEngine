@@ -25,8 +25,8 @@ import org.json.simple.JSONObject;
  * @author jeffrey
  */
 public class ParamsElementSelector extends ParamsElement {
-    public ParamsElementSelector(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
-        super(schemaDefn, paramsContainer, cb);
+    public ParamsElementSelector(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
+        super(schemaDefn, paramsContainer, cb, arrIndex);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -55,7 +55,7 @@ public class ParamsElementSelector extends ParamsElement {
             public void actionPerformed(ActionEvent e) {
                 int cid = box.getSelectedIndex();
                 String sel = CID.get(cid);
-                grp.put(id, sel);
+                setValue(sel);
                 callback.markDirty();
                 verify();
             }
@@ -63,7 +63,7 @@ public class ParamsElementSelector extends ParamsElement {
         
         verify(); // assures some value is inside text editor
         
-        String def = grp.get(id).toString();
+        String def = getValue().toString();
         for(int i=0; i<CID.size(); i++){
             if(CID.get(i).equals(def)){
                 box.setSelectedIndex(i);
@@ -75,12 +75,12 @@ public class ParamsElementSelector extends ParamsElement {
     @Override
     public boolean verify()
     {
-        if(!grp.containsKey(id)){
-            grp.put(id, (String)schem.get("efault"));
+        if(!valueExists()){
+            setValue((String)schem.get("default"));
             callback.markDirty();
         }
         
-        String val = grp.get(id).toString();
+        String val = getValue().toString();
         boolean found=false;
         for(int i=0; i<CID.size(); i++){
             if(CID.get(i).equals(val)){
@@ -90,7 +90,7 @@ public class ParamsElementSelector extends ParamsElement {
         }
         if(!found){
             val = CID.get(box.getSelectedIndex());
-            grp.put(id, val);
+            setValue(val);
         }
         
         // now send callback

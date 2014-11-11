@@ -6,19 +6,22 @@
 package org.jeffreysanti.fractalengine;
 
 import javax.swing.JComponent;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 /**
  *
  * @author jeffrey
  */
 public class ParamsElement {
-    public ParamsElement(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
+    public ParamsElement(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
         callback = cb;
         schem = schemaDefn;
         grp = paramsContainer;
         
         id = (String)schem.get("id");
+        aind = arrIndex;
     }
     
     public boolean verify()
@@ -47,9 +50,26 @@ public class ParamsElement {
         return true;
     }
     
+    protected boolean valueExists(){
+        if(aind >= 0)
+            return true;
+        return ((JSONObject)grp).containsKey(id);
+    }
+    protected Object getValue(){
+        if(aind >= 0)
+            return ((JSONArray)grp).get(aind);
+        return ((JSONObject)grp).get(id);
+    }
+    protected void setValue(Object o){
+        if(aind >= 0)
+            ((JSONArray)grp).set(aind, o);
+        ((JSONObject)grp).put(id, o);
+    }
+    
     
     protected JSONObject schem;
-    protected JSONObject grp;
+    protected Object grp;
     protected PanelProperties callback;
     protected String id;
+    protected int aind;
 }

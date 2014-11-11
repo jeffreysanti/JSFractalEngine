@@ -79,16 +79,21 @@ public class PanelProperties extends JPanel implements ServerReplyer {
             String type = (String)elm.get("type");
             ParamsElement E;
             if(type.equals("text")){
-                E = new ParamsElementText(elm, paramGroup, this);
+                E = new ParamsElementText(elm, paramGroup, this, -1);
             }else if(type.equals("integer")){
-                E = new ParamsElementIntegral(elm, paramGroup, this);
+                E = new ParamsElementIntegral(elm, paramGroup, this, -1);
             }else if(type.equals("selector")){
-                E = new ParamsElementSelector(elm, paramGroup, this);
+                E = new ParamsElementSelector(elm, paramGroup, this, -1);
             }else if(type.equals("color")){
-                E = new ParamsElementColor(elm, paramGroup, this);
+                E = new ParamsElementColor(elm, paramGroup, this, -1);
             }else if(type.equals("real")){
-                E = new ParamsElementReal(elm, paramGroup, this);
-            }else{
+                E = new ParamsElementReal(elm, paramGroup, this, -1);
+            }else if(type.equals("array")){
+                E = new ParamsElementArray(elm, paramGroup, this, -1);
+            }else if(type.equals("tuple")){
+                E = new ParamsElementTuple(elm, paramGroup, this, -1);
+            }
+            else{
                 continue;
             }
             pnl.add(E.getInnerElm());

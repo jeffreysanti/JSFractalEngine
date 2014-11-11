@@ -20,8 +20,8 @@ import org.json.simple.JSONObject;
  * @author jeffrey
  */
 public class ParamsElementText extends ParamsElement {
-    public ParamsElementText(JSONObject schemaDefn, JSONObject paramsContainer, PanelProperties cb){
-        super(schemaDefn, paramsContainer, cb);
+    public ParamsElementText(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
+        super(schemaDefn, paramsContainer, cb, arrIndex);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -34,33 +34,33 @@ public class ParamsElementText extends ParamsElement {
              public void keyPressed(KeyEvent ke) {  }
              @Override
              public void keyReleased(KeyEvent ke) {
-                 String val = txt.getText();
-                 grp.put(id, val);
-                 if(!verify()){
-                     lbl.setForeground(Color.red);
-                 }
-                 else{
-                    lbl.setForeground(Color.black);
-                 }
-                 callback.markDirty();
+                String val = txt.getText();
+                setValue(val);
+                if(!verify()){
+                    lbl.setForeground(Color.red);
+                }
+                else{
+                   lbl.setForeground(Color.black);
+                }
+                callback.markDirty();
              }
          });
         
         verify(); // assures some value is inside text editor
-        txt.setText((String)grp.get(id));
+        txt.setText((String)getValue());
     }
     
     @Override
     public boolean verify()
     {
-        if(!grp.containsKey(id) || !(grp.get(id) instanceof String)){
+        if(!valueExists() || !(getValue() instanceof String)){
             if(schem.containsKey("default"))
-                grp.put(id, (String)schem.get("default"));
+                setValue((String)schem.get("default"));
             else
-                grp.put(id, "");
+                setValue("");
             callback.markDirty();
         }
-        String val = (String)grp.get(id);
+        String val = (String)getValue();
         return verifyMinMaxZero(val.length());
     }
     
