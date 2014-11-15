@@ -59,10 +59,10 @@ public class PanelViewer extends JPanel implements ServerReplyer {
         }
         addPane(new ViewPaneLog(c), "Log");
         if(!c.isUpdateableState()){
-            //addPane(new ViewPaneParams(c, c.getParamsOutput()), "Results");
+            addPane(new ViewPaneParams(c, c.getParamsOutput()), "Results");
         }
         
-        //addPane(new ViewPaneParams(c, c.getParams()), "Paramaters");
+        addPane(new ViewPaneParams(c, c.getParams()), "Paramaters");
     }
     
     private void addPane(ViewPaneAbstract p, String title){
