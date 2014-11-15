@@ -31,6 +31,7 @@ public class PanelProperties extends JPanel implements ServerReplyer {
     PanelProperties(){
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         G = new HashMap();
+        //P = new HashSet();
     }
     
     public void switchContext(Context cont){
@@ -50,6 +51,15 @@ public class PanelProperties extends JPanel implements ServerReplyer {
                 addGroup(s);
             }
         }
+        
+        btnSubmit = new JButton("Submit Job");
+        btnSubmit.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                submit();
+            }
+        });
+
         
         this.revalidate();
     }
@@ -100,17 +110,15 @@ public class PanelProperties extends JPanel implements ServerReplyer {
         }
         
         G.put(nm, pnl);
-        this.add(pnl);
-        this.revalidate();
+        updateGroupDisplay();
     }
     
     public void removeGroup(String nm){
         JPanel pnl = G.get(nm);
         if(pnl != null){
-            this.remove(pnl);
             G.remove(nm);
         }
-        this.revalidate();
+        updateGroupDisplay();
     }
     
     public void showActuator(HashSet<String> set){
@@ -134,22 +142,30 @@ public class PanelProperties extends JPanel implements ServerReplyer {
         }
     }
     
-    /*public void addProperty(Component comp) {
-        this.add(comp);
-        P.add(comp);
-    }*/
+    public void updateGroupDisplay(){
+        this.removeAll();
+        ArrayList<String> ordered = SchemaManager.getInst().findAllOrderedGroups();
+        for(String id  : ordered){
+            if(G.containsKey(id)){
+                this.add(G.get(id));
+            }
+        }
+        this.add(btnSubmit);
+        this.revalidate();
+    }
     
     public void submit(){
-        /*for(Component p : P){
+        for(JPanel p : G.values()){
             p.setEnabled(false);
-        }*/
+        }
+        this.remove(btnSubmit);
         
-        //ServerConnection.getInst().addPacketToQueue("SJOB",c.getParams().dumpToString(), this); // request all avali info
+        ServerConnection.getInst().addPacketToQueue("SJOB",c.getParams().toJSONString(), this); // request all avali info
     }
     
     
     private Context c;
-    //private ArrayList<Component> P;
+    //private HashSet<Component> P;
     
     private HashMap<String, JPanel> G;
     

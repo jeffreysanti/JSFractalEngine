@@ -52,8 +52,8 @@ public class ParamsElement {
     
     protected boolean valueExists(){
         if(aind >= 0)
-            return true;
-        return ((JSONObject)grp).containsKey(id);
+            return ((JSONArray)grp).get(aind) != null;
+        return ((JSONObject)grp).containsKey(id) && ((JSONObject)grp).get(id) != null;
     }
     protected Object getValue(){
         if(aind >= 0)
@@ -63,7 +63,8 @@ public class ParamsElement {
     protected void setValue(Object o){
         if(aind >= 0)
             ((JSONArray)grp).set(aind, o);
-        ((JSONObject)grp).put(id, o);
+        else
+            ((JSONObject)grp).put(id, o);
     }
     
     

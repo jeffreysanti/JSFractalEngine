@@ -3,6 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/home/jeffrey/dev/JSFractalEngine/Client/src/org/jeffreysanti/fractalengine/ParamsElementArray.java</file>
+            <file>file:/home/jeffrey/dev/JSFractalEngine/Client/src/org/jeffreysanti/fractalengine/ParamsElementText.java</file>
+            <file>file:/home/jeffrey/dev/JSFractalEngine/Client/src/org/jeffreysanti/fractalengine/PanelProperties.java</file>
+            <file>file:/home/jeffrey/dev/JSFractalEngine/Client/src/org/jeffreysanti/fractalengine/ParamsElementTuple.java</file>
+        </group>
     </open-files>
 </project-private>

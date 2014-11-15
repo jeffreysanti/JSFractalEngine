@@ -37,29 +37,6 @@ public class ParamsElementSelector extends ParamsElement {
             CID.add((String)choice.get("id"));
             box.addItem((String)choice.get("caption"));
         }
-        box.addActionListener(new ActionListener(){
-            /*
-             public void keyReleased(KeyEvent ke) {
-                 String val = txt.getText();
-                 grp.put(id, val);
-                 if(!verify()){
-                     lbl.setForeground(Color.red);
-                 }
-                 else{
-                    lbl.setForeground(Color.black);
-                 }
-                 callback.markDirty();
-             }
-*/
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int cid = box.getSelectedIndex();
-                String sel = CID.get(cid);
-                setValue(sel);
-                callback.markDirty();
-                verify();
-            }
-         });
         
         verify(); // assures some value is inside text editor
         
@@ -70,6 +47,18 @@ public class ParamsElementSelector extends ParamsElement {
                 break;
             }
         }
+        
+        // moved down here to not dirty context when default selected
+        box.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int cid = box.getSelectedIndex();
+                String sel = CID.get(cid);
+                setValue(sel);
+                callback.markDirty();
+                verify();
+            }
+         });
     }
     
     @Override

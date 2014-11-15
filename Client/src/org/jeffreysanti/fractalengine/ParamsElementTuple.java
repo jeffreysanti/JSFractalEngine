@@ -56,7 +56,7 @@ public class ParamsElementTuple extends ParamsElement {
             JSONObject O = (JSONObject)getValue();
             for(Object elmSchem : (JSONArray)schem.get("elms")){
                 if(!O.containsKey(((JSONObject)elmSchem).get("id"))){
-                    O.put(((JSONObject)elmSchem).get("id"), new JSONValue());
+                    O.put(((JSONObject)elmSchem).get("id"), null);
                 }
             }
             callback.markDirty();
@@ -97,7 +97,20 @@ public class ParamsElementTuple extends ParamsElement {
     
     @Override
     public JComponent getInnerElm(){
-        JPanel pnl = new JPanel();
+        JPanel pnl = new JPanel(){
+            @Override
+            public void setBackground(Color bg) {
+                super.setBackground(bg);
+                for(Component comp : this.getComponents()){
+                    if(comp instanceof JPanel){
+                        comp.setBackground(bg);
+                        for(Component comp2 : ((JPanel)comp).getComponents()){
+                            comp2.setBackground(bg);
+                        }
+                    }
+                }
+            }
+        };
         
         pnl.setLayout(new BorderLayout());
         pnl.add(lbl, BorderLayout.LINE_START);

@@ -11,16 +11,22 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.TransferHandler;
@@ -47,7 +53,7 @@ public class ParamsElementArray extends ParamsElement {
     @Override
     public boolean verify()
     {
-        int minQuant = 0;
+        minQuant = 0;
         if(schem.containsKey("min"))
             minQuant = ((Number)schem.get("min")).intValue();
         
@@ -94,8 +100,70 @@ public class ParamsElementArray extends ParamsElement {
                 continue;
             }
             E.add(e);
-            lst.add(e.getInnerElm());
+            
+            // Add List Entry
+            JPanel lstEntry = new JPanel();
+            lstEntry.setLayout(new BorderLayout());
+            JLabel actionLbl = new JLabel("["+Integer.toString(E.size()+1)+"]");
+            final JPopupMenu menu = new JPopupMenu("Popup");
+            JMenuItem itm = new JMenuItem("Delete");
+            menu.add(itm);
+            final int arrIndex = E.size() - 1;
+            itm.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // delete item from array
+                    JSONArray val = (JSONArray)getValue();
+                    if(val.size() <= minQuant)
+                        return;
+                    val.remove(arrIndex);
+                    verify();
+                }
+            });
+            actionLbl.addMouseListener(new MouseAdapter(){
+                @Override
+                public void mousePressed(MouseEvent ev) {
+                    if (ev.isPopupTrigger()) {
+                        menu.show(ev.getComponent(), ev.getX(), ev.getY());
+                    }
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent ev) {
+                    if (ev.isPopupTrigger()) {
+                        menu.show(ev.getComponent(), ev.getX(), ev.getY());
+                    }
+                }
+            });
+            
+            lstEntry.add(BorderLayout.WEST, actionLbl);
+            JComponent comp = e.getInnerElm();
+            lstEntry.add(BorderLayout.CENTER, comp);
+            
+            Color bg = null;
+            if(i % 2 == 0)
+                bg = new Color(65, 129, 127);
+            else
+                bg = new Color(103, 155, 153);
+            
+            lstEntry.setBackground(bg);
+            if(comp instanceof JPanel){
+                comp.setBackground(bg);
+            }
+            
+            lst.add(lstEntry);
         }
+        JButton btnNew = new JButton("Add New Entry");
+        btnNew.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Add item from array
+                JSONArray val = (JSONArray)getValue();
+                val.add(null);
+                verify();
+            }
+        });
+        lst.add(btnNew);
         lst.revalidate();
         return true;
     }
@@ -112,6 +180,8 @@ public class ParamsElementArray extends ParamsElement {
     
     private JLabel lbl;
     private JPanel lst;
+    
+    private int minQuant;
     
     private ArrayList<ParamsElement> E = new ArrayList();
 }

@@ -74,6 +74,7 @@ public class SchemaManager {
                 JSONObject g = (JSONObject)o;
                 if(g.containsKey("elms") && g.containsKey("id") && g.get("elms") instanceof JSONArray){
                     G.put((String)g.get("id"), (JSONObject)g);
+                    OG.add((String)g.get("id"));
                 }
             }
         }
@@ -86,6 +87,10 @@ public class SchemaManager {
                 lst.add(id);
             }
         }
+    }
+    public ArrayList<String> findAllOrderedGroups()
+    {
+        return OG;
     }
     
     public ArrayList<String> getGroupList(JSONObject r){
@@ -124,6 +129,7 @@ public class SchemaManager {
     
     private JSONObject root;
     private HashMap<String, JSONObject> G = new HashMap();
+    private ArrayList<String> OG = new ArrayList(); // ordered groups
     
     public static SchemaManager getInst(){
         return schmMngr;

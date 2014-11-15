@@ -35,6 +35,7 @@ public class ParamsElementColor extends ParamsElement {
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
         colBox = new JPanel();
+        colBox.setMinimumSize(new Dimension(50, 25));
         colBox.addMouseListener(new MouseListener(){
             @Override
             public void mouseClicked(MouseEvent e) {
