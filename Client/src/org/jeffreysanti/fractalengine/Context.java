@@ -186,8 +186,14 @@ public class Context implements ServerReplyer {
         jid = j;
         uid = ServerConnection.getInst().getUserID();
         status = LibraryTile.FDBS_RENDER_SUBMITTED;
-        name = (String)((JSONObject)params.get("basic")).get("name");//params.getValue("title", "[Just Submitted]");
-        author = (String)((JSONObject)params.get("basic")).get("author");//params.getValue("author", "...");
+        
+        if(params.get("basic") != null){
+            name = (String)((JSONObject)params.get("basic")).get("name");//params.getValue("title", "[Just Submitted]");
+            author = (String)((JSONObject)params.get("basic")).get("author");//params.getValue("author", "...");
+        }else{
+            name = "Manually Submitted";
+            author = "NA";
+        }
         
         JavaDesktop.getInst().getWorkspacePanel().getContextLibrary().recievedFractalStatusUpdate(jid, 
                         LibraryTile.FDBS_QUEUED, name, author, uid, null);

@@ -68,6 +68,16 @@ public class PanelLibrary extends JPanel implements ServerReplyer, ServerMessage
         });
         this.add(btnNew);
         
+        btnNewManual = new JButton("New Manual Fractal");
+        btnNewManual.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ManualSubmit ms = new ManualSubmit();
+                ms.setVisible(true);
+            }
+        });
+        this.add(btnNewManual);
+        
         T = new ArrayList();
         
         timer = new javax.swing.Timer(REQUEST_GAP_RE_SSLT, new ActionListener() { // once per minute
@@ -156,7 +166,7 @@ public class PanelLibrary extends JPanel implements ServerReplyer, ServerMessage
     
     
     private JTextField txtSearch;
-    private JButton btnNew;
+    private JButton btnNew, btnNewManual;
     private ArrayList<LibraryTile> T;
     private Timer timer;
     private Timer timer2;

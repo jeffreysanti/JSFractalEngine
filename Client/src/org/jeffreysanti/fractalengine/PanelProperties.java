@@ -37,6 +37,14 @@ public class PanelProperties extends JPanel implements ServerReplyer {
     public void switchContext(Context cont){
         c = cont;
         
+        btnSubmit = new JButton("Submit Job");
+        btnSubmit.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                submit();
+            }
+        });
+        
         for(JPanel p : G.values()){
             this.remove(p);
         }
@@ -51,15 +59,6 @@ public class PanelProperties extends JPanel implements ServerReplyer {
                 addGroup(s);
             }
         }
-        
-        btnSubmit = new JButton("Submit Job");
-        btnSubmit.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                submit();
-            }
-        });
-
         
         this.revalidate();
     }
