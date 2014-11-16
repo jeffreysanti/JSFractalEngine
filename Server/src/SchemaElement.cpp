@@ -142,6 +142,8 @@ void SchemaElementText::verifyElement(Json::Value &in, std::string &err, std::ve
 SchemaElementSelector::SchemaElementSelector(std::string grpAddr, Json::Value &schema) :
 		SchemaElement(grpAddr, schema)
 {
+	E = nullptr;
+
 	// read options list
 	if(!schm.isMember("choices") || !schm["choices"].isArray()){
 		std::cerr << "SchemaElement Selector " << addr << " Missing Choices Array\n";
@@ -176,6 +178,9 @@ SchemaElementSelector::SchemaElementSelector(std::string grpAddr, Json::Value &s
 			}
 		}
 		O[o["id"].asString()] = actuators;
+		if(o.isMember("elm") && o["elm"].isObject()){ // subelement
+			SubElms[o["id"].asString()] = o["elm"];
+		}
 	}
 
 	if(schm.isMember("default") && schm["default"].isString())
@@ -184,20 +189,53 @@ SchemaElementSelector::SchemaElementSelector(std::string grpAddr, Json::Value &s
 		defVal = "";
 }
 
+SchemaElementSelector::~SchemaElementSelector(){
+	if(E != nullptr)
+		delete E;
+}
+
 void SchemaElementSelector::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
 {
 	std::string val;
-	if(!isPresent(in) || !in[elmid].isString()){
+	if(!isPresent(in) || !in[elmid].isObject() || !in[elmid].isMember("selected") ||
+			!in[elmid]["selected"].isString()){
 		val = defVal;
+		in[elmid] = Json::Value(Json::objectValue);
+		in[elmid]["selected"] = defVal;
 	}else{
-		val = in[elmid].asString();
+		val = in[elmid]["selected"].asString();
 	}
 	// now verify constraints
 	if(O.find(val) == O.end())
 		err += "Illegal Selector Option Chosen ["+val+"] for " + addr + "\n";
-	else
+	else{
 		actutators = O[val];
-	in[elmid] = val;
+
+		// now verify subelement
+		if(SubElms.find(val) != SubElms.end()){
+			Json::Value elm = SubElms[val];
+			if(elm["type"].asString() == "integer"){
+				E = new SchemaElementIntegral(addr, elm);
+			}else if(elm["type"].asString() == "real"){
+				E = new SchemaElementReal(addr, elm);
+			}else if(elm["type"].asString() == "text"){
+				E = new SchemaElementText(addr, elm);
+			}else if(elm["type"].asString() == "selector"){
+				E = new SchemaElementSelector(addr, elm);
+			}else if(elm["type"].asString() == "color"){
+				E = new SchemaElementColor(addr, elm);
+			}else if(elm["type"].asString() == "tuple"){
+				E = new SchemaElementTuple(addr, elm);
+			}else if(elm["type"].asString() == "array"){
+				E = new SchemaElementArray(addr, elm);
+			}else{
+				std::cerr << "Unknown sub element type: " << elm["type"].asString() << "\n";
+				exit(EXIT_FAILURE);
+				return;
+			}
+			E->verifyElement(in[elmid], err, actutators);
+		}
+	}
 }
 
 SchemaElementColor::SchemaElementColor(std::string grpAddr, Json::Value &schema) :

@@ -132,7 +132,7 @@ void FractalMandleJulia::processParamsAlgorithm()
 	funct = p->getJson()["type.juliamandle"]["func"].asString();
 	threshold = p->getJson()["type.juliamandle"]["threshold"].asDouble();
 
-	if(p->getJson()["type.juliamandle"]["zInitial"].asString() == "zero"){
+	if(p->getJson()["type.juliamandle"]["zInitial"]["selected"].asString() == "zero"){
 		zeroZ = true;
 	}else{
 		zeroZ = false;
@@ -209,26 +209,26 @@ void FractalMandleJulia::processParamsGraphics()
 
 void FractalMandleJulia::processParamsShading()
 {
-	shading = p->getJson()["type.juliamandle"]["shading"].asString();
+	shading = p->getJson()["type.juliamandle"]["shading"]["selected"].asString();
 
 	if(shading == "none"){
 		bgColor = palette.fromParam(p->getJson()["jmshader.bg"]["bgColor"]);
 	}else{
 		palette.loadPaletteFromParams(p->getJson()["jmshader.normal"]["palette"],
-				p->getJson()["jmshader.normal"]["fillColPalType"].asString());
+				p->getJson()["jmshader.normal"]["fillColPalType"]["selected"].asString());
 	}
 }
 
 void FractalMandleJulia::processParamsTracing()
 {
-	tracingMethod = p->getJson()["type.juliamandle"]["tracing"].asString();
+	tracingMethod = p->getJson()["type.juliamandle"]["tracing"]["selected"].asString();
 
 	if(tracingMethod != "none"){
-		traceBrushRadius = p->getJson()["jmtracer.normal"]["traceRadius"].asInt();
-		traceBlur = p->getJson()["jmtracer.normal"]["traceBlur"].asDouble();
-		traceOpacity = p->getJson()["jmtracer.normal"]["traceOpacity"].asDouble();
+		traceBrushRadius = p->getJson()["type.juliamandle"]["tracing"]["t"]["traceRadius"].asInt();
+		traceBlur = p->getJson()["type.juliamandle"]["tracing"]["t"]["traceBlur"].asDouble();
+		traceOpacity = p->getJson()["type.juliamandle"]["tracing"]["t"]["traceOpacity"].asDouble();
 		if(tracingMethod == "solid"){
-			//traceSolidColor = schem.getColor(*p, "traceCol");
+			traceSolidColor = palette.fromParam(p->getJson()["type.juliamandle"]["tracing"]["t"]["traceCol"]);
 		}
 	}
 }

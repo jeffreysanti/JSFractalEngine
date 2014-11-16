@@ -28,7 +28,8 @@
 				"type" : "integer",
 				"allowZero" : false,
 				"min" : 10,
-				"max" : 4098
+				"max" : 4098,
+				"default" : 100
 			},
 			{
 				"id" : "imgHeight",
@@ -36,7 +37,8 @@
 				"type" : "integer",
 				"allowZero" : false,
 				"min" : 10,
-				"max" : 4098
+				"max" : 4098,
+				"default" : 100
 			},
 			{
 				"id" : "timeout",
@@ -292,21 +294,85 @@
 				"choices" : [
 					{
 						"id": "none", 
-						"caption" : "No Tracing",
-						"hide" : ["jmtracer.*"],
-						"show" : []
+						"caption" : "No Tracing"
 					},
 					{
 						"id": "blend", 
 						"caption" : "Blend",
-						"hide" : ["jmtracer.*"],
-						"show" : ["jmtracer.normal"]
+						"elm" :	{
+							"id" : "t",
+							"type" : "tuple",
+							"caption" : "",
+							"elms" : [
+									{
+										"id" : "traceRadius",
+										"caption" : "Trace Radius (px)",
+										"type" : "integer",
+										"min" : 0,
+										"default" : 1,
+										"allowZero" : true
+									},
+									{
+										"id" : "traceBlur",
+										"caption" : "Trace Blur Factor",
+										"type" : "real",
+										"min" : 0,
+										"default" : 1,
+										"allowZero" : true
+									},
+									{
+										"id" : "traceOpacity",
+										"caption" : "Trace Opacity",
+										"type" : "real",
+										"min" : 0,
+										"max" : 1,
+										"default" : 1,
+										"allowZero" : true
+									}
+								]
+						}
 					},
 					{
 						"id": "solid",
 						"caption" : "Solid",
-						"hide" : ["jmtracer.*"],
-						"show" : ["jmtracer.normal", "jmtracer.solid"]
+						"elm" :	{
+							"id" : "t",
+							"type" : "tuple",
+							"caption" : "",
+							"elms" : [
+									{
+										"id" : "traceCol",
+										"caption" : "Trace Color",
+										"type" : "color",
+										"default" : [23, 32, 64]
+									},
+									{
+										"id" : "traceRadius",
+										"caption" : "Trace Radius (px)",
+										"type" : "integer",
+										"min" : 0,
+										"default" : 1,
+										"allowZero" : true
+									},
+									{
+										"id" : "traceBlur",
+										"caption" : "Trace Blur Factor",
+										"type" : "real",
+										"min" : 0,
+										"default" : 1,
+										"allowZero" : true
+									},
+									{
+										"id" : "traceOpacity",
+										"caption" : "Trace Opacity",
+										"type" : "real",
+										"min" : 0,
+										"max" : 1,
+										"default" : 1,
+										"allowZero" : true
+									}
+								]
+						}
 					}
 				],
 				"default" : "none"
@@ -366,49 +432,6 @@
 						}
 					]
 				}
-			}
-		]
-	},
-	{
-		"caption" : "Tracer",
-		"id" : "jmtracer.normal",
-		"elms" : [
-			{
-				"id" : "traceRadius",
-				"caption" : "Trace Radius (px)",
-				"type" : "integer",
-				"min" : 0,
-				"default" : 1,
-				"allowZero" : true
-			},
-			{
-				"id" : "traceBlur",
-				"caption" : "Trace Blur Factor",
-				"type" : "real",
-				"min" : 0,
-				"default" : 1,
-				"allowZero" : true
-			},
-			{
-				"id" : "traceOpacity",
-				"caption" : "Trace Opacity",
-				"type" : "real",
-				"min" : 0,
-				"max" : 1,
-				"default" : 1,
-				"allowZero" : true
-			}
-		]
-	},
-	{
-		"caption" : "Tracer",
-		"id" : "jmtracer.solid",
-		"elms" : [
-			{
-				"id" : "traceCol",
-				"caption" : "Trace Color",
-				"type" : "color",
-				"default" : [23, 32, 64]
 			}
 		]
 	},

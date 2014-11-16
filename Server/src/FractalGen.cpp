@@ -295,7 +295,7 @@ int runGen(RenderingJob *r)
 			return 0;
 		}
 
-		std::string type = r->params->getJson()["basic"]["type"].asString();
+		std::string type = r->params->getJson()["basic"]["type"]["selected"].asString();
 		int width = r->params->getJson()["basic"]["imgWidth"].asInt();
 		int height = r->params->getJson()["basic"]["imgHeight"].asInt();
 		int timeOut = r->params->getJson()["basic"]["timeout"].asInt();

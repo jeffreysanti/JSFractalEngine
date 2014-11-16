@@ -359,7 +359,7 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		int iters = 0;
 		ParamsFile P(params, false);
 		if(P.validate(err)){
-			if(P.getJson()["basic"]["type"].asString() == "mandlejulia"){
+			if(P.getJson()["basic"]["type"]["selected"].asString() == "mandlejulia"){
 				dtaSkip = P.getJson()["basic"]["imgWidth"].asInt() *
 						P.getJson()["basic"]["imgHeight"].asInt() * 4;
 				iters = P.getJson()["type.juliamandle"]["iters"].asLargestUInt();

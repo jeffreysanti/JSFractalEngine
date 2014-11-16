@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -29,6 +31,7 @@ public class ParamsElementSelector extends ParamsElement {
         super(schemaDefn, paramsContainer, cb, arrIndex);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
+        subElm = new JPanel();
         
         box = new JComboBox();
         JSONArray choices = (JSONArray)schem.get("choices");
@@ -40,7 +43,7 @@ public class ParamsElementSelector extends ParamsElement {
         
         verify(); // assures some value is inside text editor
         
-        String def = getValue().toString();
+        String def = (String)((JSONObject)getValue()).get("selected");
         for(int i=0; i<CID.size(); i++){
             if(CID.get(i).equals(def)){
                 box.setSelectedIndex(i);
@@ -54,7 +57,9 @@ public class ParamsElementSelector extends ParamsElement {
             public void actionPerformed(ActionEvent e) {
                 int cid = box.getSelectedIndex();
                 String sel = CID.get(cid);
-                setValue(sel);
+                JSONObject MP = new JSONObject();
+                MP.put("selected", sel);
+                setValue(MP);
                 callback.markDirty();
                 verify();
             }
@@ -64,12 +69,18 @@ public class ParamsElementSelector extends ParamsElement {
     @Override
     public boolean verify()
     {
-        if(!valueExists()){
-            setValue((String)schem.get("default"));
+        subElm.removeAll();
+        
+        if(!valueExists() || !(getValue() instanceof JSONObject) ||
+                !((JSONObject)getValue()).containsKey("selected")){
+            JSONObject MP = new JSONObject();
+            MP.put("selected", (String)schem.get("default"));
+            setValue(MP);
             callback.markDirty();
         }
         
-        String val = getValue().toString();
+        JSONObject obj = (JSONObject)getValue();
+        String val = (String)obj.get("selected");
         boolean found=false;
         for(int i=0; i<CID.size(); i++){
             if(CID.get(i).equals(val)){
@@ -79,7 +90,8 @@ public class ParamsElementSelector extends ParamsElement {
         }
         if(!found){
             val = CID.get(box.getSelectedIndex());
-            setValue(val);
+            obj.put("selected", val);
+            setValue(obj);
         }
         
         // now send callback
@@ -102,6 +114,32 @@ public class ParamsElementSelector extends ParamsElement {
                     }
                 }
                 callback.showActuator(SchemaManager.getInst().expandGroupSet(A));
+                
+                // now verify subelements
+                if(choice.containsKey("elm") && choice.get("elm") instanceof JSONObject){
+                    JSONObject subelm = (JSONObject)choice.get("elm");
+                    String type = (String)subelm.get("type");
+
+                    ParamsElement e = null;
+                    if(type.equals("text")){
+                        e = new ParamsElementText(subelm, getValue(), callback, -1);
+                    }else if(type.equals("integer")){
+                        e = new ParamsElementIntegral(subelm, getValue(), callback, -1);
+                    }else if(type.equals("selector")){
+                        e = new ParamsElementSelector(subelm, getValue(), callback, -1);
+                    }else if(type.equals("color")){
+                        e = new ParamsElementColor(subelm, getValue(), callback, -1);
+                    }else if(type.equals("real")){
+                        e = new ParamsElementReal(subelm, getValue(), callback, -1);
+                    }else if(type.equals("array")){
+                        e = new ParamsElementArray(subelm, getValue(), callback, -1);
+                    }else if(type.equals("tuple")){
+                        e = new ParamsElementTuple(subelm, getValue(), callback, -1);
+                    }
+                    subElm.add(e.getInnerElm());
+                    subElm.revalidate();
+                }
+                
                 break;
             }
         }
@@ -111,15 +149,22 @@ public class ParamsElementSelector extends ParamsElement {
     
     @Override
     public JComponent getInnerElm(){
+        JPanel selectorContainer = new JPanel();
+        selectorContainer.setLayout(new BorderLayout());
+        selectorContainer.add(lbl, BorderLayout.LINE_START);
+        selectorContainer.add(box, BorderLayout.LINE_END);
+        
         JPanel pnl = new JPanel();
         pnl.setLayout(new BorderLayout());
-        pnl.add(lbl, BorderLayout.LINE_START);
-        pnl.add(box, BorderLayout.LINE_END);
+        pnl.add(selectorContainer, BorderLayout.NORTH);
+        pnl.add(subElm, BorderLayout.CENTER);
+        
         return pnl;
     }
     
     private JLabel lbl;
     private JComboBox<String> box;
+    private JPanel subElm;
     private ArrayList<String> CID = new ArrayList();
 }
 

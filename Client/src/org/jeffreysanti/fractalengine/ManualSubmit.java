@@ -56,8 +56,6 @@ public class ManualSubmit extends JFrame implements ServerReplyer {
         int jid = Integer.parseInt(ServerPacket.extractString(data, len));
         System.out.println("Submitted JOB: " + jid);
         
-        //LibraryTile tile = new LibraryTile(jid);
-        //JavaDesktop.getInst().getWorkspacePanel().openNewContext(tile);
         Context c = JavaDesktop.getInst().getWorkspacePanel().getContextLibrary().openNewContextFromScratch();
         JavaDesktop.getInst().getWorkspacePanel().changeContext(c);
         c.becameSubmittedJob(jid);

@@ -69,10 +69,13 @@ protected:
 class SchemaElementSelector : public SchemaElement {
 public:
 	SchemaElementSelector(std::string grpAddr, Json::Value &schema);
+	virtual ~SchemaElementSelector();
 	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
 protected:
 	std::map<std::string, std::vector<SchemaActuator>> O;
+	std::map<std::string, Json::Value> SubElms;
 	std::string defVal;
+	SchemaElement *E;
 };
 class SchemaElementColor : public SchemaElement {
 public:

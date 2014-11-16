@@ -24,9 +24,8 @@ private:
 	SchemaManager();
 	~SchemaManager();
 
-	Json::Value root;
-
-	std::map <std::string, Json::Value> G;
+	Json::Value inital_root;
+	std::map <std::string, Json::Value> inital_G;
 
 	void findConditionlessGroups(std::deque<std::string> &lst);
 

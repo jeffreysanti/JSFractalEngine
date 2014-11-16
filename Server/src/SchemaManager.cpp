@@ -26,7 +26,7 @@ void SchemaManager::initialize()
 
 	Json::Reader reader;
 	std::ifstream stream(configFile, std::ifstream::in);
-	if (!reader.parse(stream, root))
+	if (!reader.parse(stream, inital_root))
 	{
 		stream.close();
 		std::cerr << "Error in schema initialization [SchemaManager::initialize]!\n";
@@ -39,25 +39,27 @@ void SchemaManager::initialize()
 	stream.close();
 
 	// now load the schema
-	if(!root.isObject() || !root.isMember("groups") || !root["groups"].isArray() || root["groups"].empty()){
+	if(!inital_root.isObject() || !inital_root.isMember("groups") || !inital_root["groups"].isArray() || inital_root["groups"].empty()){
 		std::cerr << "Schema must contain array of groups\n";
 		exit(EXIT_FAILURE);
 		return;
 	}
 
-	for(auto grp : root["groups"]){
+	for(auto grp : inital_root["groups"]){
 		if(!grp.isObject() || !grp.isMember("elms") || !grp["elms"].isArray() || !grp.isMember("id"))
 			continue;
 
 		std::string gname = grp["id"].asString();
-		G[gname] = grp;
+		inital_G[gname] = grp;
 	}
 }
 
 void SchemaManager::findConditionlessGroups(std::deque<std::string> &lst)
 {
-	for(auto it=G.begin(); it!=G.end(); ++it){
+	int i = 0;
+	for(auto it=inital_G.begin(); it!=inital_G.end(); ++it){
 		if((*it).second.isMember("active") && (*it).second.asBool()){
+			i ++;
 			lst.push_back((*it).first);
 		}
 	}
@@ -110,6 +112,14 @@ std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
 	std::deque<std::string> queue;
 	std::set<std::string> parsed; // store already evaluated groups
 	findConditionlessGroups(queue); // get initial search list
+
+	std::map<std::string, Json::Value> G;
+	Json::Reader reader;
+	for(auto ent : inital_G){
+		Json::Value cpy;
+		reader.parse(ent.second.toStyledString(), cpy);
+		G[ent.first] = cpy;
+	}
 
 	while(queue.size() > 0){
 		std::string id = queue.front();
