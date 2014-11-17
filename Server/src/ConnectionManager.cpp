@@ -55,7 +55,7 @@ void ConnectionManager::initialize()
 	}
 	int portno = root["portno"].asInt();
 
-	if(root.isMember("nosockets") && root["nosockets"].asBool()){
+	if(root.isMember("nosockets") && root["nosockets"].isBool() && root["nosockets"].asBool()){
 		std::cout << "Using nosockets method:: WARNING may be slow and only supports one local connection\n";
 		nosockets = true;
 		maxConnections = 1;

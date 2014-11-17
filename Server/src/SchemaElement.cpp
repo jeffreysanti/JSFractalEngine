@@ -25,7 +25,7 @@ SchemaElement::~SchemaElement()
 
 bool SchemaElement::allowNull()
 {
-	if(schm.isMember("allowZero") && !schm["allowZero"].asBool()){
+	if(schm.isMember("allowZero") && schm["allowZero"].isBool() && !schm["allowZero"].asBool()){
 		return false;
 	}else{
 		return true;

@@ -35,8 +35,8 @@ void UserManager::initialize() {
 			return;
 		}
 		User u;
-		u.admin = elm["admin"].asBool();
-		u.daemon = elm["automated"].asBool();
+		u.admin = elm["admin"].isBool() && elm["admin"].asBool();
+		u.daemon = elm["admin"].isBool() && elm["automated"].asBool();
 		u.name = elm["name"].asString();
 		u.pass = elm["pass"].asString();
 		u.id = elm["id"].asInt();
