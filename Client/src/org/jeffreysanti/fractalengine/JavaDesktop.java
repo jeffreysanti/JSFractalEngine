@@ -4,7 +4,6 @@
  */
 package org.jeffreysanti.fractalengine;
 
-import Ice.Communicator;
 import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.traces.Trace2DSimple;
