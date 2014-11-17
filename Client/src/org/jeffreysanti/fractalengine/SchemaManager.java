@@ -5,9 +5,12 @@
  */
 package org.jeffreysanti.fractalengine;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,12 +30,14 @@ import org.json.simple.parser.ParseException;
 public class SchemaManager {
     
     SchemaManager(){
-        String schemaPath = "/home/jeffrey/dev/JSFractalEngine/Server/etc/schema.json";
+        String schemaPath = "/org/jeffreysanti/fractalengine/schema.json";
+        
+        
         JSONParser parser = new JSONParser();
         Object objRoot;
         try {
-            objRoot = parser.parse(new FileReader(schemaPath));
-        } catch (ParseException ex) {
+            objRoot = parser.parse(new InputStreamReader(this.getClass().getResourceAsStream(schemaPath)));
+        }catch (ParseException ex) {
             System.err.println("Error in schema initialization [SchemaManager::initialize]!");
             System.err.println("   File failed to parse: '" + schemaPath + "'");
             System.err.println("   Is json invalid?");

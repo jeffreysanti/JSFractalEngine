@@ -106,7 +106,7 @@
 			},
 			{
 				"id" : "algocopy",
-				"caption" : "Copy Algorithm Data From Job (-1 for no copying)",
+				"caption" : "Copy Algorithm Data",
 				"type" : "integer",
 				"allowZero" : true,
 				"min" : -1,
