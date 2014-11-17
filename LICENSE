@@ -1,4 +1,4 @@
-ALL CODE WITHIN ROOT DIRECTORY AND FILES IN javaclient/src:
+﻿ALL CODE WITHIN ROOT DIRECTORY AND FILES IN javaclient/src:
 
 The MIT License (MIT)
 
@@ -32,5 +32,10 @@ This program includes third party libraries:
 		NOTE: This includes other libraries; Licenses are included as well
 * CImg[http://cimg.sourceforge.net] license (CeCILL-C) is located in the CImg directory
 
+* JsonSimple [http://code.google.com/p/json-simple/] Apache 2 license at http://www.apache.org/licenses/LICENSE-2.0
+
+* Gson [http://code.google.com/p/google-gson/] Apache 2 license at http://www.apache.org/licenses/LICENSE-2.0
+
+* libJSONCpp [https://github.com/open-source-parsers/jsoncpp] in public domain
 
 
