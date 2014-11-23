@@ -168,10 +168,10 @@ void FractalMandleJulia::processParamsAlgorithm()
 
 void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double centerX, double centerY){
 	// now handle transformations :)
-	double transX = p->getJson()["type.juliamandle"]["translateX"].asDouble();
-	double transY = p->getJson()["type.juliamandle"]["translateY"].asDouble();
-	double scaleX = p->getJson()["type.juliamandle"]["scaleX"].asDouble();
-	double scaleY = p->getJson()["type.juliamandle"]["scaleY"].asDouble();
+	double transX = p->getJson()["basic"]["translateX"].asDouble();
+	double transY = p->getJson()["basic"]["translateY"].asDouble();
+	double scaleX = p->getJson()["basic"]["scaleX"].asDouble();
+	double scaleY = p->getJson()["basic"]["scaleY"].asDouble();
 	if(scaleX <= 0 || scaleY <= 0)
 		return;
 
@@ -191,10 +191,10 @@ void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double
 	p->getJson()["type.juliamandle"]["radI"] = sizeY;
 	p->getJson()["type.juliamandle"]["centR"] = centerX;
 	p->getJson()["type.juliamandle"]["centI"] = centerY;
-	p->getJson()["type.juliamandle"]["translateX"] = 0;
-	p->getJson()["type.juliamandle"]["translateY"] = 0;
-	p->getJson()["type.juliamandle"]["scaleX"] = 1;
-	p->getJson()["type.juliamandle"]["scaleY"] = 1;
+	p->getJson()["basic"]["translateX"] = 0;
+	p->getJson()["basic"]["translateY"] = 0;
+	p->getJson()["basic"]["scaleX"] = 1;
+	p->getJson()["basic"]["scaleY"] = 1;
 	// TODO: DO i need to save here? p->saveToFile()
 }
 

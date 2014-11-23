@@ -67,13 +67,7 @@
 					}
 				],
 				"default" : "mandlejulia"
-			}
-		]
-	},
-	{
-		"caption" : "Julia/Mandlebrot Sets",
-		"id" : "type.juliamandle",
-		"elms" : [
+			},
 			{
 				"id" : "translateX",
 				"caption" : "",
@@ -103,7 +97,14 @@
 				"allowZero" : false,
 				"min" : 0,
 				"default" : 1
-			},
+			}
+			
+		]
+	},
+	{
+		"caption" : "Julia/Mandlebrot Sets",
+		"id" : "type.juliamandle",
+		"elms" : [
 			{
 				"id" : "algocopy",
 				"caption" : "Copy Algorithm Data",

@@ -43,6 +43,7 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 import static org.jeffreysanti.fractalengine.LibraryTile.FDBS_UNLINKED;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -110,10 +111,13 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
                 trans.getScaleX() != 1 || trans.getScaleY() != 1)
             context.markDirty(); // a change has been made
         
-        /*context.getParams().setValue("translateX", Long.toString(-Math.round(trans.getTranslateX())));
-        context.getParams().setValue("translateY", Long.toString(-Math.round(trans.getTranslateY())));
-        context.getParams().setValue("scaleX", Double.toString(trans.getScaleX()));
-        context.getParams().setValue("scaleY", Double.toString(trans.getScaleY()));*/
+        if(context.getParams().containsKey("basic") && context.getParams().get("basic") instanceof JSONObject){
+            JSONObject json = (JSONObject)context.getParams().get("basic");
+            json.put("translateX", -Math.round(trans.getTranslateX()));
+            json.put("translateY", -Math.round(trans.getTranslateY()));
+            json.put("scaleX", trans.getScaleX());
+            json.put("scaleY", trans.getScaleY());
+        }
     }
     
     synchronized void saveImage(){

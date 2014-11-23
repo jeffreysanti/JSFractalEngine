@@ -329,6 +329,11 @@ int runGen(RenderingJob *r)
 			pOut->saveToFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".info");
 		}
 		r->timeStart = TIMESTART_COMPLETE;
+	}catch (const std::exception &exc){
+		std::cerr << "EXCEPTION:\n";
+	    std::cerr << exc.what() << "\n";
+	    r->timeStart = TIMESTART_COMPLETE;
+	    return 0;
 	}catch(...){
 		std::cerr << "Unknown Exception Caught\n";
 		r->timeStart = TIMESTART_COMPLETE;

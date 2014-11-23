@@ -58,7 +58,7 @@ void SchemaManager::findConditionlessGroups(std::deque<std::string> &lst)
 {
 	int i = 0;
 	for(auto it=inital_G.begin(); it!=inital_G.end(); ++it){
-		if((*it).second.isMember("active") && (*it).second.isBool() && (*it).second.asBool()){
+		if((*it).second.isMember("active") && (*it).second["active"].isBool() && (*it).second["active"].asBool()){
 			i ++;
 			lst.push_back((*it).first);
 		}
