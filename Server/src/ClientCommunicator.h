@@ -56,8 +56,10 @@ struct Packet{
 
 #ifdef _WIN32
 #define wouldBeBlocked (WSAGetLastError() == WSAEWOULDBLOCK)
+#define bufferFull (WSAGetLastError() == WSAENOBUFS)
 #else
 #define wouldBeBlocked (errno == EWOULDBLOCK || errno == EAGAIN)
+#define bufferFull false
 #endif
 #define isBlocked
 

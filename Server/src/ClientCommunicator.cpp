@@ -228,7 +228,7 @@ bool ClientCommunicator::update()
 			}
 			if(bytesOut >= sizeof(PacketHeader) && Pout->hdr.len > 0){ // write data section
 				ssize_t count = send(sock, Pout->data+(bytesOut-sizeof(PacketHeader)), Pout->hdr.len-(bytesOut-sizeof(PacketHeader)), 0);
-				if(count < 0 && !wouldBeBlocked){
+				if(count < 0 && !wouldBeBlocked && !bufferFull){
 					std::cout << "Client Write Failed [" << ID << "] Kicking...\n";
 					std::cout << "  CASE B" << errno << "\n";
 					close();
