@@ -73,14 +73,16 @@
 				"caption" : "",
 				"type" : "real",
 				"allowZero" : true,
-				"default" : 0
+				"default" : 0,
+				"hidden" : true
 			},
 			{
 				"id" : "translateY",
 				"caption" : "",
 				"type" : "real",
 				"allowZero" : true,
-				"default" : 0
+				"default" : 0,
+				"hidden" : true
 			},
 			{
 				"id" : "scaleX",
@@ -88,7 +90,8 @@
 				"type" : "real",
 				"allowZero" : false,
 				"min" : 0,
-				"default" : 1
+				"default" : 1,
+				"hidden" : true
 			},
 			{
 				"id" : "scaleY",
@@ -96,7 +99,8 @@
 				"type" : "real",
 				"allowZero" : false,
 				"min" : 0,
-				"default" : 1
+				"default" : 1,
+				"hidden" : true
 			}
 			
 		]

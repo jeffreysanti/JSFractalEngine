@@ -86,6 +86,8 @@ public class PanelProperties extends JPanel implements ServerReplyer {
         for(Object o : elms){
             JSONObject elm = (JSONObject)o;
             String type = (String)elm.get("type");
+            if(elm.containsKey("hidden"))
+                continue;
             ParamsElement E;
             if(type.equals("text")){
                 E = new ParamsElementText(elm, paramGroup, this, -1);
