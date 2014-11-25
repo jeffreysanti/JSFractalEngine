@@ -8,6 +8,8 @@
 #include "ColorPalette.h"
 #include "FractalGen.h"
 
+#include <climits>
+
 ColorPalette::ColorPalette() {
 	fillDefaultHSVPalette();
 }
@@ -34,18 +36,18 @@ Color ColorPalette::getColorByIterations(unsigned int iters)
 		std::cerr << "Error getColorByIterations called when method is not iterMax!\n";
 		return Color(0,0,0);
 	}
-	int c = 0;
-	Color ccur = C[0];
-	while(true){
-		if(c >= C.size())
-			return C[C.size()-1];
-		if(I[c] == iters)
+
+	int minBand = 0;
+	int maxBand = 0;
+
+	for(int c=0; c<C.size(); c++){
+		minBand = maxBand;
+		maxBand = I[c];
+		if(iters >= minBand && iters <= maxBand){
 			return C[c];
-		if(I[c] > iters && I[c] != -1)
-			return ccur;
-		ccur = C[c];
-		c ++;
+		}
 	}
+	return C[C.size()-1];
 }
 
 Color ColorPalette::getBackgroundColor(){
@@ -112,16 +114,24 @@ void ColorPalette::loadPaletteFromParams(Json::Value &colorArray, std::string pa
 
 	C.clear();
 	I.clear();
-	for(int i=1; i< numOfColors; i++){
-		Color col = fromParam(colorArray[i]["color"]);
-		C.push_back(col);
-		if(type == "iterMax"){
+	if(type == "iterMax"){
+		for(int i=0; i< numOfColors; i++){
+			Color col = fromParam(colorArray[i]["color"]);
+			C.push_back(col);
 			int maxIter = colorArray[i]["maxIter"].asInt();
+
+			if(maxIter < 0){
+				maxIter = INT_MAX;
+			}
 			I.push_back(maxIter);
 		}
+	}else{
+		for(int i=0; i< numOfColors-1; i++){
+			Color col = fromParam(colorArray[i]["color"]);
+			C.push_back(col);
+		}
 	}
-
-	bg = fromParam(colorArray[0]["color"]);
+	bg = fromParam(colorArray[numOfColors-1]["color"]);
 }
 
 
