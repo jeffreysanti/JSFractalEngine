@@ -522,14 +522,40 @@ void FractalMandleJulia::passEvaluate()
 
 	// get standard deviation
 	double avg = sum / (width*height);
+	int hmax = 0;
 	pOut->getJson()["avgIterCount"] = avg;
 	double variance = 0;
 	for(int i=0; i<iters; i++)
 	{
 		variance += histogram[i] * std::pow(avg - (i+1), 2);
+		if(histogram[i] > hmax)
+			hmax = histogram[i];
 	}
 	variance = variance / (width * height);
 	pOut->getJson()["stdDeviation"] = std::sqrt(variance);
+
+	// populate charts
+	Json::Value graphs = Json::Value(Json::arrayValue);
+
+	Json::Value histo = Json::Value(Json::objectValue);
+	histo["title"] = "Histogram";
+	histo["xaxis"] = "Iteration Count";
+	histo["yaxis"] = "Pixel Count";
+	histo["xmin"] = 1;
+	histo["xmax"] = iters;
+	histo["ymin"] = 0;
+	histo["ymax"] = hmax;
+	histo["trace"] = Json::Value(Json::arrayValue);
+	for(int i=0; i<iters; i++)
+	{
+		Json::Value pt = Json::Value(Json::arrayValue);
+		pt[0] = i+1;
+		pt[1] = histogram[i];
+		histo["trace"][i] = pt;
+	}
+
+	graphs[0] = histo;
+	pOut->getJson()["graphs"] = graphs;
 }
 
 

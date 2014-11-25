@@ -361,7 +361,7 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 			return;
 		}
 
-		// layout: [jid:4][paramLen:4][params][poutLen:4][pOut][logLen:4][log][histLen:4][histo]
+		// layout: [jid:4][paramLen:4][params][poutLen:4][pOut][logLen:4][log]
 		// size: 20+|params| + |pOut| + |log| + |histo|
 
 		std::string basePath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", jid);
@@ -384,36 +384,8 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		// params----
 		std::string params = ParamsFile::readAllFile(basePath + ".job");
 
-		// histo
-		std::string err;
-		unsigned int *histogram = NULL;
-		int dtaSkip = 0;
-		int iters = 0;
-		ParamsFile P(params, false);
-		if(P.validate(err)){
-			if(P.getJson()["basic"]["type"]["selected"].asString() == "mandlejulia"){
-				dtaSkip = P.getJson()["basic"]["imgWidth"].asInt() *
-						P.getJson()["basic"]["imgHeight"].asInt() * 4;
-				iters = P.getJson()["type.juliamandle"]["iters"].asLargestUInt();
 
-				FILE *fp2 = fopen(std::string(basePath + ".algo").c_str(), "rb");
-				if(iters > 0 && fp2 != NULL){
-					fseek(fp2, dtaSkip, SEEK_SET);
-					histogram = new unsigned int[iters];
-					for(int i=0; i<iters; i++){
-						int tmp;
-						fread(&tmp, sizeof(unsigned int), 1, fp2);
-						histogram[i] = htonl(tmp);
-					}
-				}
-				if(fp2 != NULL)
-					fclose(fp2);
-			}
-		}
-
-		len = 20 + paramsOut.length() + params.length() + log.length();
-		if(histogram != NULL)
-			len += iters * 4;
+		len = 16 + paramsOut.length() + params.length() + log.length();
 
 		*sz = new char[len];
 		char *ptr = *sz;
@@ -439,19 +411,6 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		ptr += 4;
 		memcpy(ptr, log.c_str(), log.length());
 		ptr += log.length();
-
-		if(histogram == NULL){
-			iTmp = 0;
-			memcpy(ptr, &iTmp, 4);
-			ptr += 4;
-		}else{
-			iTmp = htonl(iters * 4);
-			memcpy(ptr, &iTmp, 4);
-			ptr += 4;
-
-			memcpy(ptr, histogram, iters*4);
-			ptr += iters * 4;
-		}
 	}catch(std::bad_alloc &e){
 		std::cerr << "Out of memory\n";
 		exit(0);

@@ -4,6 +4,7 @@
  */
 package org.jeffreysanti.fractalengine;
 
+import info.monitorenter.gui.chart.Chart2D;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -55,8 +56,12 @@ public class PanelViewer extends JPanel implements ServerReplyer {
         // now add the nessesary tabs
         if(c.isComplete()){
             addPane(new ViewPaneImage(c), "Image");
-            addPane(new ViewPaneHistogram(c), "Iteration Histogram");
         }
+        
+        for(Chart2D graph : c.getGraphs()){
+            addPane(new ViewPaneHistogram(c, graph), graph.getName());
+        }
+        
         addPane(new ViewPaneLog(c), "Log");
         if(!c.isUpdateableState()){
             addPane(new ViewPaneParams(c, c.getParamsOutput()), "Results");

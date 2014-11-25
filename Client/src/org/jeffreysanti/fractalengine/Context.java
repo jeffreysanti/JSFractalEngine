@@ -4,11 +4,17 @@
  */
 package org.jeffreysanti.fractalengine;
 
+import info.monitorenter.gui.chart.Chart2D;
+import info.monitorenter.gui.chart.ITrace2D;
+import info.monitorenter.gui.chart.traces.Trace2DSimple;
+import info.monitorenter.gui.chart.traces.painters.TracePainterVerticalBar;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
@@ -33,11 +39,11 @@ public class Context implements ServerReplyer {
         uid = userid;
         status = stat;
         imgFull = full;
-        histo = new int[0];
         
         modified = false;
         params = new JSONObject();
         paramsOut = new JSONObject();
+        charts = new ArrayList();
         //isFetched = true;
         
         if(jid >= 0){
@@ -144,25 +150,26 @@ public class Context implements ServerReplyer {
                 log = new String(tmp);
             }
             
-            
-            // TODO: histogram
-            len = ds.readInt();
-            if(len > 0){
-                if(len % 4 == 0){ // should be list of integers
-                    histo = new int[len/4];
-                    for(int i=0; i<len/4; i++){
-                        histo[i] = ds.readInt();
-                    }
-                }else{
-                    byte[] tmp = new byte[len];
-                    ds.readFully(tmp);
-                }
-            }
-            
+            seperateGraphsFromResults();
             
         } catch (IOException ex) {
             Logger.getLogger(Context.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private void seperateGraphsFromResults(){
+        charts.clear();
+        if(!paramsOut.containsKey("graphs"))
+            return;
+        ArrayList<HashMap<String,Object>> G = (ArrayList)paramsOut.get("graphs");
+        for(HashMap<String,Object> g : G){
+            charts.add(ViewPaneHistogram.parseGraph(g));
+        }
+        paramsOut.put("graphs", null);
+    }
+    
+    public ArrayList<Chart2D> getGraphs(){
+        return charts;
     }
     
     private void onReceiveRCTX(DataInputStream ds){
@@ -172,10 +179,6 @@ public class Context implements ServerReplyer {
         if(JavaDesktop.getInst().getWorkspacePanel().getContext() == this){
             JavaDesktop.getInst().getWorkspacePanel().changeContext(this); // force panel to update
         }
-    }
-    
-    public int[] getHistogram(){
-        return histo;
     }
     
     public String getLog(){
@@ -209,9 +212,9 @@ public class Context implements ServerReplyer {
     private String rawParams, rawParamsOut;
     private String log;
     
-    public ContextTile callBack = null;
+    ArrayList<Chart2D> charts;
     
-    private int[] histo;
+    public ContextTile callBack = null;
     
     private int status;
     private BufferedImage imgFull;
