@@ -243,6 +243,38 @@ void DBManager::updateFractal(FractalMeta f)
 }
 
 
+void DBManager::deleteFractal(FractalMeta f)
+{
+	mtx.lock();   ////////////////////////
+	std::string q;
+	sqlite3_stmt *stmt;
+	int ret;
+	FractalMeta fract;
+
+	q = "DELETE FROM fract WHERE ID=?";
+	ret = sqlite3_prepare(s, q.c_str(), q.length(), &stmt, NULL);
+	dbVerify(ret);
+
+	ret = sqlite3_bind_int(stmt, 1, f.jobID);
+	dbVerify(ret);
+
+	ret = sqlite3_step(stmt);
+	dbVerify(ret);
+
+	ret = sqlite3_finalize(stmt);
+	dbVerify(ret);
+
+	// now delete data files
+	std::string basePath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", f.jobID);
+	remove(std::string(basePath + ".info").c_str());
+	remove(std::string(basePath + ".log").c_str());
+	remove(std::string(basePath + ".png").c_str());
+	remove(std::string(basePath + ".algo").c_str());
+	remove(std::string(basePath + ".job").c_str());
+
+	mtx.unlock();   //-----------------
+}
+
 void DBManager::fillMDUDRequest(int jid, char **sz, int &len)
 {
 	try{

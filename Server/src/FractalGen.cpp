@@ -229,6 +229,15 @@ void FractalGen::update()
 		int jid = exh.uiParam1;
 		if(exh.artType == ART_CANCEL){
 			cancelJob(jid);
+		}else if(exh.artType == ART_DELETE){
+			FractalMeta meta = DBManager::getSingleton()->getFractal(jid);
+			if(meta.jobID == jid){
+				DBManager::getSingleton()->deleteFractal(meta);
+				InfoExchange exh;
+				exh.type = EXT_REPORT_DELETED;
+				exh.uiParam1 = meta.jobID;
+				FractalGenTrackManager::getSingleton()->postExchange(exh);
+			}
 		}else if(exh.artType == ART_CHANGE_NAME || exh.artType == ART_CHANGE_AUTHOR){ // some kind of simple update
 			FractalMeta meta = DBManager::getSingleton()->getFractal(jid);
 			if(meta.jobID == jid){

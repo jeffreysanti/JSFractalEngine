@@ -97,6 +97,7 @@ public class PanelLibrary extends JPanel implements ServerReplyer, ServerMessage
         timer2.setRepeats(true);
         
         ServerConnection.getInst().addServerMessageListener("MDUD", this);
+        ServerConnection.getInst().addServerMessageListener("DELF", this);
     }
     
     @Override
@@ -132,6 +133,15 @@ public class PanelLibrary extends JPanel implements ServerReplyer, ServerMessage
             } catch (Exception ex) {
                 Logger.getLogger(PanelLibrary.class.getName()).log(Level.SEVERE, null, ex);
                 System.err.println("Error Improting: MDUD: " + jid);
+            }
+        }else if(head.equals("DELF")){
+            jid = Integer.parseInt(ServerPacket.extractString(ds, len));
+            for(LibraryTile t : T){
+                if(t.getJobID() == jid){
+                    this.remove(t);
+                    T.remove(t);
+                    break;
+                }
             }
         }
     }

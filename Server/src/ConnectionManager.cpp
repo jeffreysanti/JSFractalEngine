@@ -268,6 +268,14 @@ void ConnectionManager::threadMain()
 				singleton.C[i]->writeServerFractalUpdate(jid);
 			}
 		}
+		exh = FractalGenTrackManager::getSingleton()->getExchange(EXT_REPORT_DELETED);
+		if(exh.type != EXT_NONE){
+			int jid = exh.uiParam1;
+
+			for(int i=0; i<singleton.C.size(); i++){
+				singleton.C[i]->writeServerFractalDeletion(jid);
+			}
+		}
 
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));

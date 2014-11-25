@@ -60,6 +60,8 @@ public:
 	void insertFractal(FractalMeta f);
 	void updateFractal(FractalMeta f);
 
+	void deleteFractal(FractalMeta f);
+
 	void fillMDUDRequest(int jid, char **sz, int &len);
 	void fillRCTXRequest(int jid, char **sz, int &len);
 

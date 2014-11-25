@@ -188,6 +188,17 @@ void Client::handlePacket(std::string &head, unsigned int &len, unsigned int &re
 				FractalGenTrackManager::getSingleton()->postExchange(ench);
 			}
 		}
+	}else if(head == "DELF"){ // delete fractal
+		int jid = atoi(str.c_str());
+
+		FractalMeta meta = DBManager::getSingleton()->getFractal(jid);
+		if(meta.jobID==jid && (U.admin || U.id==meta.userID)){
+			InfoExchange ench;
+			ench.type = EXT_AFFECT_RENDERING_FRACTAL;
+			ench.artType = ART_DELETE;
+			ench.uiParam1 = jid;
+			FractalGenTrackManager::getSingleton()->postExchange(ench);
+		}
 	}else{
 		std::cout << "Lost Packet Received. HEAD: " << head << "\n";
 	}
@@ -210,5 +221,10 @@ void Client::writeServerFractalUpdate(unsigned int jid)
 	if(len > 0){
 		C->addPacketToQueue("MDUD", len, resp, 0);
 	}
+}
+
+void Client::writeServerFractalDeletion(unsigned int jid)
+{
+	C->addPacketToQueue("DELF", concat("", jid), 0);
 }
 

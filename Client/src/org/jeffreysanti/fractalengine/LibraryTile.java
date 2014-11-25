@@ -21,6 +21,8 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
+import static javax.swing.JOptionPane.YES_OPTION;
 import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
@@ -181,7 +183,7 @@ public class LibraryTile extends javax.swing.JPanel {
     }
     
     class ContextMenu extends JPopupMenu {
-        JMenuItem itmSetTitle, itmSetAuthor;
+        JMenuItem itmSetTitle, itmSetAuthor, itmDel;
         public ContextMenu(){
             itmSetTitle = new JMenuItem("Set Fractal Title");
             itmSetTitle.addActionListener(new ActionListener(){
@@ -209,9 +211,22 @@ public class LibraryTile extends javax.swing.JPanel {
             });
             add(itmSetAuthor);
             
+            itmDel = new JMenuItem("Delete Fractal");
+            itmDel.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    int resp = JOptionPane.showConfirmDialog(null, "Delete Fractal", "Are you sure", YES_NO_OPTION);
+                    if(resp == YES_OPTION){
+                        ServerConnection.getInst().addPacketToQueue("DELF", job+"", null);
+                    }
+                }
+            });
+            add(itmDel);
+            
             if(!canUserEdit()){
                 itmSetTitle.setEnabled(false);
                 itmSetAuthor.setEnabled(false);
+                itmDel.setEnabled(false);
             }
         }
     }

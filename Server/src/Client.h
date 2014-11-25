@@ -24,6 +24,7 @@ public:
 
 	void writeServerMessage(std::string msg);
 	void writeServerFractalUpdate(unsigned int jid);
+	void writeServerFractalDeletion(unsigned int jid);
 
 private:
 
