@@ -101,37 +101,37 @@ public class LibraryTile extends javax.swing.JPanel {
                         ImageIcon icon = new ImageIcon(simag);
                         this.img.setIcon(icon);
 
-                        image = imag; // save full copy
+                        thumb = imag; // save full copy
                     } catch (IOException ex) {
                         Logger.getLogger(LibraryTile.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }else{
                     this.img.setIcon(icoNo);
-                    image = null;
+                    thumb = null;
                 }
             }else if(status == FDBS_RENDERING){
                 this.img.setIcon(icoRendering);
-                image = null;
+                thumb = null;
             }else if(status == FDBS_QUEUED){
                 this.img.setIcon(icoInQueue);
-                image = null;
+                thumb = null;
             }else if(status == FDBS_CANCEL){
                 this.img.setIcon(icoCanceled);
-                image = null;
+                thumb = null;
             }else if(status == FDBS_TIMEOUT){
                 this.img.setIcon(icoTimeout);
-                image = null;
+                thumb = null;
             }else if(status == FDBS_ERR){
                 this.img.setIcon(icoError);
-                image = null;
+                thumb = null;
             }else{
                 this.img.setIcon(icoNo);
-                image = null;
+                thumb = null;
             }
         }catch(Exception e){
             status = FDBS_UNLINKED;
             this.img.setIcon(icoNo);
-            image = null;
+            thumb = null;
         }
     }
     
@@ -168,8 +168,8 @@ public class LibraryTile extends javax.swing.JPanel {
     public String getAuthor(){
         return lblAuthor.getText();
     }
-    public BufferedImage getFullSizeImage(){
-        return image;
+    public BufferedImage getThumbnail(){
+        return thumb;
     }
     
     public boolean canUserEdit(){
@@ -299,7 +299,7 @@ public class LibraryTile extends javax.swing.JPanel {
     private int job;
     private int uid;
     private int status;
-    BufferedImage image = null; // this holds the true image, while displayed is scaled :P
+    BufferedImage thumb = null; // this holds the true image, while displayed is scaled :P
     
     private Timer updateTimer;
 }

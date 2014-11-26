@@ -84,8 +84,8 @@ public class ContextTile extends javax.swing.JPanel {
     
     private void updateImage(){
         if(c.getStatus() == LibraryTile.FDBS_COMPLETE){
-            if(c.getFullImage() != null){
-                Image simag = c.getFullImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            if(c.getThumbnail() != null){
+                Image simag = c.getThumbnail().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
                 ImageIcon icon = new ImageIcon(simag);
                 this.img.setIcon(icon);
             }else{

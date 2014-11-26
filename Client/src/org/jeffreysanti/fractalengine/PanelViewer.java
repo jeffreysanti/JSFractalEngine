@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.Timer;
+import org.jeffreysanti.fractalengine.Context.Artifact;
 
 /**
  *
@@ -53,18 +54,22 @@ public class PanelViewer extends JPanel implements ServerReplyer {
             pane.removeTabAt(0);
         }
         
-        // now add the nessesary tabs
+        // now add the artifact tabs
         if(c.isComplete()){
-            addPane(new ViewPaneImage(c), "Image");
+            for(Artifact a : c.getArtifacts()){
+                if(a.type.equals("IMGS")){                    
+                    addPane(new ViewPaneTransformableImage(c, a.data), "Image");
+                }
+            }
         }
         
-        for(Chart2D graph : c.getGraphs()){
-            addPane(new ViewPaneHistogram(c, graph), graph.getName());
-        }
         
         addPane(new ViewPaneLog(c), "Log");
         if(!c.isUpdateableState()){
             addPane(new ViewPaneParams(c, c.getParamsOutput()), "Results");
+            for(Chart2D graph : c.getGraphs()){
+                addPane(new ViewPaneHistogram(c, graph), graph.getName());
+            }
         }
         
         addPane(new ViewPaneParams(c, c.getParams()), "Paramaters");

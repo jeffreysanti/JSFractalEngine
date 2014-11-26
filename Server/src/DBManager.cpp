@@ -6,6 +6,7 @@
  */
 
 #include "DBManager.h"
+#include "ArtifactDistributer.h"
 
 DBManager DBManager::singleton;
 
@@ -287,13 +288,12 @@ void DBManager::fillMDUDRequest(int jid, char **sz, int &len)
 			return;
 		}
 
-		// layout: [jid:4][uid:4][titleLen:4][title][authorLen:4][author][status:4][imgDtaLen:4][imgDta]
+		// layout: [jid:4][uid:4][titleLen:4][title][authorLen:4][author][status:4][thumbDtaLen:4][thumbDta]
 		// size: 24+|title| + |author| + |imgData|
 
 		// open image
-		std::string imgPath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", jid) + ".png";
-		FILE *fp = fopen(imgPath.c_str(), "rb");
-		if(fp == NULL){ // no image
+		FILE *fp = ArtifactDistributer::getSingleton()->getFractalThumbnail(fract);
+		if(fp == nullptr){ // no image
 			len = 24 + fract.name.length() + fract.author.length();
 			*sz = new char[len];
 			memset(*sz + len - 4, 0, 4); // copy last four bytes as zero length of imgDta
@@ -361,7 +361,7 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 			return;
 		}
 
-		// layout: [jid:4][paramLen:4][params][poutLen:4][pOut][logLen:4][log]
+		// layout: [jid:4][paramLen:4][params][poutLen:4][pOut][logLen:4][log][artifacts]
 		// size: 20+|params| + |pOut| + |log| + |histo|
 
 		std::string basePath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", jid);
@@ -384,8 +384,13 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		// params----
 		std::string params = ParamsFile::readAllFile(basePath + ".job");
 
-
 		len = 16 + paramsOut.length() + params.length() + log.length();
+
+		// artifacts
+		char *artifactData = nullptr;
+		int artifactLen = ArtifactDistributer::getSingleton()->getArtifactData(fract, &artifactData);
+		len += artifactLen;
+
 
 		*sz = new char[len];
 		char *ptr = *sz;
@@ -411,6 +416,10 @@ void DBManager::fillRCTXRequest(int jid, char **sz, int &len)
 		ptr += 4;
 		memcpy(ptr, log.c_str(), log.length());
 		ptr += log.length();
+
+		memcpy(ptr, artifactData, artifactLen);
+		ptr += artifactLen;
+
 	}catch(std::bad_alloc &e){
 		std::cerr << "Out of memory\n";
 		exit(0);

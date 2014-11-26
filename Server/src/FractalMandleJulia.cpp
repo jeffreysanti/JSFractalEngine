@@ -558,5 +558,54 @@ void FractalMandleJulia::passEvaluate()
 	pOut->getJson()["graphs"] = graphs;
 }
 
+unsigned int FractalMandleJulia::returnArtifacts(FractalMeta &meta, char **dta)
+{
+	unsigned int len = 4;
+	unsigned int artificatCount = 0;
+
+	std::string imgPath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", meta.jobID) + ".png";
+	FILE *fp = fopen(imgPath.c_str(), "rb");
+	if(fp == NULL){ // no image
+		*dta = new char[len];
+		char *ptr = *dta;
+
+		artificatCount = htonl(artificatCount);
+		memcpy(ptr, &artificatCount, 4);
+		ptr += 4;
+	}else{
+		artificatCount = 1;
+		len += 8;
+
+		fseek(fp, 0L, SEEK_END);
+		int dtaSz = ftell(fp);
+		fseek(fp, 0L, SEEK_SET);
+		len += dtaSz;
+		*dta = new char[len];
+		char *ptr = *dta;
+
+		// now copy data
+		artificatCount = htonl(artificatCount);
+		memcpy(ptr, &artificatCount, 4);
+		ptr += 4;
+
+		// image artifact
+		memcpy(ptr, "IMGS", 4); // image, scalable
+		ptr += 4;
+
+		unsigned int reportedSize = htonl(dtaSz);
+		memcpy(ptr, &reportedSize, 4);
+		ptr += 4;
+
+		for(int i=0; i<dtaSz; i++){
+			char byte;
+			fread(&byte, 1, 1, fp);
+			*ptr = byte;
+			ptr ++;
+		}
+		fclose(fp);
+	}
+	return len;
+}
+
 
 

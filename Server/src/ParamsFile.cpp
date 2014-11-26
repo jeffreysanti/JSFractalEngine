@@ -67,6 +67,11 @@ void ParamsFile::saveToFile(std::string path)
 	stream.close();
 }
 
+bool ParamsFile::openedCorrectly()
+{
+	return open_correct;
+}
+
 bool ParamsFile::validate(std::string &err)
 {
 	if(!open_correct){

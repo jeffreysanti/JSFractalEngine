@@ -27,7 +27,7 @@ public class PanelContextLibrary extends JPanel {
         this.setPreferredSize(new Dimension(2000, 120));
     }
     
-    public void recievedFractalStatusUpdate(int jid, int status, String title, String author, int uid, BufferedImage img){
+    public void recievedFractalStatusUpdate(int jid, int status, String title, String author, int uid, BufferedImage thumb){
         for(ContextTile c : C){
             if(c.getContext().getJobID() == jid){
                 if(!c.getContext().isUpdateableState()) // we cannot update this context
@@ -36,7 +36,7 @@ public class PanelContextLibrary extends JPanel {
                     C.remove(c);
                     this.remove(c);
                     
-                    Context cont = new Context(jid, title, author, uid, status, img);
+                    Context cont = new Context(jid, title, author, uid, status, thumb);
                     ContextTile contTile = new ContextTile(cont);
                     C.add(contTile);
                     this.add(contTile);
@@ -53,7 +53,7 @@ public class PanelContextLibrary extends JPanel {
     
     public Context openNewContext(LibraryTile tile){
         Context cont = new Context(tile.getJobID(), tile.getTitle(), tile.getAuthor(), tile.getUserID(), 
-                tile.getStatus(), tile.getFullSizeImage());
+                tile.getStatus(), tile.getThumbnail());
         
         // only one context is allowed for an "updatable"
         for(ContextTile c : C){

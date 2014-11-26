@@ -27,6 +27,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageFilter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -49,10 +50,10 @@ import org.json.simple.JSONObject;
  *
  * @author jeffrey
  */
-public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener {
+public class ViewPaneTransformableImage extends ViewPaneAbstract implements ComponentListener {
     
     
-    public ViewPaneImage(Context c){
+    public ViewPaneTransformableImage(Context c, byte[] data){
         super(c);
         isLoaded = false;
         
@@ -69,14 +70,25 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         img.addMouseListener(new ContextMenuListener());
         
         this.addComponentListener(this);
+        
+        if(data != null){
+            try {
+                fullIMG = ImageIO.read(new ByteArrayInputStream(data));
+            } catch (IOException ex) {
+                Logger.getLogger(LibraryTile.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         contextDataReceieved();
         
         keyHndlr = new KeyHandler();
     }
+    
+    private BufferedImage fullIMG = null;
 
     @Override
     synchronized void contextDataReceieved() {
-        if(context.getFullImage() == null || context.getFullImage().getHeight() < 1)
+        if(fullIMG == null || fullIMG.getHeight() < 1)
             return;
         
         if(this.getWidth() == 0 || this.getHeight() == 0)
@@ -84,8 +96,8 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         
         isLoaded = true;
         
-        double aspectRatio = (double)context.getFullImage().getWidth() / 
-                        (double)context.getFullImage().getHeight();
+        double aspectRatio = (double)fullIMG.getWidth() / 
+                        (double)fullIMG.getHeight();
         Image i;
         if((double)this.getHeight() * aspectRatio > this.getWidth()){ // need to scale on width-constrait
             projectedWidth = this.getWidth();
@@ -96,11 +108,11 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         }
         
         // now get the subimage baded on transformations
-        BufferedImage imgTransform = new BufferedImage(context.getFullImage().getWidth(), context.getFullImage().getHeight(), 
+        BufferedImage imgTransform = new BufferedImage(fullIMG.getWidth(), fullIMG.getHeight(), 
                 BufferedImage.TYPE_INT_RGB);
         Graphics2D dc = imgTransform.createGraphics();
         dc.setBackground(Color.MAGENTA);
-        boolean ret = dc.drawImage(context.getFullImage(), trans, null);
+        boolean ret = dc.drawImage(fullIMG, trans, null);
         imgTransform.flush();
         
         i = imgTransform.getScaledInstance(projectedWidth, projectedHeight, Image.SCALE_SMOOTH);
@@ -165,9 +177,9 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
                 file = new File(file + ".png");
             }
             try {
-                ImageIO.write(context.getFullImage(), "png", file);
+                ImageIO.write(fullIMG, "png", file);
             } catch (IOException ex) {
-                Logger.getLogger(ViewPaneImage.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ViewPaneTransformableImage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -201,15 +213,15 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         double curImgY = projectedHeight/2;
 
         // convert curImg to fullsize coords
-        curImgX = (double)curImgX * (double)context.getFullImage().getWidth()/(double)projectedWidth;
-        curImgY = (double)curImgY * (double)context.getFullImage().getHeight()/(double)projectedHeight;
+        curImgX = (double)curImgX * (double)fullIMG.getWidth()/(double)projectedWidth;
+        curImgY = (double)curImgY * (double)fullIMG.getHeight()/(double)projectedHeight;
 
         // undo old transformation
         Point2D pt = new Point2D.Double();
         try {
             trans.inverseTransform(new Point2D.Double(curImgX, curImgY), pt);
         } catch (NoninvertibleTransformException ex) {
-            Logger.getLogger(ViewPaneImage.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ViewPaneTransformableImage.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
         return pt;
@@ -219,13 +231,13 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         trans = new AffineTransform();
 
         // now apply scale
-        trans.translate(context.getFullImage().getWidth()/2, context.getFullImage().getHeight()/2);
+        trans.translate(fullIMG.getWidth()/2, fullIMG.getHeight()/2);
         trans.scale(scaleX, scaleY);
-        trans.translate(-context.getFullImage().getWidth()/2, -context.getFullImage().getHeight()/2);
+        trans.translate(-fullIMG.getWidth()/2, -fullIMG.getHeight()/2);
 
         // apply final translation
-        trans.translate(context.getFullImage().getWidth()/2 - cent.getX(), 
-                            context.getFullImage().getHeight()/2 - cent.getY());
+        trans.translate(fullIMG.getWidth()/2 - cent.getX(), 
+                            fullIMG.getHeight()/2 - cent.getY());
     }
     
     public synchronized void scaleAboutXCenter(double factor){
@@ -249,12 +261,12 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         }
     }
     public synchronized void translateAboutX(double factor){
-        double tX = factor * context.getFullImage().getWidth() * 1/trans.getScaleX();
+        double tX = factor * fullIMG.getWidth() * 1/trans.getScaleX();
         trans.translate(tX, 0);
         contextDataReceieved();
     }
     public synchronized void translateAboutY(double factor){
-        double tY = factor * context.getFullImage().getHeight() * 1/trans.getScaleY();
+        double tY = factor * fullIMG.getHeight() * 1/trans.getScaleY();
         trans.translate(0, tY);
         contextDataReceieved();
     }
@@ -402,18 +414,18 @@ public class ViewPaneImage extends ViewPaneAbstract implements ComponentListener
         public Point2D mouseToFullSizeCoord(){
             // x is left-aligned, y is center-aligned
             double curImgX = me.getX();
-            double curImgY = (double)me.getY() - ((double)ViewPaneImage.this.getHeight() - (double)projectedHeight) / 2.0;
+            double curImgY = (double)me.getY() - ((double)ViewPaneTransformableImage.this.getHeight() - (double)projectedHeight) / 2.0;
 
             // convert curImg to fullsize coords
-            curImgX = (double)curImgX * (double)context.getFullImage().getWidth()/(double)projectedWidth;
-            curImgY = (double)curImgY * (double)context.getFullImage().getHeight()/(double)projectedHeight;
+            curImgX = (double)curImgX * (double)fullIMG.getWidth()/(double)projectedWidth;
+            curImgY = (double)curImgY * (double)fullIMG.getHeight()/(double)projectedHeight;
 
             // undo old transformation
             Point2D pt = new Point2D.Double();
             try {
                 trans.inverseTransform(new Point2D.Double(curImgX, curImgY), pt);
             } catch (NoninvertibleTransformException ex) {
-                Logger.getLogger(ViewPaneImage.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ViewPaneTransformableImage.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }
             return pt;

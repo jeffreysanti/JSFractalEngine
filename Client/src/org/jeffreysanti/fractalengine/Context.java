@@ -32,18 +32,24 @@ import org.json.simple.parser.ParseException;
 
 public class Context implements ServerReplyer {
     
-    Context(int job, String nm, String auth, int userid, int stat, BufferedImage full){
+    public class Artifact{
+        public String type;
+        public byte[] data;
+    }
+    
+    Context(int job, String nm, String auth, int userid, int stat, BufferedImage thm){
         jid = job;
         name = nm;
         author = auth;
         uid = userid;
         status = stat;
-        imgFull = full;
+        thumb = thm;
         
         modified = false;
         params = new JSONObject();
         paramsOut = new JSONObject();
         charts = new ArrayList();
+        A = new ArrayList();
         //isFetched = true;
         
         if(jid >= 0){
@@ -74,8 +80,8 @@ public class Context implements ServerReplyer {
     public int getStatus(){
         return status;
     }
-    public BufferedImage getFullImage(){
-        return imgFull;
+    public BufferedImage getThumbnail(){
+        return thumb;
     }
     
     public JSONObject getParams(){
@@ -150,6 +156,23 @@ public class Context implements ServerReplyer {
                 log = new String(tmp);
             }
             
+            // now fetch artifacts
+            A.clear();
+            int artCount = ds.readInt();
+            for(int i=0; i<artCount; i++){
+                Artifact a = new Artifact();
+                
+                byte[] type = new byte[4];
+                ds.readFully(type);
+                a.type = new String(type);
+                
+                int alen = ds.readInt();
+                a.data = new byte[alen];
+                ds.readFully(a.data);
+                
+                A.add(a);
+            }
+            
             seperateGraphsFromResults();
             
         } catch (IOException ex) {
@@ -170,6 +193,10 @@ public class Context implements ServerReplyer {
     
     public ArrayList<Chart2D> getGraphs(){
         return charts;
+    }
+    
+    public ArrayList<Artifact> getArtifacts(){
+        return A;
     }
     
     private void onReceiveRCTX(DataInputStream ds){
@@ -212,12 +239,13 @@ public class Context implements ServerReplyer {
     private String rawParams, rawParamsOut;
     private String log;
     
-    ArrayList<Chart2D> charts;
+    private ArrayList<Artifact> A;
+    private ArrayList<Chart2D> charts;
     
     public ContextTile callBack = null;
     
     private int status;
-    private BufferedImage imgFull;
+    private BufferedImage thumb;
     
     private boolean modified;
     //private volatile boolean isFetched

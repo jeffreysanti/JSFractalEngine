@@ -23,6 +23,8 @@ public:
 	virtual void render(int maxTime);
 	virtual void processParams();
 
+	static unsigned int returnArtifacts(FractalMeta &meta, char **dta);
+
 protected:
 
 

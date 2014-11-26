@@ -18,6 +18,8 @@ public:
 
 	void saveFile(std::string flName);
 
+	FILE *createThumbnail(std::string origFile);
+
 	void fillImage(unsigned char r, unsigned char g, unsigned char b);
 
 	unsigned int getWidth();

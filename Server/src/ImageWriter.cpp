@@ -144,3 +144,21 @@ Color ImageWriter::getColorAt(unsigned int x, unsigned int y)
 	return c;
 }
 
+FILE *ImageWriter::createThumbnail(std::string origFile)
+{
+	try{
+		CImg<unsigned char> *thumb = (CImg<unsigned char> *)_img;
+		CImg<unsigned char> orig(origFile.c_str());
+		thumb->draw_image(0, 0, 0, 0, orig.get_resize(thumb->width(), thumb->height(), 1, 4));
+		FILE *tmp = std::tmpfile();
+		thumb->save_png(tmp);
+		return tmp;
+	}catch(std::exception &ex){
+		return nullptr;
+	}
+}
+
+
+
+
+

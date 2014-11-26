@@ -18,6 +18,7 @@ public:
 
 	Json::Value &getJson();
 	virtual bool validate(std::string &err);
+	bool openedCorrectly();
 	void saveToFile(std::string path);
 
 	std::string getFormattedJson();
