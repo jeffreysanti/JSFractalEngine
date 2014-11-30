@@ -118,6 +118,10 @@ public class SchemaManager {
         for(String s : set){
             if(s.charAt(s.length()-1) != '*'){
                 ret.add(s);
+            }else if(s.equals("*")){
+                for(String g : G.keySet()){
+                    ret.add(g);
+                }
             }else{
                 String tmp = s.substring(0, s.length()-1);
                 for(String g : G.keySet()){

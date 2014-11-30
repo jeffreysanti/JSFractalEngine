@@ -17,7 +17,7 @@
 
 class FractalMandleJulia : public Fractal {
 public:
-	FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut, ImageWriter *i);
+	FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut);
 	virtual ~FractalMandleJulia();
 
 	virtual void render(int maxTime);
@@ -79,6 +79,9 @@ protected:
 	// algorithm trackers
 	int **I; // For tracking iteration count of each pixel
 	unsigned int *histogram; // for tracking distribution of each iteration count
+
+
+	ImageWriter *img;
 
 
 	inline Color atEdge(unsigned int x, unsigned int y){

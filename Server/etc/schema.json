@@ -23,24 +23,6 @@
 				"max" : 40
 			},
 			{
-				"id" : "imgWidth",
-				"caption" : "Image Width (px)",
-				"type" : "integer",
-				"allowZero" : false,
-				"min" : 10,
-				"max" : 4098,
-				"default" : 100
-			},
-			{
-				"id" : "imgHeight",
-				"caption" : "Image Height (px)",
-				"type" : "integer",
-				"allowZero" : false,
-				"min" : 10,
-				"max" : 4098,
-				"default" : 100
-			},
-			{
 				"id" : "timeout",
 				"caption" : "Maximum Execution Time (sec)",
 				"type" : "integer",
@@ -57,11 +39,17 @@
 					{
 						"id": "mandlejulia", 
 						"caption" : "Mandlebrot/Julia Set",
-						"hide" : ["type.*"], 
-						"show" : ["type.juliamandle*"]
+						"hide" : ["*"], 
+						"show" : ["type.juliamandle*", "posteffects"]
 					},
 					{
-						"hide" : ["type.*"], 
+						"id": "heightmap", 
+						"caption" : "Height Map",
+						"hide" : ["*"], 
+						"show" : ["type.heightmap*"]
+					},
+					{
+						"hide" : ["*"], 
 						"id": "none", 
 						"caption" : "None"
 					}
@@ -109,6 +97,24 @@
 		"caption" : "Julia/Mandlebrot Sets",
 		"id" : "type.juliamandle",
 		"elms" : [
+			{
+				"id" : "imgWidth",
+				"caption" : "Image Width (px)",
+				"type" : "integer",
+				"allowZero" : false,
+				"min" : 10,
+				"max" : 4098,
+				"default" : 100
+			},
+			{
+				"id" : "imgHeight",
+				"caption" : "Image Height (px)",
+				"type" : "integer",
+				"allowZero" : false,
+				"min" : 10,
+				"max" : 4098,
+				"default" : 100
+			},
 			{
 				"id" : "algocopy",
 				"caption" : "Copy Algorithm Data",
@@ -443,7 +449,6 @@
 	{
 		"caption" : "Post Effects",
 		"id" : "posteffects",
-		"active" : true,
 		"elms" : [
 			{
 				"id" : "imgBlur",
@@ -460,6 +465,30 @@
 				"allowZero" : true,
 				"default" : 0,
 				"min" : 0
+			}
+		]
+	},
+	{
+		"caption" : "Height Map",
+		"id" : "type.heightmap",
+		"elms" : [
+			{
+				"id" : "imgWidth",
+				"caption" : "Image Width (px)",
+				"type" : "integer",
+				"allowZero" : false,
+				"min" : 5,
+				"max" : 4098,
+				"default" : 10
+			},
+			{
+				"id" : "imgHeight",
+				"caption" : "Image Height (px)",
+				"type" : "integer",
+				"allowZero" : false,
+				"min" : 5,
+				"max" : 4098,
+				"default" : 10
 			}
 		]
 	}

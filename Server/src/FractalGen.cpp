@@ -7,6 +7,7 @@
 
 #include "FractalGen.h"
 #include "FractalMandleJulia.h"
+#include "FractalHeightMap.h"
 
 std::string FractalGen::saveDir = "";
 
@@ -74,7 +75,7 @@ bool FractalGen::cancelJob(unsigned int id)
 	for(auto it=JQManual.begin(); it!=JQManual.end(); it++){
 		if((*it)->getJson()["internal"]["id"].asUInt() == id){
 			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut, NULL);
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut);
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
 			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
@@ -87,7 +88,7 @@ bool FractalGen::cancelJob(unsigned int id)
 	for(auto it=JQ.begin(); it!=JQ.end(); it++){
 		if((*it)->getJson()["internal"]["id"].asUInt() == id){
 			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut, NULL);
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut);
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
 			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
@@ -296,7 +297,7 @@ int runGen(RenderingJob *r)
 
 		std::string err = "";
 		if(!r->params->validate(err)){
-			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut, new ImageWriter(0, 0));
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
 			fTmp->err(err);
 			std::cerr << err;
 			delete fTmp;
@@ -305,14 +306,20 @@ int runGen(RenderingJob *r)
 		}
 
 		std::string type = r->params->getJson()["basic"]["type"]["selected"].asString();
-		int width = r->params->getJson()["basic"]["imgWidth"].asInt();
-		int height = r->params->getJson()["basic"]["imgHeight"].asInt();
 		int timeOut = r->params->getJson()["basic"]["timeout"].asInt();
 
-		ImageWriter *img = new ImageWriter(width, height);
 
 		if(type == "mandlejulia"){
-			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut, img);
+			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			r->fract->processParams();
+			if(!r->fract->isOkay()){
+				std::cerr << r->fract->getErrors();
+				r->timeStart = TIMESTART_COMPLETE;
+				return 0;
+			}
+			r->fract->render(timeOut);
+		}else if(type == "heightmap"){
+			r->fract = new FractalHeightMap(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
 			r->fract->processParams();
 			if(!r->fract->isOkay()){
 				std::cerr << r->fract->getErrors();
@@ -321,7 +328,7 @@ int runGen(RenderingJob *r)
 			}
 			r->fract->render(timeOut);
 		}else{
-			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut, img);
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
 			fTmp->err("Error: Unknown type parameter: " + type);
 			r->timeStart = TIMESTART_COMPLETE;
 			delete fTmp;
@@ -334,7 +341,6 @@ int runGen(RenderingJob *r)
 		}
 
 		if(r->fract->isOkay()){
-			img->saveFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".png");
 			pOut->saveToFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".info");
 		}
 		r->timeStart = TIMESTART_COMPLETE;

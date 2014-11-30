@@ -9,12 +9,11 @@
 #include "FractalGen.h"
 
 
-Fractal::Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut, ImageWriter *i)
+Fractal::Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut)
 {
 	fId = id;
 	p = params;
 	pOut = paramsOut;
-	img = i;
 	flogFile.open(std::string(concat(FractalGen::getSaveDir()+"/",id) +".log").c_str(), std::ios::out);
 
 	timeMustStop = 0;
@@ -39,7 +38,6 @@ Fractal::~Fractal()
 
 	SAFE_DELETE(p);
 	SAFE_DELETE(pOut);
-	SAFE_DELETE(img);
 }
 
 bool Fractal::isEndedEarly()

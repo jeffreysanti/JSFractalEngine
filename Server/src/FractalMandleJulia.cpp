@@ -7,14 +7,15 @@
 
 #include "FractalMandleJulia.h"
 
-FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut, ImageWriter *i)
-						: Fractal(id, p, paramsOut, i) {
+FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut)
+						: Fractal(id, p, paramsOut) {
 	I = NULL;
 	histogram = NULL;
 	algoCopy = -1;
 
-	processParams();
-
+	width = p->getJson()["type.juliamandle"]["imgWidth"].asInt();
+	height = p->getJson()["type.juliamandle"]["imgHeight"].asInt();
+	img = new ImageWriter(width, height);
 }
 
 FractalMandleJulia::~FractalMandleJulia() {
@@ -30,6 +31,8 @@ FractalMandleJulia::~FractalMandleJulia() {
 		delete [] histogram;
 		histogram = NULL;
 	}
+
+	SAFE_DELETE(img);
 }
 
 void FractalMandleJulia::render(int maxTime)
@@ -46,6 +49,10 @@ void FractalMandleJulia::render(int maxTime)
 	passEvaluate();
 
 	Fractal::postRender();
+
+	if(isOkay()){
+		img->saveFile(concat(FractalGen::getSaveDir()+"/", p->getJson()["internal"]["id"].asInt())+".png");
+	}
 }
 
 void FractalMandleJulia::processParams()
@@ -100,8 +107,8 @@ void FractalMandleJulia::processParamsAlgorithm()
 		std::string errTmp;
 		ParamsFile pCopy(FractalGen::getSaveDir() + concat("/", algoCopy)+".job", true);
 		if(pCopy.validate(errTmp) &&
-				pCopy.getJson()["basic"]["imgWidth"].asInt()==p->getJson()["basic"]["imgWidth"].asInt() &&
-				pCopy.getJson()["basic"]["imgHeight"].asInt()==p->getJson()["basic"]["imgHeight"].asInt()){
+				pCopy.getJson()["type.juliamandle"]["imgWidth"].asInt()==p->getJson()["type.juliamandle"]["imgWidth"].asInt() &&
+				pCopy.getJson()["type.juliamandle"]["imgHeight"].asInt()==p->getJson()["type.juliamandle"]["imgHeight"].asInt()){
 			std::string algoFl = FractalGen::getSaveDir() + concat("/", algoCopy)+".algo";
 			FILE *fp = fopen(algoFl.c_str(), "rb");
 			if(fp == NULL){
@@ -200,9 +207,6 @@ void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double
 
 void FractalMandleJulia::processParamsGraphics()
 {
-	width = img->getWidth();
-	height = img->getHeight();
-
 	imgBlur = p->getJson()["posteffects"]["imgBlur"].asDouble();
 	imgSharpen = p->getJson()["posteffects"]["imgSharpen"].asDouble();
 }
