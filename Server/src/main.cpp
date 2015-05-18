@@ -32,6 +32,8 @@ int manualSubmit(ParamsFile *p){
 
 int main(int argc, char* argv[])
 {
+	std::cout << "JSFractalEngine Server Build: " << __DATE__ << " : " << __TIME__ << "\n";
+
 	DirectoryManager::getSingleton()->initialize(std::string(argv[0]));
 	SchemaManager::getSingleton()->initialize();
 	UserManager::getSingleton()->initialize();

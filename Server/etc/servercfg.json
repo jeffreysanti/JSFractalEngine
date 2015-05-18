@@ -11,6 +11,9 @@
 
 	// max connections at a time
 	"maxclients" : 30,
+	
+	// max simultaneous fractals being rendered
+	"maxthreads" : 2,
 
 	// User accounts to gain access for a session
 	// each user pair has "id" "name" "pass" "admin" and "automated"

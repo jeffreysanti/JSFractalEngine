@@ -25,6 +25,11 @@ FractalGen::FractalGen() {
 #endif
 
 	maxThreads = 2;
+	if(DirectoryManager::getSingleton()->getConfigRoot().isMember("maxthreads") &&
+			DirectoryManager::getSingleton()->getConfigRoot()["maxthreads"].isInt()){
+		maxThreads = DirectoryManager::getSingleton()->getConfigRoot()["maxthreads"].asInt();
+		std::cout << "Using " << maxThreads << " Rendering Threads.\n";
+	}
 }
 
 FractalGen::~FractalGen() {
