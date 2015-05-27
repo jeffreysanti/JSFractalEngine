@@ -43,7 +43,7 @@ enum FractalState{
 class Fractal{
 
 public:
-	Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut, ImageWriter *i);
+	Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut);
 	virtual ~Fractal();
 
 	bool isEndedEarly();
@@ -66,7 +66,6 @@ public:
 protected:
 	ParamsFile *p;
 	ParamsFileNotSchema *pOut;
-	ImageWriter *img;
 	std::fstream flogFile;
 
 	unsigned long renderStart;

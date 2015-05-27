@@ -7,11 +7,16 @@
 
 #include "FractalMandleJulia.h"
 
-FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut, ImageWriter *i)
-						: Fractal(id, p, paramsOut, i) {
+FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut)
+						: Fractal(id, p, paramsOut) {
 	I = NULL;
 	histogram = NULL;
 	algoCopy = -1;
+
+
+	width = p->getJson()["type.juliamandle"]["imgWidth"].asInt();
+	height = p->getJson()["type.juliamandle"]["imgHeight"].asInt();
+	img = new ImageWriter(width, height);
 
 	processParams();
 
@@ -30,6 +35,7 @@ FractalMandleJulia::~FractalMandleJulia() {
 		delete [] histogram;
 		histogram = NULL;
 	}
+	SAFE_DELETE(img);
 }
 
 void FractalMandleJulia::render(int maxTime)
@@ -44,6 +50,9 @@ void FractalMandleJulia::render(int maxTime)
 	passTrace();
 	passEffect();
 	passEvaluate();
+
+	if(isOkay())
+		img->saveFile(concat(FractalGen::getSaveDir()+"/", getId())+".png");
 
 	Fractal::postRender();
 }
