@@ -1,0 +1,148 @@
+{
+  "internal": {
+    "uid": 1,
+    "id": 40,
+    "queue": "MANUAL"
+  },
+  "basic": {
+    "scaleX": 1,
+    "scaleY": 1,
+    "imgWidth": 500,
+    "author": "Jeffrey Santi",
+    "translateY": 0,
+    "translateX": 0,
+    "imgHeight": 500,
+    "title": "Neural Network",
+    "type": {
+      "selected": "mandlejulia"
+    },
+    "timeout": 120
+  },
+  "jmshader.normal": {
+    "fillColPalType": {
+      "selected": "discrete"
+    },
+    "palette": [
+      {
+        "color": [
+          252,
+          209,
+          150
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          252,
+          209,
+          150
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          254,
+          191,
+          104
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          251,
+          181,
+          84
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          246,
+          168,
+          60
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          254,
+          165,
+          42
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          248,
+          152,
+          19
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          206,
+          126,
+          14
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          174,
+          103,
+          6
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          155,
+          93,
+          8
+        ],
+        "maxIter": -1
+      },
+      {
+        "color": [
+          143,
+          63,
+          12
+        ],
+        "maxIter": -1
+      }
+    ]
+  },
+  "posteffects": {
+    "imgBlur": 0.0,
+    "imgSharpen": 0.0
+  },
+  "type.juliamandle": {
+    "Kk": "0+0i",
+    "shading": {
+      "selected": "simplelin"
+    },
+    "Kl": "0+0i",
+    "radI": 0.1068038,
+    "Km": "0+0i",
+    "tracing": {
+      "selected": "none"
+    },
+    "Kn": "0+0i",
+    "centI": 0.3000778,
+    "zInitial": {
+      "selected": "c"
+    },
+    "iters": 25,
+    "centR": 0.03308095,
+    "radR": 0.15056825,
+    "algocopy": -1,
+    "threshold": 5000.0,
+    "scaleX": 1,
+    "scaleY": 1,
+    "func": "z^3+2*z^2+.5*z+j",
+    "translateY": 0,
+    "translateX": 0,
+    "Kj": "-.3-.6i"
+  }
+}

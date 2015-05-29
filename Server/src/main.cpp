@@ -43,6 +43,10 @@ int main(int argc, char* argv[])
 
 	FractalGen gen;
 
+	ParamsFile *p = new ParamsFile("test.job", true);
+	//manualSubmit(p);
+
+
 	//unsigned long start = time(NULL);
 	while(true){
 		gen.update();

@@ -35,8 +35,11 @@
 #include "Fractal.h"
 #include "DBManager.h"
 #include "FractalGenTrackManager.h"
+#include "AnimationBuilder.h"
 
 int dummy();
+
+class FractalGen;
 
 #define TIMESTART_COMPLETE 0
 struct RenderingJob{
@@ -51,6 +54,7 @@ struct RenderingJob{
 	}
 
 	unsigned int jid;
+	unsigned int frameID;
 
 	std::thread gen;
 	ParamsFile *params;
@@ -58,6 +62,7 @@ struct RenderingJob{
 	unsigned long timeStart;
 	int uid;
 	bool success;
+	FractalGen *genPtr;
 };
 
 
@@ -69,6 +74,7 @@ public:
 	static std::string getSaveDir();
 
 	int postJob(FractalContainer f);
+	void addAnimationToQueue(Animation anim);
 
 	void update();
 
@@ -89,13 +95,17 @@ private:
 	void sendUpdateToTracker();
 
 
-
 	std::vector<RenderingJob*> R;
 
 	// job stack
 	std::list<ParamsFile*> JQ;
 	std::list<ParamsFile*> JQManual;
 
+
+	std::vector<Animation> A;
+	std::mutex animLock;
+	void addAnimationFramesToRenderQueue(int count);
+	void cancelAnimation(int jid);
 };
 
 int runGen(RenderingJob *r);

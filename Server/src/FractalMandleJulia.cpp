@@ -14,8 +14,8 @@ FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFil
 	algoCopy = -1;
 
 
-	width = p->getJson()["type.juliamandle"]["imgWidth"].asInt();
-	height = p->getJson()["type.juliamandle"]["imgHeight"].asInt();
+	width = p->getJson()["basic"]["imgWidth"].asInt();
+	height = p->getJson()["basic"]["imgHeight"].asInt();
 	img = new ImageWriter(width, height);
 
 	processParams();
@@ -51,8 +51,14 @@ void FractalMandleJulia::render(int maxTime)
 	passEffect();
 	passEvaluate();
 
-	if(isOkay())
-		img->saveFile(concat(FractalGen::getSaveDir()+"/", getId())+".png");
+	if(isOkay()){
+		if(p->getFrameData() == 0 || p->getFrameData() == 1)
+			img->saveFile(concat(FractalGen::getSaveDir()+"/", getId())+".png");
+		if(p->getFrameData() != 0){
+			img->saveFile(concat(concat(FractalGen::getSaveDir()+"/", getId())+".",
+					p->getFrameData())+".png");
+		}
+	}
 
 	Fractal::postRender();
 }
@@ -307,7 +313,7 @@ void FractalMandleJulia::passAlgoritm()
 		}
 	}else{
 		// Copy .algo file
-		flogFile << "Copying ALGO FILE # " << algoCopy << ".\n";
+		logMessage(concat("Copying ALGO FILE # ",algoCopy) + ".\n)", false);
 		std::string algoFl = FractalGen::getSaveDir() + concat("/", algoCopy)+".algo";
 		FILE *fp = fopen(algoFl.c_str(), "rb");
 		for(int x=0; x<width; x++)
@@ -317,12 +323,14 @@ void FractalMandleJulia::passAlgoritm()
 	}
 
 	// now cache the algo data for faster changes in color/shading
-	std::string algoFl = FractalGen::getSaveDir() + concat("/", getId())+".algo";
-	FILE *fp = fopen(algoFl.c_str(), "wb");
-	for(int x=0; x<width; x++)
-		fwrite(I[x], sizeof(int), height, fp);
-	fwrite(histogram, sizeof(unsigned int), iters, fp);
-	fclose(fp);
+	if(p->getFrameData() == 0 || p->getFrameData() == 1){
+		std::string algoFl = FractalGen::getSaveDir() + concat("/", getId())+".algo";
+		FILE *fp = fopen(algoFl.c_str(), "wb");
+		for(int x=0; x<width; x++)
+			fwrite(I[x], sizeof(int), height, fp);
+		fwrite(histogram, sizeof(unsigned int), iters, fp);
+		fclose(fp);
+	}
 }
 
 

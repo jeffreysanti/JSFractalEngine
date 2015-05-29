@@ -66,13 +66,14 @@ public:
 protected:
 	ParamsFile *p;
 	ParamsFileNotSchema *pOut;
-	std::fstream flogFile;
 
 	unsigned long renderStart;
 	void postRender();
 
 	unsigned long processParamStart;
 	void postProcessParams();
+
+	void logMessage(std::string s, bool important);
 
 private:
 	std::stringstream errs;

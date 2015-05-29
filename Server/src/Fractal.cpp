@@ -14,7 +14,6 @@ Fractal::Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *param
 	fId = id;
 	p = params;
 	pOut = paramsOut;
-	flogFile.open(std::string(concat(FractalGen::getSaveDir()+"/",id) +".log").c_str(), std::ios::out);
 
 	timeMustStop = 0;
 
@@ -33,8 +32,6 @@ Fractal::~Fractal()
 	char* dt = ctime(&now);
 
 	pOut->getJson()["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
-	flogFile.flush();
-	flogFile.close();
 
 	SAFE_DELETE(p);
 	SAFE_DELETE(pOut);
@@ -63,12 +60,12 @@ bool Fractal::updateStatus(std::string stage, double percent)
 	if(state == FS_CANCEL)
 	{
 		pOut->getJson()["Canceled"] = "YES";
-		flogFile << "Canceled!\n";
+		logMessage("Canceled!\n", true);
 		return true;
 	}
 	if(state == FS_TIMEOUT || (timeMustStop != 0 && now > timeMustStop)){
 		pOut->getJson()["TimedOut"] = "YES";
-		flogFile << "Timed Out!\n";
+		logMessage("Timed Out!\n", true);
 		state = FS_TIMEOUT;
 		return true;
 	}
@@ -79,16 +76,16 @@ bool Fractal::updateStatus(std::string stage, double percent)
 			pOut->getJson()["time"+stage] = (int)len;
 		}
 		stageName = stage;
-		if(stageName != "done")
-			flogFile << "Starting Stage: " << stageName << "\n";
+		if(stageName != "done"){
+			logMessage("Starting Stage: " + stageName + "\n", false);
+		}
 		lastStateTrans = now;
 	}
 	if(stageName == "done")
 		return false;
 
 	if(now - last > 2){
-		flogFile << "Stage: "<<stage<<", " << percent << "% complete\n";
-		flogFile.flush();
+		logMessage("Stage: " + stage + concat(", ", percent) + "% complete\n", false);
 		last = now;
 	}
 	return false;
@@ -130,7 +127,6 @@ void Fractal::processParams()
 
 void Fractal::postProcessParams()
 {
-	p->saveToFile(FractalGen::getSaveDir() + concat("/", getId())+".job");
 	unsigned long end = time(NULL);
 	pOut->getJson()["timeParamProcessing"] = int(end-processParamStart);
 }
@@ -144,11 +140,20 @@ void Fractal::err(std::string error)
 {
 	state = FS_ERR;
 	errs << error;
-	flogFile << error;
+	logMessage(error, true);
 }
 
 FractalState Fractal::getState(){
 	return state;
+}
+
+void Fractal::logMessage(std::string s, bool important)
+{
+	if(p->getFrameData() == 0 || important){
+		FractalLogger::getSingleton()->write(fId, s);
+	}else{
+		// repress message
+	}
 }
 
 

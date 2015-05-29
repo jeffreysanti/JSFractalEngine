@@ -102,6 +102,29 @@ std::string ParamsFile::readAllFile(std::string path)
 	}
 }
 
+void ParamsFile::clearFrameData(){
+	if(!root.isMember("internal") || !root["internal"].isObject())
+		return;
+	if(root["internal"].isMember("thisframe"))
+		root["internal"].removeMember("thisframe");
+}
+
+int ParamsFile::getFrameData(){
+	if(!root.isMember("internal") || !root["internal"].isObject())
+		return 0;
+	if(root["internal"].isMember("thisframe") && root["internal"]["thisframe"].isInt())
+		return root["internal"]["thisframe"].asInt();
+	return 0;
+}
+
+int ParamsFile::getID(){
+	if(!root.isMember("internal") || !root["internal"].isObject())
+		return 0;
+	if(root["internal"].isMember("id") && root["internal"]["id"].isInt())
+		return root["internal"]["id"].asInt();
+	return 0;
+}
+
 
 
 

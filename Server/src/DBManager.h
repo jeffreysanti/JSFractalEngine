@@ -32,6 +32,7 @@ struct FractalMeta{
 		userID = -1;
 		status = FDBS_ERR;
 		manualQueue = true;
+		animation = false;
 	}
 
 	int jobID;
@@ -40,6 +41,7 @@ struct FractalMeta{
 	std::string author;
 	FractalDBState status;
 	bool manualQueue;
+	bool animation;
 };
 
 struct FractalContainer{
