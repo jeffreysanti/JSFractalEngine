@@ -39,12 +39,12 @@ int main(int argc, char* argv[])
 	UserManager::getSingleton()->initialize();
 	DBManager::getSingleton()->initialize();
 	FractalGenTrackManager::getSingleton()->initialize();
-	ConnectionManager::getSingleton()->initialize();
+	//ConnectionManager::getSingleton()->initialize();
 
 	FractalGen gen;
 
 	ParamsFile *p = new ParamsFile("test.job", true);
-	//manualSubmit(p);
+	manualSubmit(p);
 
 
 	//unsigned long start = time(NULL);

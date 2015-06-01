@@ -28,6 +28,8 @@ public:
 	bool isPresent(Json::Value &in);
 	bool allowNull();
 
+	inline void overrideElementID(std::string eid) {elmid = eid;}
+
 	inline std::string getElementID() {return elmid;}
 
 protected:
