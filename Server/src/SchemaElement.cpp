@@ -111,6 +111,27 @@ void SchemaElementReal::verifyElement(Json::Value &in, std::string &err, std::ve
 	in[elmid] = (double)val;
 }
 
+SchemaElementComplex::SchemaElementComplex(std::string grpAddr, Json::Value &schema) :
+		SchemaElement(grpAddr, schema)
+{
+	if(schm.isMember("default") && schm["default"].isString())
+		defVal = schm["default"].asString();
+	else
+		defVal = "0+0i";
+}
+
+void SchemaElementComplex::verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators)
+{
+	std::string val;
+	if(!isPresent(in) || !in[elmid].isString()){
+		val = defVal;
+	}else{
+		val = in[elmid].asString();
+	}
+	// TODO: Perhaps more checking here?
+	in[elmid] = val;
+}
+
 SchemaElementText::SchemaElementText(std::string grpAddr, Json::Value &schema) :
 		SchemaElement(grpAddr, schema)
 {

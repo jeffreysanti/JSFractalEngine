@@ -22,7 +22,7 @@ AnimationBuilder::~AnimationBuilder() {
 Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 	FractalLogger::getSingleton()->write(id, "Fractal Is Animated: Note Detailed progress not reported.\n");
 	FractalLogger::getSingleton()->write(id, "Building Animation Data...\n");
-
+	unsigned long genStart = time(NULL);
 
 	Animation anim;
 	anim.baseID = id;
@@ -80,8 +80,11 @@ Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 	// finally revalidate the parameters in case we messed up
 	err += SchemaManager::getSingleton()->validateParamaters(p->getJson());
 
-	if(err == "")
-		FractalLogger::getSingleton()->write(id, "Animation Data Built!\n");
+	if(err == ""){
+		genStart = time(NULL) - genStart;
+		FractalLogger::getSingleton()->write(id,
+				concat("Animation Data Built: Took ", (float)genStart/1000)+" seconds!\n");
+	}
 	return anim;
 }
 
@@ -140,27 +143,27 @@ T animationInterpolate(std::string method, int frame, int fi, int ff, T i, T f){
 	if(method == "linear"){
 		T m = f - i;
 		T b = i;
-		return (double)m * progress + b;
+		return m * progress + b;
 	}
 	if(method == "square"){
 		T m = f - i;
 		T b = i;
-		return (double)m * std::pow(progress,2) + b;
+		return m * std::pow(progress,2) + b;
 	}
 	if(method == "cube"){
 		T m = f - i;
 		T b = i;
-		return (double)m * std::pow(progress,3) + b;
+		return m * std::pow(progress,3) + b;
 	}
 	if(method == "sqroot"){
 		T m = f - i;
 		T b = i;
-		return (double)m * std::sqrt(progress) + b;
+		return m * std::sqrt(progress) + b;
 	}
 	if(method == "cuberoot"){
 		T m = f - i;
 		T b = i;
-		return (double)m * std::pow(progress,(double)1/3) + b;
+		return m * std::pow(progress,(double)1/3) + b;
 	}
 
 	return i;
@@ -203,6 +206,12 @@ void AnimationBuilder::interpolateFrame(ParamsFile &pnew, int frameno)
 				arr[2] = animationInterpolate(nextFrame.interp, frameno, fi, ff,
 							i[2].asInt(), f[2].asInt());
 				*((*itP).second.jsonPtr) = arr;
+			}else if((*itP).second.pType == SVT_COMPLEX){
+				std::complex<double> zi = getComplexValueFromString(i.asString());
+				std::complex<double> zf = getComplexValueFromString(f.asString());
+				std::complex<double> z = animationInterpolate(nextFrame.interp, frameno, fi, ff, zi, zf);
+				std::string res = concat("", z.real()) + concat("+", z.imag()) + "i";
+				*((*itP).second.jsonPtr) = res;
 			}
 		}
 	}

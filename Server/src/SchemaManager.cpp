@@ -150,6 +150,9 @@ std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
 			}else if(elm["type"].asString() == "real"){
 				SchemaElementReal Erel(id, elm);
 				Erel.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "complex"){
+				SchemaElementComplex Ecomp(id, elm);
+				Ecomp.verifyElement(paramRoot[id], ret, actuators);
 			}else if(elm["type"].asString() == "text"){
 				SchemaElementText Etxt(id, elm);
 				Etxt.verifyElement(paramRoot[id], ret, actuators);
@@ -226,6 +229,8 @@ SchemaValTypeJsonObj SchemaManager::getParamAddrType(std::string addr, Json::Val
 			return SchemaValTypeJsonObj(SVT_INT, elm, param);
 		if(elm["type"] == "real")
 			return SchemaValTypeJsonObj(SVT_REAL, elm, param);
+		if(elm["type"] == "complex")
+			return SchemaValTypeJsonObj(SVT_COMPLEX, elm, param);
 		if(elm["type"] == "color")
 			return SchemaValTypeJsonObj(SVT_COLOR, elm, param);
 		if(elm["type"] == "selector"){
@@ -365,6 +370,10 @@ bool SchemaManager::validateAnimationParam(Json::Value &keyframeRoot, int frameC
 			SchemaElementReal Ereal("", schemaEntry);
 			Ereal.overrideElementID("val");
 			Ereal.verifyElement(keyframe, err, act);
+		}else if(ret.vt == SVT_COMPLEX){
+			SchemaElementComplex Ecomp("", schemaEntry);
+			Ecomp.overrideElementID("val");
+			Ecomp.verifyElement(keyframe, err, act);
 		}else if(ret.vt == SVT_TEXT){
 			SchemaElementText Etext("", schemaEntry);
 			Etext.overrideElementID("val");

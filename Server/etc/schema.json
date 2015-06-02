@@ -184,7 +184,7 @@
 			{
 				"id" : "Kj",
 				"caption" : "Constant j",
-				"type" : "text",
+				"type" : "complex",
 				"allowZero" : false,
 				"default" : "0+0i",
 				"min" : 1,
@@ -193,7 +193,7 @@
 			{
 				"id" : "Kk",
 				"caption" : "Constant k",
-				"type" : "text",
+				"type" : "complex",
 				"allowZero" : false,
 				"default" : "0+0i",
 				"min" : 1,
@@ -202,7 +202,7 @@
 			{
 				"id" : "Kl",
 				"caption" : "Constant l",
-				"type" : "text",
+				"type" : "complex",
 				"allowZero" : false,
 				"default" : "0+0i",
 				"min" : 1,
@@ -211,7 +211,7 @@
 			{
 				"id" : "Km",
 				"caption" : "Constant m",
-				"type" : "text",
+				"type" : "complex",
 				"allowZero" : false,
 				"default" : "0+0i",
 				"min" : 1,
@@ -220,7 +220,7 @@
 			{
 				"id" : "Kn",
 				"caption" : "Constant n",
-				"type" : "text",
+				"type" : "complex",
 				"allowZero" : false,
 				"default" : "0+0i",
 				"min" : 1,
