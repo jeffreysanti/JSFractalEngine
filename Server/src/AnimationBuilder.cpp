@@ -26,6 +26,7 @@ Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 
 	Animation anim;
 	anim.baseID = id;
+	anim.timeStarted = genStart;
 	if(maxTime > 0){
 		anim.timeMustStop = time(NULL) + maxTime;
 	}else{
@@ -63,12 +64,7 @@ Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 		std::string savepath = DirectoryManager::getSingleton()->getRootDirectory()+"renders/";
 		savepath = concat(savepath, anim.baseID) + concat(".frame.", i) + ".job";
 
-		// zoom
-		//pnew.getJson()["type.juliamandle"]["radI"] = pnew.getJson()["type.juliamandle"]["radI"].asDouble() * 0.98;
-		//pnew.getJson()["type.juliamandle"]["radR"] = pnew.getJson()["type.juliamandle"]["radR"].asDouble() * 0.98;
-
 		interpolateFrame(pnew, i);
-
 
 		pnew.saveToFile(savepath);
 		anim.frameQueue.push_back(savepath);
@@ -179,7 +175,6 @@ void AnimationBuilder::interpolateFrame(ParamsFile &pnew, int frameno)
 		int nextFrameIndex = (*itP).second.lastSetIndex + 1;
 		KeyFrame nextFrame = (*itP).second.F[nextFrameIndex];
 
-		// TODO: Interpolate if not on frame
 		if(nextFrame.frameno == frameno){
 			*((*itP).second.jsonPtr) = nextFrame.val;
 

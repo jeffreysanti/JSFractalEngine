@@ -418,6 +418,11 @@ void FractalGen::addAnimationFramesToRenderQueue(int count){
 
 		// check if animation rendering complete
 		if((*itA).frameQueue.empty() && (*itA).framesRendering.empty()){
+
+			unsigned long t = time(NULL) - (*itA).timeStarted;
+			FractalLogger::getSingleton()->write((*itA).baseID,
+					concat("Animation Completed! Took: ", t) + " Seconds.\n");
+
 			FractalMeta m = DBManager::getSingleton()->getFractal((*itA).baseID);
 			m.status = FDBS_COMPLETE;
 			DBManager::getSingleton()->updateFractal(m);

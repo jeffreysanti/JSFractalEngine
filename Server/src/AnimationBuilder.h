@@ -22,6 +22,7 @@ public:
 	int maxThreads;
 
 	unsigned long timeMustStop;
+	unsigned long timeStarted;
 
 	std::list<std::string> frameQueue;
 	std::set<int> framesRendering;
