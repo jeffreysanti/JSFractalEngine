@@ -91,6 +91,8 @@ public class ParamsElementArray extends ParamsElement {
                 e = new ParamsElementColor(elmsSchema, val, callback, i);
             }else if(type.equals("real")){
                 e = new ParamsElementReal(elmsSchema, val, callback, i);
+            }else if(type.equals("complex")){
+                e = new ParamsElementComplex(elmsSchema, val, callback, i);
             }else if(type.equals("array")){
                 e = new ParamsElementArray(elmsSchema, val, callback, i);
             }else if(type.equals("tuple")){

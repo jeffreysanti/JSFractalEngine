@@ -131,6 +131,8 @@ public class ParamsElementSelector extends ParamsElement {
                         e = new ParamsElementColor(subelm, getValue(), callback, -1);
                     }else if(type.equals("real")){
                         e = new ParamsElementReal(subelm, getValue(), callback, -1);
+                    }else if(type.equals("complex")){
+                        e = new ParamsElementComplex(subelm, getValue(), callback, -1);
                     }else if(type.equals("array")){
                         e = new ParamsElementArray(subelm, getValue(), callback, -1);
                     }else if(type.equals("tuple")){

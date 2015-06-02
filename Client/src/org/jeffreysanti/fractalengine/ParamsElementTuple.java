@@ -80,6 +80,8 @@ public class ParamsElementTuple extends ParamsElement {
                 e = new ParamsElementColor((JSONObject)elmSchem, getValue(), callback, -1);
             }else if(type.equals("real")){
                 e = new ParamsElementReal((JSONObject)elmSchem, getValue(), callback, -1);
+            }else if(type.equals("complex")){
+                e = new ParamsElementComplex((JSONObject)elmSchem, getValue(), callback, -1);
             }else if(type.equals("array")){
                 e = new ParamsElementArray((JSONObject)elmSchem, getValue(), callback, -1);
             }else if(type.equals("tuple")){

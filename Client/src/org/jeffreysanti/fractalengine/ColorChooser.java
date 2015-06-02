@@ -48,7 +48,7 @@ public class ColorChooser extends javax.swing.JFrame {
             try {
                 return new DataFlavor[]{(DataFlavor)FLAVOR.clone()};
             } catch (CloneNotSupportedException ex) {
-                Logger.getLogger(PaletteEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ColorChooser.class.getName()).log(Level.SEVERE, null, ex);
             }
             return new DataFlavor[]{};
         }
