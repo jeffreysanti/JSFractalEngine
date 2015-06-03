@@ -20,8 +20,8 @@ import org.json.simple.JSONObject;
  * @author jeffrey
  */
 public class ParamsElementText extends ParamsElement {
-    public ParamsElementText(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
-        super(schemaDefn, paramsContainer, cb, arrIndex);
+    public ParamsElementText(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
+        super(schemaDefn, paramsContainer, cb, arrIndex, addr);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -48,6 +48,9 @@ public class ParamsElementText extends ParamsElement {
         
         verify(); // assures some value is inside text editor
         txt.setText((String)getValue());
+        
+        callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_TEXT, schem));
     }
     
     @Override
