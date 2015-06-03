@@ -115,6 +115,48 @@ public class AnimationWindow extends javax.swing.JFrame {
         });
         getContentPane().add(selKF);
         
+        delKF = new JButton("Delete Key Frame");
+        delKF.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if(selectedParamKF == null)
+                    return;
+                JSONArray keyframes = (JSONArray)((JSONObject)params.get("anim")).get("keyframes");
+                keyframes.remove(selectedParamKF);
+                selectedParamKF = null;
+                selectedFrame = 0;
+                selectedParam = "";
+                valueContainer.removeAll();
+                interpSel.setEnabled(false);
+                updatedAnimationParams();
+            }
+        });
+        getContentPane().add(delKF);
+        
+        valueContainer = new JPanel();
+        valueContainer.setLayout(new BoxLayout(valueContainer, BoxLayout.PAGE_AXIS));
+        getContentPane().add(valueContainer);
+        
+        interpSel = new JComboBox<String>();
+        interpSel.addItem("none");
+        interpSel.addItem("linear");
+        interpSel.addItem("sqroot");
+        interpSel.addItem("cuberoot");
+        interpSel.addItem("square");
+        interpSel.addItem("cube");
+        interpSel.setEnabled(false);
+        interpSel.setSelectedIndex(1);
+        interpSel.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(selectedParamKF == null)
+                    return;
+                String sel = (String)interpSel.getSelectedItem();
+                selectedParamKF.put("interp", sel);
+                cb.markDirty();
+            }
+        });
+        getContentPane().add(interpSel);
     }
     
     public void updatedAnimationParams(){
@@ -188,9 +230,70 @@ public class AnimationWindow extends javax.swing.JFrame {
     }
     
     public void frameSelected(String param, int fno){
-        System.out.println(param + " : "+ fno);
         selectedFrame = fno;
         selectedParam = param;
+        
+        JSONArray keyframes = (JSONArray)((JSONObject)params.get("anim")).get("keyframes");
+        selectedParamKF = null;
+        for(Object o : keyframes){
+            JSONObject frame = (JSONObject)o;
+            if(!frame.get("param").equals(selectedParam))
+                continue;
+            if(((Number)frame.get("frame")).intValue() != selectedFrame)
+                continue;
+            selectedParamKF = (JSONObject)o;
+            break;
+        }
+        
+        if(selectedParamKF == null){
+            selectedParamKF = new JSONObject();
+            selectedParamKF.put("param", selectedParam);
+            selectedParamKF.put("frame", selectedFrame);
+            keyframes.add(selectedParamKF);
+        }
+        
+        AnimationParamType t = APrevised.get(selectedParam).type;
+        ParamsElement e = null;
+        boolean addInterpSel = false;
+        JSONObject schema = (JSONObject)APrevised.get(selectedParam).schema.clone();
+        schema.put("id", "val");
+        if(t.equals(AnimationParamType.APT_INT)){
+            e = new ParamsElementIntegral(schema, selectedParamKF, cb, -1, "/");
+            addInterpSel = true;
+        }else if(t.equals(AnimationParamType.APT_REAL)){
+            e = new ParamsElementReal(schema, selectedParamKF, cb, -1, "/");
+            addInterpSel = true;
+        }else if(t.equals(AnimationParamType.APT_COLOR)){
+            e = new ParamsElementColor(schema, selectedParamKF, cb, -1, "/");
+            addInterpSel = true;
+        }else if(t.equals(AnimationParamType.APT_TEXT)){
+            e = new ParamsElementText(schema, selectedParamKF, cb, -1, "/");
+        }else if(t.equals(AnimationParamType.APT_COMPLEX)){
+            e = new ParamsElementComplex(schema, selectedParamKF, cb, -1, "/");
+            addInterpSel = true;
+        }else if(t.equals(AnimationParamType.APT_SELECTOR_NO_AFFECT)){
+            e = new ParamsElementSelector(schema, selectedParamKF, cb, -1, "/");
+        }
+        
+        valueContainer.removeAll();
+        if(e != null)
+            valueContainer.add(e.getInnerElm());
+        if(addInterpSel){
+            if(selectedParamKF.containsKey("interp") && selectedParamKF.get("interp") instanceof String &&
+                    (selectedParamKF.get("interp").equals("none") ||
+                     selectedParamKF.get("interp").equals("sqroot") ||
+                     selectedParamKF.get("interp").equals("cuberoot") ||
+                     selectedParamKF.get("interp").equals("cube") ||
+                     selectedParamKF.get("interp").equals("square"))){
+                interpSel.setSelectedItem(selectedParamKF.get("interp"));
+            }else{
+                interpSel.setSelectedItem("linear");
+            }
+            interpSel.setEnabled(true);
+        }else{
+            interpSel.setEnabled(false);
+        }
+        
         updatedAnimationParams();
     }
     
@@ -202,7 +305,12 @@ public class AnimationWindow extends javax.swing.JFrame {
     private HashMap<String, AnimationParam> APrevised = new HashMap();
     private HashMap<String, AnimationParamPanel> P;
     private JButton selKF;
+    private JButton delKF;
+    private JPanel valueContainer;
     
     private int selectedFrame;
     private String selectedParam;
+    private JSONObject selectedParamKF = null;
+    
+    private JComboBox<String> interpSel;
 }
