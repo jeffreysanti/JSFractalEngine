@@ -414,33 +414,42 @@ void FractalGen::addAnimationFramesToRenderQueue(int count){
 
 		// check if animation rendering complete
 		if((*itA).frameQueue.empty() && (*itA).framesRendering.empty()){
-
-			unsigned long t = time(NULL) - (*itA).timeStarted;
-			FractalLogger::getSingleton()->write((*itA).baseID,
-					concat("Animation Completed! Took: ", t) + " Seconds.\n");
-
-			time_t now = time(NULL);
-			char* dt = ctime(&now);
-			Json::Value &pOut = FractalLogger::getSingleton()->outParams((*itA).baseID);
-			pOut["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
-			FractalLogger::getSingleton()->unlockOutParams((*itA).baseID, true);
-
-			FractalMeta m = DBManager::getSingleton()->getFractal((*itA).baseID);
-			m.status = FDBS_COMPLETE;
-			DBManager::getSingleton()->updateFractal(m);
-
-			InfoExchange exh;
-			exh.type = EXT_REPORT_FRACT_STATUS_CHANGE;
-			exh.uiParam1 = m.jobID;
-			FractalGenTrackManager::getSingleton()->postExchange(exh);
-
-			sendUpdateToTracker();
-
+			// run muxer in a seperate thread
+			std::thread muxer = std::thread(&AnimationBuilder::muxFrames, (*itA), this);
+			muxer.detach();
 			itA = A.erase(itA);
 		}else{
 			++itA;
 		}
 	}
+	animLock.unlock();
+}
+
+void FractalGen::finishedMuxingFrames(Animation anim){
+	animLock.lock();
+
+	unsigned long t = time(NULL) - anim.timeStarted;
+	FractalLogger::getSingleton()->write(anim.baseID,
+				concat("Animation Completed! Took: ", t) + " Seconds.\n");
+
+	time_t now = time(NULL);
+	char* dt = ctime(&now);
+	Json::Value &pOut = FractalLogger::getSingleton()->outParams(anim.baseID);
+	pOut["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
+	pOut["timeMuxing"] = (int)(time(NULL) - anim.timeMuxStarted);
+	FractalLogger::getSingleton()->unlockOutParams(anim.baseID, true);
+
+	FractalMeta m = DBManager::getSingleton()->getFractal(anim.baseID);
+	m.status = FDBS_COMPLETE;
+	DBManager::getSingleton()->updateFractal(m);
+
+	InfoExchange exh;
+	exh.type = EXT_REPORT_FRACT_STATUS_CHANGE;
+	exh.uiParam1 = m.jobID;
+	FractalGenTrackManager::getSingleton()->postExchange(exh);
+
+	sendUpdateToTracker();
+
 	animLock.unlock();
 }
 

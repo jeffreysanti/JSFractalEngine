@@ -86,15 +86,20 @@ public class AnimationWindow extends javax.swing.JFrame {
         pnlInfo.setLayout(new BoxLayout(pnlInfo, BoxLayout.LINE_AXIS));
         JSONParser parser = new JSONParser();
         JSONObject schemaFrameCount;
+        JSONObject schemaFPS;
         try {
             schemaFrameCount = (JSONObject)parser.parse("{\"id\":\"frames\", \"caption\":\"Frame Count\", \"type\":\"integer\", "
                     + "\"min\":2, \"allowZero\":false, \"default\":150}");
+            schemaFPS = (JSONObject)parser.parse("{\"id\":\"fps\", \"caption\":\"FPS\", \"type\":\"integer\", "
+                    + "\"min\":1, \"allowZero\":false, \"default\":24}");
         } catch (ParseException ex) {
             Logger.getLogger(AnimationWindow.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         frameCount = new ParamsElementIntegral(schemaFrameCount, params.get("anim"), cb, -1, "/");
         pnlInfo.add(frameCount.getInnerElm());
+        fps = new ParamsElementIntegral(schemaFPS, params.get("anim"), cb, -1, "/");
+        pnlInfo.add(fps.getInnerElm());
         getContentPane().add(pnlInfo);
         
         timeLine = new JPanel();
@@ -299,6 +304,7 @@ public class AnimationWindow extends javax.swing.JFrame {
     
     private JPanel timeLine;
     private ParamsElementIntegral frameCount;
+    private ParamsElementIntegral fps;
     private JSONObject params;
     private PanelProperties cb;
     private HashMap<String, AnimationParam> AP;

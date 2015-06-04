@@ -18,11 +18,14 @@ public:
 
 	unsigned int baseID;
 	unsigned int frames;
+	unsigned int fps;
 	bool manualQueue;
 	int maxThreads;
 
 	unsigned long timeMustStop;
 	unsigned long timeStarted;
+
+	unsigned long timeMuxStarted;
 
 	std::list<std::string> frameQueue;
 	std::set<int> framesRendering;
@@ -49,12 +52,16 @@ struct AnimatedParam{
 	int lastSetIndex;
 };
 
+class FractalGen;
+
 class AnimationBuilder {
 public:
 	AnimationBuilder(ParamsFile *params, int fid);
 	virtual ~AnimationBuilder();
 
 	Animation spawnJobs(std::string &err, int maxTime);
+
+	static void muxFrames(Animation A, FractalGen *gen);
 
 protected:
 

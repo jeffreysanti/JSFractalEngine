@@ -7,6 +7,9 @@
 
 #include "AnimationBuilder.h"
 #include "FractalGen.h"
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 AnimationBuilder::AnimationBuilder(ParamsFile *params, int fid) {
 	p = params;
@@ -43,7 +46,21 @@ Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 		err += "anim.frames does not exist or non-int\n";
 		return anim;
 	}
+	if(animData["frames"].asInt() < 1){
+		err += "anim.frames out of bounds\n";
+		return anim;
+	}
 	anim.frames = animData["frames"].asInt();
+
+	if(!animData.isMember("fps") || !animData["fps"].isInt()){
+		err += "anim.fps does not exist or non-int\n";
+		return anim;
+	}
+	if(animData["fps"].asInt() < 1){
+		err += "anim.fps out of bounds\n";
+		return anim;
+	}
+	anim.fps = animData["fps"].asInt();
 
 	if(!animData.isMember("keyframes") || !animData["keyframes"].isArray()){
 		err += "anim.keyframes does not exist or non-array\n";
@@ -209,5 +226,56 @@ void AnimationBuilder::interpolateFrame(ParamsFile &pnew, int frameno)
 			}
 		}
 	}
+}
+
+void AnimationBuilder::muxFrames(Animation A, FractalGen *gen){
+	A.timeMuxStarted = time(NULL);
+	FractalLogger::getSingleton()->write(A.baseID, "Started Muxing Frames\n");
+
+	std::string execPath = DirectoryManager::getSingleton()->getFFmpegBinary();
+	std::string inFiles = gen->getSaveDir()+concat("/",A.baseID)+".%d.png";
+	std::string outFile = gen->getSaveDir()+concat("/",A.baseID)+".mkv";
+
+#ifdef _WIN32
+	std::string params = " -y -i \""+inFiles+concat("\" -r ",A.fps) +
+			" -c:v libx264 -preset veryslow -qp 0 -pix_fmt yuv420p "+ " \""+outFile+"\"";
+
+	SHELLEXECUTEINFO sei = {0};
+
+	sei.cbSize = sizeof (SHELLEXECUTEINFO);
+	sei.fMask  = SEE_MASK_NOCLOSEPROCESS;
+	sei.lpVerb = "open";
+	sei.lpFile = execPath.c_str();
+	sei.nShow  = SW_HIDE;
+	sei.lpParameters = params.c_str();
+
+	if(ShellExecuteEx(&sei))
+	{
+		WaitForSingleObject(sei.hProcess, INFINITE);
+	}else{
+		FractalLogger::getSingleton()->write(A.baseID, "Muxer Process Launch Failed!\n");
+		FractalLogger::getSingleton()->write(A.baseID, concat(" Windows Error: ",GetLastError())+"\n");
+	}
+#else
+	pid_t pid = fork();
+	if(pid == -1){
+		FractalLogger::getSingleton()->write(A.baseID, "Muxer Process 'fork' Failed!\n");
+	}else if(pid == 0){ // new process
+		//  -c:v libx264 -preset veryslow -qp 0 -pix_fmt yuv420p
+		execl(execPath.c_str(), execPath.c_str(), "-y", "-i", inFiles.c_str(), "-r",
+				concat("",A.fps).c_str(), "-c:v", "libx264", "-preset", "veryslow",
+				"-qp", "0", "-pix_fmt", "yuv420p", outFile.c_str(),
+				NULL, NULL);
+		FractalLogger::getSingleton()->write(A.baseID, "Muxer Process 'execl' Failed! Child Process: I'm Still Alive...???\n");
+		exit(EXIT_FAILURE);
+	}else{
+		int status;
+		waitpid(pid, &status, 0);
+	}
+#endif
+
+	FractalLogger::getSingleton()->write(A.baseID,
+			concat("Frame Muxing Complete: Took ", time(NULL) - A.timeMuxStarted) + " seconds.\n");
+	gen->finishedMuxingFrames(A);
 }
 

@@ -75,6 +75,7 @@ public:
 
 	int postJob(FractalContainer f);
 	void addAnimationToQueue(Animation anim);
+	void finishedMuxingFrames(Animation anim);
 
 	void update();
 

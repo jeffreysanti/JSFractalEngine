@@ -14,6 +14,7 @@
 class ImageWriter {
 public:
 	ImageWriter(unsigned int w, unsigned int h);
+	ImageWriter(std::string flName);
 	virtual ~ImageWriter();
 
 	void saveFile(std::string flName);
@@ -35,6 +36,7 @@ public:
 	void sharpenImage(double amp);
 
 	Color getColorAt(unsigned int x, unsigned int y);
+
 
 private:
 	void *_img;
