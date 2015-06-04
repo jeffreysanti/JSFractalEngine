@@ -29,8 +29,8 @@ import org.json.simple.JSONValue;
  * @author jeffrey
  */
 public class ParamsElementColor extends ParamsElement {
-    public ParamsElementColor(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
-        super(schemaDefn, paramsContainer, cb, arrIndex);
+    public ParamsElementColor(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
+        super(schemaDefn, paramsContainer, cb, arrIndex, addr);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -70,6 +70,9 @@ public class ParamsElementColor extends ParamsElement {
         };
         
         verify(); // assures some value is inside text editor
+        
+        callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_COLOR, schem));
     }
     
     @Override

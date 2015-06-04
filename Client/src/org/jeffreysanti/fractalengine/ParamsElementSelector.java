@@ -27,8 +27,8 @@ import org.json.simple.JSONObject;
  * @author jeffrey
  */
 public class ParamsElementSelector extends ParamsElement {
-    public ParamsElementSelector(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
-        super(schemaDefn, paramsContainer, cb, arrIndex);
+    public ParamsElementSelector(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
+        super(schemaDefn, paramsContainer, cb, arrIndex, addr);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         subElm = new JPanel();
@@ -62,14 +62,24 @@ public class ParamsElementSelector extends ParamsElement {
                 setValue(MP);
                 callback.markDirty();
                 verify();
+                callback.reportAnimationParamChange();
             }
          });
+        
+        if(isAnimatableType()){
+            callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_SELECTOR_NO_AFFECT, schem));
+        }else{
+            callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_NON_TYPE, schem));
+        }
     }
     
     @Override
     public boolean verify()
     {
         subElm.removeAll();
+        callback.removeAnimationParamType(addr+":");
         
         if(!valueExists() || !(getValue() instanceof JSONObject) ||
                 !((JSONObject)getValue()).containsKey("selected")){
@@ -119,22 +129,26 @@ public class ParamsElementSelector extends ParamsElement {
                 if(choice.containsKey("elm") && choice.get("elm") instanceof JSONObject){
                     JSONObject subelm = (JSONObject)choice.get("elm");
                     String type = (String)subelm.get("type");
+                    
+                    String newAddr = addr + ":" + val;
 
                     ParamsElement e = null;
                     if(type.equals("text")){
-                        e = new ParamsElementText(subelm, getValue(), callback, -1);
+                        e = new ParamsElementText(subelm, getValue(), callback, -1, newAddr);
                     }else if(type.equals("integer")){
-                        e = new ParamsElementIntegral(subelm, getValue(), callback, -1);
+                        e = new ParamsElementIntegral(subelm, getValue(), callback, -1, newAddr);
                     }else if(type.equals("selector")){
-                        e = new ParamsElementSelector(subelm, getValue(), callback, -1);
+                        e = new ParamsElementSelector(subelm, getValue(), callback, -1, newAddr);
                     }else if(type.equals("color")){
-                        e = new ParamsElementColor(subelm, getValue(), callback, -1);
+                        e = new ParamsElementColor(subelm, getValue(), callback, -1, newAddr);
                     }else if(type.equals("real")){
-                        e = new ParamsElementReal(subelm, getValue(), callback, -1);
+                        e = new ParamsElementReal(subelm, getValue(), callback, -1, newAddr);
+                    }else if(type.equals("complex")){
+                        e = new ParamsElementComplex(subelm, getValue(), callback, -1, newAddr);
                     }else if(type.equals("array")){
-                        e = new ParamsElementArray(subelm, getValue(), callback, -1);
+                        e = new ParamsElementArray(subelm, getValue(), callback, -1, newAddr);
                     }else if(type.equals("tuple")){
-                        e = new ParamsElementTuple(subelm, getValue(), callback, -1);
+                        e = new ParamsElementTuple(subelm, getValue(), callback, -1, newAddr);
                     }
                     subElm.add(e.getInnerElm());
                     subElm.revalidate();
@@ -160,6 +174,20 @@ public class ParamsElementSelector extends ParamsElement {
         pnl.add(subElm, BorderLayout.CENTER);
         
         return pnl;
+    }
+    
+    public boolean isAnimatableType(){
+        JSONArray choices = (JSONArray)schem.get("choices");
+        for(Object o : choices){
+            JSONObject choice = (JSONObject)o;
+            if(choice.containsKey("elm"))
+                return false;
+            if(choice.containsKey("hide"))
+                return false;
+            if(choice.containsKey("show"))
+                return false;
+        }
+        return true;
     }
     
     private JLabel lbl;

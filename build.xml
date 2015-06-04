@@ -44,6 +44,9 @@
 		<copy todir="${dist}/server.amd64.linux">
 			<fileset dir="Server/etc/" />
 		</copy>
+		<copy todir="${dist}/server.amd64.linux">
+			<fileset dir="Server/native_lin32/" />
+		</copy>
 		<zip destfile="${dist}/server.${build.number}.amd64.linux.zip" basedir="${dist}/server.amd64.linux" />
 	</target>
 

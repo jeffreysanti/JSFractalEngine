@@ -9,20 +9,22 @@
 #include "FractalGen.h"
 
 
-Fractal::Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut)
+Fractal::Fractal(unsigned int id, ParamsFile *params)
 {
 	fId = id;
 	p = params;
-	pOut = paramsOut;
-	flogFile.open(std::string(concat(FractalGen::getSaveDir()+"/",id) +".log").c_str(), std::ios::out);
 
 	timeMustStop = 0;
 
 	time_t now = time(NULL);
 	char* dt = ctime(&now);
 
-	pOut->getJson()["id"] = id;
-	pOut->getJson()["initTime"] = std::string(dt).substr(0, strlen(dt)-1); // remove newline char
+	if(p->getFrameData() == 0 || p->getFrameData() == 1){
+		Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+		pOut["id"] = id;
+		pOut["initTime"] = std::string(dt).substr(0, strlen(dt)-1); // remove newline char
+		FractalLogger::getSingleton()->unlockOutParams(fId);
+	}
 	stageName = "";
 	state = FS_CONSTRUCTED;
 }
@@ -32,12 +34,13 @@ Fractal::~Fractal()
 	time_t now = time(NULL);
 	char* dt = ctime(&now);
 
-	pOut->getJson()["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
-	flogFile.flush();
-	flogFile.close();
+	if(p->getFrameData() == 0){
+		Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+		pOut["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
+		FractalLogger::getSingleton()->unlockOutParams(fId, true);
+	}
 
 	SAFE_DELETE(p);
-	SAFE_DELETE(pOut);
 }
 
 bool Fractal::isEndedEarly()
@@ -62,13 +65,17 @@ bool Fractal::updateStatus(std::string stage, double percent)
 	}
 	if(state == FS_CANCEL)
 	{
-		pOut->getJson()["Canceled"] = "YES";
-		flogFile << "Canceled!\n";
+		Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+		pOut["Canceled"] = "YES";
+		FractalLogger::getSingleton()->unlockOutParams(fId);
+		logMessage("Canceled!\n", true);
 		return true;
 	}
 	if(state == FS_TIMEOUT || (timeMustStop != 0 && now > timeMustStop)){
-		pOut->getJson()["TimedOut"] = "YES";
-		flogFile << "Timed Out!\n";
+		Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+		pOut["TimedOut"] = "YES";
+		FractalLogger::getSingleton()->unlockOutParams(fId);
+		logMessage("Timed Out!\n", true);
 		state = FS_TIMEOUT;
 		return true;
 	}
@@ -76,19 +83,26 @@ bool Fractal::updateStatus(std::string stage, double percent)
 	if(stage != stageName){
 		if(stageName != ""){
 			unsigned long len = now - lastStateTrans;
-			pOut->getJson()["time"+stage] = (int)len;
+			std::string pName = "time"+stageName;
+
+			Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+			if(pOut.isMember(pName)){
+				len = len + pOut[pName].asLargestInt();
+			}
+			pOut[pName] = (int)len;
+			FractalLogger::getSingleton()->unlockOutParams(fId);
 		}
 		stageName = stage;
-		if(stageName != "done")
-			flogFile << "Starting Stage: " << stageName << "\n";
+		if(stageName != "done"){
+			logMessage("Starting Stage: " + stageName + "\n", false);
+		}
 		lastStateTrans = now;
 	}
 	if(stageName == "done")
 		return false;
 
 	if(now - last > 2){
-		flogFile << "Stage: "<<stage<<", " << percent << "% complete\n";
-		flogFile.flush();
+		logMessage("Stage: " + stage + concat(", ", percent) + "% complete\n", false);
 		last = now;
 	}
 	return false;
@@ -117,8 +131,16 @@ void Fractal::postRender()
 		updateStatus("done", 100);
 		unsigned long end = time(NULL);
 
-		pOut->getJson()["timeRender"] = int(end-renderStart);
-		pOut->getJson()["complete"] = "YES";
+		Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+		unsigned long tRend = end-renderStart;
+		if(pOut.isMember("TOTALRENDERTIME")){
+			tRend = tRend + pOut["TOTALRENDERTIME"].asLargestInt();
+		}
+		pOut["TOTALRENDERTIME"] = (int)tRend;
+		if(p->getFrameData() == 0){
+			pOut["complete"] = "YES";
+		}
+		FractalLogger::getSingleton()->unlockOutParams(fId, true);
 		state = FS_DONE;
 	}
 }
@@ -130,9 +152,14 @@ void Fractal::processParams()
 
 void Fractal::postProcessParams()
 {
-	p->saveToFile(FractalGen::getSaveDir() + concat("/", getId())+".job");
 	unsigned long end = time(NULL);
-	pOut->getJson()["timeParamProcessing"] = int(end-processParamStart);
+	unsigned long len = end - processParamStart;
+	Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
+	if(pOut.isMember("timeParamProcessing")){
+		len = len + pOut["timeParamProcessing"].asLargestInt();
+	}
+	pOut["timeParamProcessing"] = (int)len;
+	FractalLogger::getSingleton()->unlockOutParams(fId);
 }
 
 unsigned int Fractal::getId()
@@ -144,11 +171,20 @@ void Fractal::err(std::string error)
 {
 	state = FS_ERR;
 	errs << error;
-	flogFile << error;
+	logMessage(error, true);
 }
 
 FractalState Fractal::getState(){
 	return state;
+}
+
+void Fractal::logMessage(std::string s, bool important)
+{
+	if(p->getFrameData() == 0 || important){
+		FractalLogger::getSingleton()->write(fId, s);
+	}else{
+		// repress message
+	}
 }
 
 

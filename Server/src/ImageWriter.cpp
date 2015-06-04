@@ -23,6 +23,11 @@ ImageWriter::ImageWriter(unsigned int w, unsigned int h) {
 	_img = (CImg<unsigned char> *)img;
 }
 
+ImageWriter::ImageWriter(std::string flName){
+	CImg<unsigned char> *img = new CImg<unsigned char>(flName.c_str());
+	_img = (CImg<unsigned char> *)img;
+}
+
 ImageWriter::~ImageWriter() {
 	// TODO Auto-generated destructor stub
 	CImg<unsigned char> *img = (CImg<unsigned char> *)_img;

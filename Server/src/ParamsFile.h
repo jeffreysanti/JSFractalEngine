@@ -25,6 +25,11 @@ public:
 
 	static std::string readAllFile(std::string path);
 
+	void clearFrameData();
+	int getFrameData();
+
+	int getID();
+
 protected:
 	Json::Value root;
 	bool open_correct;

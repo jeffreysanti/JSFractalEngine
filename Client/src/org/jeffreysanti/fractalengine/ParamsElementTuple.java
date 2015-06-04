@@ -33,8 +33,8 @@ import org.json.simple.JSONValue;
  * @author jeffrey
  */
 public class ParamsElementTuple extends ParamsElement {
-    public ParamsElementTuple(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
-        super(schemaDefn, paramsContainer, cb, arrIndex);
+    public ParamsElementTuple(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
+        super(schemaDefn, paramsContainer, cb, arrIndex, addr);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -42,6 +42,9 @@ public class ParamsElementTuple extends ParamsElement {
         lst.setLayout(new BoxLayout(lst, BoxLayout.Y_AXIS));
         
         verify(); // assures some value is there
+        
+        callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_NON_TYPE, schem));
     }
     
     @Override
@@ -66,24 +69,28 @@ public class ParamsElementTuple extends ParamsElement {
         lst.removeAll();
         
         // elements of tuple
+        callback.removeAnimationParamType(addr+":");
         for(Object elmSchem : (JSONArray)schem.get("elms")){
             String type = (String)((JSONObject)elmSchem).get("type");
+            String newAddr = addr + ":" + (String)((JSONObject)elmSchem).get("id");
             
             ParamsElement e;
             if(type.equals("text")){
-                e = new ParamsElementText((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementText((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }else if(type.equals("integer")){
-                e = new ParamsElementIntegral((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementIntegral((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }else if(type.equals("selector")){
-                e = new ParamsElementSelector((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementSelector((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }else if(type.equals("color")){
-                e = new ParamsElementColor((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementColor((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }else if(type.equals("real")){
-                e = new ParamsElementReal((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementReal((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
+            }else if(type.equals("complex")){
+                e = new ParamsElementComplex((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }else if(type.equals("array")){
-                e = new ParamsElementArray((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementArray((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }else if(type.equals("tuple")){
-                e = new ParamsElementTuple((JSONObject)elmSchem, getValue(), callback, -1);
+                e = new ParamsElementTuple((JSONObject)elmSchem, getValue(), callback, -1, newAddr);
             }
             else{
                 continue;

@@ -20,8 +20,8 @@ import org.json.simple.JSONObject;
  * @author jeffrey
  */
 public class ParamsElementIntegral extends ParamsElement {
-    public ParamsElementIntegral(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
-        super(schemaDefn, paramsContainer, cb, arrIndex);
+    public ParamsElementIntegral(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
+        super(schemaDefn, paramsContainer, cb, arrIndex, addr);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -48,6 +48,9 @@ public class ParamsElementIntegral extends ParamsElement {
         
         verify(); // assures some value is inside text editor
         txt.setText(getValue().toString());
+        
+        callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_INT, schem));
     }
     
     @Override
@@ -73,6 +76,16 @@ public class ParamsElementIntegral extends ParamsElement {
             // okay
         }
         return false;
+    }
+    
+    public int getIntVal(){
+        String val = getValue().toString();
+        try{
+            return Integer.parseInt(val);
+        }catch(NumberFormatException e){
+            // okay
+        }
+        return 0;
     }
     
     @Override

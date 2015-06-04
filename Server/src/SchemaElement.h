@@ -11,6 +11,8 @@
 #include "DirectoryManager.h"
 #include <queue>
 #include <set>
+#include <complex>
+#include "muParserC/mucParser.h"
 
 struct SchemaActuator{
 	std::string action; // either "hide" or "show"
@@ -27,6 +29,8 @@ public:
 	template<class T> void numericConstraints(bool &max, bool &min, T &maxv, T &minv, bool &zero);
 	bool isPresent(Json::Value &in);
 	bool allowNull();
+
+	inline void overrideElementID(std::string eid) {elmid = eid;}
 
 	inline std::string getElementID() {return elmid;}
 
@@ -55,6 +59,13 @@ protected:
 	bool maximized, minimized;
 	long double min, max;
 	long double defVal;
+};
+class SchemaElementComplex : public SchemaElement {
+public:
+	SchemaElementComplex(std::string grpAddr, Json::Value &schema);
+	virtual void verifyElement(Json::Value &in, std::string &err, std::vector<SchemaActuator> &actutators);
+protected:
+	std::string defVal;
 };
 class SchemaElementText : public SchemaElement {
 public:
@@ -102,6 +113,19 @@ protected:
 	long long min, max;
 	SchemaElement *E;
 };
+
+
+inline std::complex<double> getComplexValueFromString(std::string val){
+	try{
+		muc::Parser p;
+		p.SetExpr(val);
+		std::complex<double> z = p.Eval();
+		return z;
+	}catch (muc::Parser::exception_type &e)
+	{
+		return std::complex<double>(0,0); // if failed
+	}
+}
 
 
 #endif /* SCHEMAELEMENT_H_ */

@@ -9,7 +9,6 @@
 #include "stdio.h"
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>
-//#include "SocketClient.h"
 #include "json/json.h"
 
 #include "ConnectionManager.h"
@@ -43,17 +42,16 @@ int main(int argc, char* argv[])
 
 	FractalGen gen;
 
-	//unsigned long start = time(NULL);
+	unsigned long iter = 1;
 	while(true){
 		gen.update();
 
-		/*if(time(NULL) - start > 20){
-			std::cout << "Time's up!\n";
-			exit(0);
-			return 0;
-		}*/
+		if(iter % 6000 == 0){ // ~ every 10 min
+			FractalLogger::getSingleton()->forceFlushAll();
+		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		iter ++;
 	}
 	return 0;
 }

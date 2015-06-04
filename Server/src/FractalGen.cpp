@@ -56,8 +56,6 @@ inline void canceled(unsigned int id, FractalGen *gen){
 	FractalMeta m = DBManager::getSingleton()->getFractal(id);
 	m.status = FDBS_CANCEL;
 	DBManager::getSingleton()->updateFractal(m);
-	char *dta = nullptr;
-	int len=0;
 	InfoExchange exh;
 	exh.type = EXT_REPORT_FRACT_STATUS_CHANGE;
 	exh.uiParam1 = m.jobID;
@@ -68,6 +66,9 @@ inline void canceled(unsigned int id, FractalGen *gen){
 // Removes from queues
 bool FractalGen::cancelJob(unsigned int id)
 {
+	// remove from animation queue
+	cancelAnimation(id);
+
 	for(int i=0; i<R.size(); i++){
 		if(R[i]->jid == id && R[i]->fract != NULL){
 			R[i]->fract->doCancel();
@@ -78,11 +79,9 @@ bool FractalGen::cancelJob(unsigned int id)
 
 	for(auto it=JQManual.begin(); it!=JQManual.end(); it++){
 		if((*it)->getJson()["internal"]["id"].asUInt() == id){
-			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut);
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it));
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
-			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
 			delete fTmp;
 			JQManual.erase(it);
 			canceled(id, this);
@@ -91,11 +90,9 @@ bool FractalGen::cancelJob(unsigned int id)
 	}
 	for(auto it=JQ.begin(); it!=JQ.end(); it++){
 		if((*it)->getJson()["internal"]["id"].asUInt() == id){
-			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut);
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it));
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
-			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
 			delete fTmp;
 			JQ.erase(it);
 			canceled(id, this);
@@ -121,10 +118,19 @@ void FractalGen::runThread(ParamsFile *p)
 
 	std::cout << "runThread(" << p->getJson()["internal"]["id"].asInt() << ")\n";
 	RenderingJob *r = new RenderingJob;
+
+	if(p->getJson()["internal"].isMember("thisframe") &&
+			p->getJson()["internal"]["thisframe"].isInt()){
+		r->frameID = p->getJson()["internal"]["thisframe"].asInt();
+	}else{
+		r->frameID = 0;
+	}
+
 	r->jid = p->getJson()["internal"]["id"].asInt();
 	r->params = p;
 	r->timeStart = time(NULL);
 	r->fract = NULL;
+	r->genPtr = this;
 	r->gen = std::thread(&runGen, r);
 	r->gen.detach();
 	R.push_back(r);
@@ -153,6 +159,7 @@ int FractalGen::postJob(FractalContainer f)
 
 	f.p->getJson()["internal"]["id"] = f.m.jobID;
 	f.p->getJson()["internal"]["uid"] = f.m.userID;
+	f.p->clearFrameData(); // frames cannot be submitted this way
 	if(f.m.manualQueue){
 		f.p->getJson()["internal"]["queue"] = "MANUAL";
 		JQManual.push_back(f.p);
@@ -174,34 +181,54 @@ void FractalGen::update()
 			continue;
 		}
 		changeOccured = true;
-		FractalMeta m = DBManager::getSingleton()->getFractal((*it)->jid);
-		if((*it)->fract != NULL){
-			if((*it)->fract->getState() == FS_TIMEOUT)
-				m.status = FDBS_TIMEOUT;
-			else if((*it)->fract->getState() == FS_CANCEL)
-				m.status = FDBS_CANCEL;
-			else if((*it)->fract->getState() == FS_DONE)
-				m.status = FDBS_COMPLETE;
-			else
+
+		if((*it)->frameID == 0){ // not an animation
+			FractalMeta m = DBManager::getSingleton()->getFractal((*it)->jid);
+			if((*it)->fract != NULL){
+				if((*it)->fract->getState() == FS_TIMEOUT)
+					m.status = FDBS_TIMEOUT;
+				else if((*it)->fract->getState() == FS_CANCEL)
+					m.status = FDBS_CANCEL;
+				else if((*it)->fract->getState() == FS_DONE)
+					m.status = FDBS_COMPLETE;
+				else
+					m.status = FDBS_ERR;
+			}else{
 				m.status = FDBS_ERR;
+			}
+			DBManager::getSingleton()->updateFractal(m);
+
+			InfoExchange exh;
+			exh.type = EXT_REPORT_FRACT_STATUS_CHANGE;
+			exh.uiParam1 = m.jobID;
+			FractalGenTrackManager::getSingleton()->postExchange(exh);
 		}else{
-			m.status = FDBS_ERR;
+			FractalDBState stat = FDBS_COMPLETE;
+			if((*it)->fract != NULL){
+				if((*it)->fract->getState() == FS_TIMEOUT)
+					stat = FDBS_TIMEOUT;
+				else if((*it)->fract->getState() == FS_CANCEL)
+					stat = FDBS_CANCEL;
+				else if((*it)->fract->getState() == FS_DONE)
+					stat = FDBS_COMPLETE;  // OK
+				else
+					stat = FDBS_ERR;
+			}else{
+				stat = FDBS_ERR;
+			}
+			if(stat != FDBS_COMPLETE){
+				// cancel job -> it failed
+				cancelJob((*it)->jid);
+			}
 		}
-		DBManager::getSingleton()->updateFractal(m);
-		char *dta = NULL;
-		int len=0;
-
-		InfoExchange exh;
-		exh.type = EXT_REPORT_FRACT_STATUS_CHANGE;
-		exh.uiParam1 = m.jobID;
-		FractalGenTrackManager::getSingleton()->postExchange(exh);
-
 
 		std::cout << "REMOVING(" << (*it)->jid << ")\n";
 		deleteRunningJob(*it);
 		delete (*it);
 		R.erase(it);
 	}
+
+	addAnimationFramesToRenderQueue(maxThreads - R.size());
 
 	// If we are not running max jobs, run one ;)
 	if(R.size() < maxThreads){
@@ -293,15 +320,159 @@ void FractalGen::sendUpdateToTracker()
 }
 
 
+void FractalGen::addAnimationToQueue(Animation anim){
+	animLock.lock();
+	FractalMeta m = DBManager::getSingleton()->getFractal(anim.baseID);
+	if(m.manualQueue)
+		anim.manualQueue = true;
+	else
+		anim.manualQueue = false;
+	A.push_back(anim);
+	animLock.unlock();
+}
+
+void FractalGen::addAnimationFramesToRenderQueue(int count){
+	unsigned long now = time(NULL);
+	for(int i=0; i<A.size(); i++) {
+		if(A[i].timeMustStop == 0 || A[i].timeMustStop > now){
+			continue;
+		}
+		FractalLogger::getSingleton()->write(A[i].baseID, "TIMED OUT!\n");
+		cancelJob(A[i].baseID);
+		break; // only cancel one this pass to avoid concurrent access
+	}
+
+	animLock.lock();
+	int a = 0;
+	while(count > 0 && a < A.size()){
+		int jid = A[a].baseID;
+		while(count > 0 && !A[a].frameQueue.empty()){
+			std::string frameFile = A[a].frameQueue.front();
+			A[a].frameQueue.pop_front();
+
+			ParamsFile *p = new ParamsFile(frameFile, true);
+			if(A[a].manualQueue){
+				JQManual.push_back(p);
+			}else{
+				JQ.push_back(p);
+			}
+			A[a].framesRendering.insert(p->getFrameData());
+			count--;
+		}
+		a++;
+	}
+	// now check for animation progress
+	for(auto itA = A.begin(); itA != A.end(); ) {
+		int jid = (*itA).baseID;
+
+		// process frames
+		for(auto itF = (*itA).framesRendering.begin(); itF != (*itA).framesRendering.end(); ) {
+			int fno = *itF;
+			bool stillbusy = false;
+
+			if((*itA).manualQueue){
+				for(ParamsFile *f : JQManual){
+					if(f->getID() == jid && f->getFrameData() == fno){
+						stillbusy = true;
+						break;
+					}
+				}
+			}else{
+				for(ParamsFile *f : JQ){
+					if(f->getID() == jid && f->getFrameData() == fno){
+						stillbusy = true;
+						break;
+					}
+				}
+			}
+
+			if(stillbusy){
+				++itF;
+				continue;
+			}
+			for(RenderingJob *r : R){
+				if(r->jid == jid && r->frameID == fno){
+					stillbusy = true;
+					break;
+				}
+			}
+
+			if(stillbusy){
+				++itF;
+				continue;
+			}
+			// no longer rendering this frame
+			itF = (*itA).framesRendering.erase(itF);
+
+
+			double percent = 1.0 - (double)((*itA).frameQueue.size() +
+					(*itA).framesRendering.size()) / (double)(*itA).frames;
+			percent *= 100.0;
+			FractalLogger::getSingleton()->write((*itA).baseID,
+					concat("Frame Completed: ", percent) + "% complete\n");
+		}
+
+		// check if animation rendering complete
+		if((*itA).frameQueue.empty() && (*itA).framesRendering.empty()){
+			// run muxer in a seperate thread
+			std::thread muxer = std::thread(&AnimationBuilder::muxFrames, (*itA), this);
+			muxer.detach();
+			itA = A.erase(itA);
+		}else{
+			++itA;
+		}
+	}
+	animLock.unlock();
+}
+
+void FractalGen::finishedMuxingFrames(Animation anim){
+	animLock.lock();
+
+	unsigned long t = time(NULL) - anim.timeStarted;
+	FractalLogger::getSingleton()->write(anim.baseID,
+				concat("Animation Completed! Took: ", t) + " Seconds.\n");
+
+	time_t now = time(NULL);
+	char* dt = ctime(&now);
+	Json::Value &pOut = FractalLogger::getSingleton()->outParams(anim.baseID);
+	pOut["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
+	pOut["timeMuxing"] = (int)(time(NULL) - anim.timeMuxStarted);
+	FractalLogger::getSingleton()->unlockOutParams(anim.baseID, true);
+
+	FractalMeta m = DBManager::getSingleton()->getFractal(anim.baseID);
+	m.status = FDBS_COMPLETE;
+	DBManager::getSingleton()->updateFractal(m);
+
+	InfoExchange exh;
+	exh.type = EXT_REPORT_FRACT_STATUS_CHANGE;
+	exh.uiParam1 = m.jobID;
+	FractalGenTrackManager::getSingleton()->postExchange(exh);
+
+	sendUpdateToTracker();
+
+	animLock.unlock();
+}
+
+void FractalGen::cancelAnimation(int jid)
+{
+	animLock.lock();
+	for(auto itA = A.begin(); itA != A.end(); ) {
+		if((*itA).baseID != jid){
+			++itA;
+			continue;
+		}
+		itA = A.erase(itA);
+	}
+	animLock.unlock();
+}
+
 
 int runGen(RenderingJob *r)
 {
 	try{
-		ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-
 		std::string err = "";
 		if(!r->params->validate(err)){
-			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params);
 			fTmp->err(err);
 			std::cerr << err;
 			delete fTmp;
@@ -309,11 +480,29 @@ int runGen(RenderingJob *r)
 			return 0;
 		}
 
-		std::string type = r->params->getJson()["basic"]["type"]["selected"].asString();
 		int timeOut = r->params->getJson()["basic"]["timeout"].asInt();
 
+		std::string animated = r->params->getJson()["basic"]["anim"]["selected"].asString();
+		if(animated == "yes"){
+			AnimationBuilder builder(r->params, r->params->getJson()["internal"]["id"].asInt());
+			Animation anim = builder.spawnJobs(err, timeOut);
+			if(err != ""){
+				Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params);
+				fTmp->err(err);
+				std::cerr << err;
+				delete fTmp;
+				r->timeStart = TIMESTART_COMPLETE;
+				return 0;
+			}
+			r->genPtr->addAnimationToQueue(anim);
+			r->frameID = 1;
+		}
+
+		std::string type = r->params->getJson()["basic"]["type"]["selected"].asString();
+
+
 		if(type == "mandlejulia"){
-			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params);
 			r->fract->processParams();
 			if(!r->fract->isOkay()){
 				std::cerr << r->fract->getErrors();
@@ -322,7 +511,7 @@ int runGen(RenderingJob *r)
 			}
 			r->fract->render(timeOut);
 		}else{
-			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params);
 			fTmp->err("Error: Unknown type parameter: " + type);
 			r->timeStart = TIMESTART_COMPLETE;
 			delete fTmp;
@@ -331,11 +520,6 @@ int runGen(RenderingJob *r)
 
 		if(!r->fract->isEndedEarly()){
 			r->fract->updateStatus("Complete!!!", 100);
-			pOut->getJson()["Complete"] = "YES";
-		}
-
-		if(r->fract->isOkay()){
-			pOut->saveToFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".info");
 		}
 		r->timeStart = TIMESTART_COMPLETE;
 	}catch (const std::exception &exc){

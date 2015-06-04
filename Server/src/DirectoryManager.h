@@ -25,6 +25,7 @@ public:
 	std::string getRootDirectory();
 	Json::Value &getConfigRoot();
 
+	std::string getFFmpegBinary();
 
 	static DirectoryManager *getSingleton();
 

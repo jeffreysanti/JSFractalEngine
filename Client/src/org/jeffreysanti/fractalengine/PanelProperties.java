@@ -7,11 +7,13 @@ package org.jeffreysanti.fractalengine;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -19,6 +21,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.jeffreysanti.fractalengine.AnimationWindow.AnimationParam;
+import org.jeffreysanti.fractalengine.AnimationWindow.AnimationParamType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -36,12 +40,29 @@ public class PanelProperties extends JPanel implements ServerReplyer {
     
     public void switchContext(Context cont){
         c = cont;
+        AP = new HashMap();
+        
+        if(awnd != null && awnd.isVisible()){
+            awnd.dispatchEvent(new WindowEvent(awnd, WindowEvent.WINDOW_CLOSING));
+        }
+        awnd = null;
         
         btnSubmit = new JButton("Submit Job");
         btnSubmit.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent ae) {
                 submit();
+            }
+        });
+        
+        btnAnim = new JButton("Animation");
+        btnAnim.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if(awnd != null && awnd.isVisible()){
+                    awnd.dispatchEvent(new WindowEvent(awnd, WindowEvent.WINDOW_CLOSING));
+                }
+                awnd = new AnimationWindow(c.getParams(), PanelProperties.this, AP);
             }
         });
         
@@ -89,20 +110,23 @@ public class PanelProperties extends JPanel implements ServerReplyer {
             if(elm.containsKey("hidden"))
                 continue;
             ParamsElement E;
+            String addr = nm+":"+(String)elm.get("id");
             if(type.equals("text")){
-                E = new ParamsElementText(elm, paramGroup, this, -1);
+                E = new ParamsElementText(elm, paramGroup, this, -1, addr);
             }else if(type.equals("integer")){
-                E = new ParamsElementIntegral(elm, paramGroup, this, -1);
+                E = new ParamsElementIntegral(elm, paramGroup, this, -1, addr);
             }else if(type.equals("selector")){
-                E = new ParamsElementSelector(elm, paramGroup, this, -1);
+                E = new ParamsElementSelector(elm, paramGroup, this, -1, addr);
             }else if(type.equals("color")){
-                E = new ParamsElementColor(elm, paramGroup, this, -1);
+                E = new ParamsElementColor(elm, paramGroup, this, -1, addr);
             }else if(type.equals("real")){
-                E = new ParamsElementReal(elm, paramGroup, this, -1);
+                E = new ParamsElementReal(elm, paramGroup, this, -1, addr);
+            }else if(type.equals("complex")){
+                E = new ParamsElementComplex(elm, paramGroup, this, -1, addr);
             }else if(type.equals("array")){
-                E = new ParamsElementArray(elm, paramGroup, this, -1);
+                E = new ParamsElementArray(elm, paramGroup, this, -1, addr);
             }else if(type.equals("tuple")){
-                E = new ParamsElementTuple(elm, paramGroup, this, -1);
+                E = new ParamsElementTuple(elm, paramGroup, this, -1, addr);
             }
             else{
                 continue;
@@ -110,6 +134,7 @@ public class PanelProperties extends JPanel implements ServerReplyer {
             pnl.add(E.getInnerElm());
         }
         
+        reportAnimationParamChange();
         G.put(nm, pnl);
         updateGroupDisplay();
     }
@@ -151,6 +176,7 @@ public class PanelProperties extends JPanel implements ServerReplyer {
                 this.add(G.get(id));
             }
         }
+        this.add(btnAnim);
         this.add(btnSubmit);
         this.revalidate();
     }
@@ -160,6 +186,10 @@ public class PanelProperties extends JPanel implements ServerReplyer {
             p.setEnabled(false);
         }
         this.remove(btnSubmit);
+        if(awnd != null && awnd.isVisible()){
+            awnd.dispatchEvent(new WindowEvent(awnd, WindowEvent.WINDOW_CLOSING));
+        }
+        awnd = null;
         
         ServerConnection.getInst().addPacketToQueue("SJOB",c.getParams().toJSONString(), this); // request all avali info
     }
@@ -171,6 +201,9 @@ public class PanelProperties extends JPanel implements ServerReplyer {
     private HashMap<String, JPanel> G;
     
     private JButton btnSubmit;
+    private JButton btnAnim;
+    private AnimationWindow awnd = null;
+    private HashMap<String, AnimationParam> AP;
 
     @Override
     public void onReceiveReply(String head, int len, DataInputStream ds) {
@@ -181,5 +214,24 @@ public class PanelProperties extends JPanel implements ServerReplyer {
     
     void markDirty(){
         c.markDirty();
+    }
+    
+    public void registerAnimationParamType(AnimationParam pt){
+        AP.put(pt.addr, pt);
+    }
+    public void removeAnimationParamType(String s){
+        Iterator<String> it = AP.keySet().iterator();
+        while (it.hasNext()){
+            String tmp = it.next();
+            if(tmp.startsWith(s)){
+                it.remove();
+            }
+        }
+    }
+    
+    public void reportAnimationParamChange(){
+        if(awnd != null){
+            awnd.updatedAnimationParams();
+        }
     }
 }

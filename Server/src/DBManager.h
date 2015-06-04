@@ -32,6 +32,7 @@ struct FractalMeta{
 		userID = -1;
 		status = FDBS_ERR;
 		manualQueue = true;
+		animation = false;
 	}
 
 	int jobID;
@@ -40,6 +41,7 @@ struct FractalMeta{
 	std::string author;
 	FractalDBState status;
 	bool manualQueue;
+	bool animation;
 };
 
 struct FractalContainer{
@@ -96,6 +98,22 @@ inline std::string concat(std::string s, TYP i)
 	std::stringstream ss;
 	ss << s << i;
 	return ss.str();
+}
+
+inline std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+inline std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
 }
 
 #endif /* DBSYSTEM_H_ */

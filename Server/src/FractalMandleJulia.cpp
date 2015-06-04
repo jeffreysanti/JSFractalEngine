@@ -7,15 +7,15 @@
 
 #include "FractalMandleJulia.h"
 
-FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut)
-						: Fractal(id, p, paramsOut) {
+FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p)
+						: Fractal(id, p) {
 	I = NULL;
 	histogram = NULL;
 	algoCopy = -1;
 
 
-	width = p->getJson()["type.juliamandle"]["imgWidth"].asInt();
-	height = p->getJson()["type.juliamandle"]["imgHeight"].asInt();
+	width = p->getJson()["basic"]["imgWidth"].asInt();
+	height = p->getJson()["basic"]["imgHeight"].asInt();
 	img = new ImageWriter(width, height);
 
 	processParams();
@@ -51,8 +51,14 @@ void FractalMandleJulia::render(int maxTime)
 	passEffect();
 	passEvaluate();
 
-	if(isOkay())
-		img->saveFile(concat(FractalGen::getSaveDir()+"/", getId())+".png");
+	if(isOkay()){
+		if(p->getFrameData() == 0 || p->getFrameData() == 1)
+			img->saveFile(concat(FractalGen::getSaveDir()+"/", getId())+".png");
+		if(p->getFrameData() != 0){
+			img->saveFile(concat(concat(FractalGen::getSaveDir()+"/", getId())+".",
+					p->getFrameData())+".png");
+		}
+	}
 
 	Fractal::postRender();
 }
@@ -307,7 +313,7 @@ void FractalMandleJulia::passAlgoritm()
 		}
 	}else{
 		// Copy .algo file
-		flogFile << "Copying ALGO FILE # " << algoCopy << ".\n";
+		logMessage(concat("Copying ALGO FILE # ",algoCopy) + ".\n)", false);
 		std::string algoFl = FractalGen::getSaveDir() + concat("/", algoCopy)+".algo";
 		FILE *fp = fopen(algoFl.c_str(), "rb");
 		for(int x=0; x<width; x++)
@@ -317,12 +323,14 @@ void FractalMandleJulia::passAlgoritm()
 	}
 
 	// now cache the algo data for faster changes in color/shading
-	std::string algoFl = FractalGen::getSaveDir() + concat("/", getId())+".algo";
-	FILE *fp = fopen(algoFl.c_str(), "wb");
-	for(int x=0; x<width; x++)
-		fwrite(I[x], sizeof(int), height, fp);
-	fwrite(histogram, sizeof(unsigned int), iters, fp);
-	fclose(fp);
+	if(p->getFrameData() == 0 || p->getFrameData() == 1){
+		std::string algoFl = FractalGen::getSaveDir() + concat("/", getId())+".algo";
+		FILE *fp = fopen(algoFl.c_str(), "wb");
+		for(int x=0; x<width; x++)
+			fwrite(I[x], sizeof(int), height, fp);
+		fwrite(histogram, sizeof(unsigned int), iters, fp);
+		fclose(fp);
+	}
 }
 
 
@@ -518,53 +526,61 @@ void FractalMandleJulia::passEvaluate()
 	if(updateStatus("Eval 5/5", 0))
 		return;
 
-	// how interesting is this?
-	int uniqueIterCount = 0;
-	int sum = 0;
-	for(int i=0; i<iters; i++)
-	{
-		if(histogram[i] > 0)
-			uniqueIterCount ++;
-		sum += (i+1)*histogram[i];
+	Json::Value &pOut = FractalLogger::getSingleton()->outParams(getId());
+
+	if(p->getFrameData() == 0){
+		// how interesting is this?
+		int uniqueIterCount = 0;
+		int sum = 0;
+		for(int i=0; i<iters; i++)
+		{
+			if(histogram[i] > 0)
+				uniqueIterCount ++;
+			sum += (i+1)*histogram[i];
+		}
+		pOut["uniqueSecs"] = uniqueIterCount;
+
+		// get standard deviation
+		double avg = sum / (width*height);
+		int hmax = 0;
+		pOut["avgIterCount"] = avg;
+		double variance = 0;
+		for(int i=0; i<iters; i++)
+		{
+			variance += histogram[i] * std::pow(avg - (i+1), 2);
+			if(histogram[i] > hmax)
+				hmax = histogram[i];
+		}
+		variance = variance / (width * height);
+		pOut["stdDeviation"] = std::sqrt(variance);
+
+		// populate charts
+		Json::Value graphs = Json::Value(Json::arrayValue);
+
+		Json::Value histo = Json::Value(Json::objectValue);
+		histo["title"] = "Histogram";
+		histo["xaxis"] = "Iteration Count";
+		histo["yaxis"] = "Pixel Count";
+		histo["xmin"] = 1;
+		histo["xmax"] = iters;
+		histo["ymin"] = 0;
+		histo["ymax"] = hmax;
+		histo["trace"] = Json::Value(Json::arrayValue);
+		for(int i=0; i<iters; i++)
+		{
+			Json::Value pt = Json::Value(Json::arrayValue);
+			pt[0] = i+1;
+			pt[1] = histogram[i];
+			histo["trace"][i] = pt;
+		}
+
+		graphs[0] = histo;
+		pOut["graphs"] = graphs;
+	}else{
+		// TODO: What About For Animations?
 	}
-	pOut->getJson()["uniqueSecs"] = uniqueIterCount;
 
-	// get standard deviation
-	double avg = sum / (width*height);
-	int hmax = 0;
-	pOut->getJson()["avgIterCount"] = avg;
-	double variance = 0;
-	for(int i=0; i<iters; i++)
-	{
-		variance += histogram[i] * std::pow(avg - (i+1), 2);
-		if(histogram[i] > hmax)
-			hmax = histogram[i];
-	}
-	variance = variance / (width * height);
-	pOut->getJson()["stdDeviation"] = std::sqrt(variance);
-
-	// populate charts
-	Json::Value graphs = Json::Value(Json::arrayValue);
-
-	Json::Value histo = Json::Value(Json::objectValue);
-	histo["title"] = "Histogram";
-	histo["xaxis"] = "Iteration Count";
-	histo["yaxis"] = "Pixel Count";
-	histo["xmin"] = 1;
-	histo["xmax"] = iters;
-	histo["ymin"] = 0;
-	histo["ymax"] = hmax;
-	histo["trace"] = Json::Value(Json::arrayValue);
-	for(int i=0; i<iters; i++)
-	{
-		Json::Value pt = Json::Value(Json::arrayValue);
-		pt[0] = i+1;
-		pt[1] = histogram[i];
-		histo["trace"][i] = pt;
-	}
-
-	graphs[0] = histo;
-	pOut->getJson()["graphs"] = graphs;
+	FractalLogger::getSingleton()->unlockOutParams(getId());
 }
 
 unsigned int FractalMandleJulia::returnArtifacts(FractalMeta &meta, char **dta)

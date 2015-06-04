@@ -84,6 +84,14 @@ void DirectoryManager::initialize(std::string arg0)
 	}
 }
 
+std::string DirectoryManager::getFFmpegBinary(){
+#ifdef _WIN32
+   return rootDir + "ffmpeg.exe";
+#else
+   return rootDir + "ffmpeg";
+#endif
+}
+
 Json::Value &DirectoryManager::getConfigRoot()
 {
 	return configRoot;

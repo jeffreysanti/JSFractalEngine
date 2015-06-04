@@ -6,6 +6,7 @@
  */
 
 #include "SchemaManager.h"
+#include "DBManager.h"
 
 SchemaManager SchemaManager::singleton;
 
@@ -149,6 +150,9 @@ std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
 			}else if(elm["type"].asString() == "real"){
 				SchemaElementReal Erel(id, elm);
 				Erel.verifyElement(paramRoot[id], ret, actuators);
+			}else if(elm["type"].asString() == "complex"){
+				SchemaElementComplex Ecomp(id, elm);
+				Ecomp.verifyElement(paramRoot[id], ret, actuators);
 			}else if(elm["type"].asString() == "text"){
 				SchemaElementText Etxt(id, elm);
 				Etxt.verifyElement(paramRoot[id], ret, actuators);
@@ -177,6 +181,226 @@ std::string SchemaManager::validateParamaters(Json::Value &paramRoot)
 
 	return ret;
 }
+
+SchemaValTypeJsonObj SchemaManager::getParamAddrType(std::string addr, Json::Value *paramRoot)
+{
+	Json::Value elm;
+	Json::Value *param;
+
+	std::vector<std::string> parts = split(addr, ':');
+	if(parts.size() < 2) return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+
+	std::string groupstr = parts[0];
+	if(inital_G.find(groupstr) == inital_G.end()) return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+	Json::Value group = inital_G[groupstr]["elms"];
+
+	if(paramRoot == NULL || !paramRoot->isObject()){
+		param = NULL;
+	}else{
+		param = paramRoot;
+	}
+	if(param != NULL && param->isMember(groupstr) && (*param)[groupstr].isObject()){
+		param = &(*paramRoot)[groupstr];
+	}else{
+		param = NULL;
+	}
+
+	std::string elmstr = parts[1];
+	bool found = false;
+	for(Json::Value e : group){
+		if(e["id"] == elmstr){
+			elm = e;
+			found = true;
+
+			if(param != NULL && param->isMember(elmstr)){
+				param = &(*param)[elmstr];
+			}else{
+				param = NULL;
+			}
+		}
+	}
+	if(!found) return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+
+	int index = 1;
+	while(true){
+		if(elm["type"] == "text")
+			return SchemaValTypeJsonObj(SVT_TEXT, elm, param);
+		if(elm["type"] == "integer")
+			return SchemaValTypeJsonObj(SVT_INT, elm, param);
+		if(elm["type"] == "real")
+			return SchemaValTypeJsonObj(SVT_REAL, elm, param);
+		if(elm["type"] == "complex")
+			return SchemaValTypeJsonObj(SVT_COMPLEX, elm, param);
+		if(elm["type"] == "color")
+			return SchemaValTypeJsonObj(SVT_COLOR, elm, param);
+		if(elm["type"] == "selector"){
+			if(index+1 < parts.size()){
+				index ++;
+				std::string s = parts[index];
+				bool found = false;
+				for(Json::Value choice : elm["choices"]){
+					if(choice["id"] == s && choice.isMember("elm")){
+						elm = choice["elm"];
+						found = true;
+						break;
+					}
+				}
+				if(found){
+					if(param != NULL && param->isObject() && param->isMember(s)){
+						param = &(*param)[s];
+					}else{
+						param = NULL;
+					}
+					continue;
+				}
+				return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+			}else{
+				// selector cannot change schema state, so no hide/show/elm in any choice
+				for(Json::Value choice : elm["choices"]){
+					if(choice.isMember("elm") || choice.isMember("hide") || choice.isMember("show")){
+						return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+					}
+				}
+				return SchemaValTypeJsonObj(SVT_SELECTOR_NO_AFFECT, elm, param);
+			}
+		}
+		if(elm["type"] == "tuple"){
+			if(index+1 >= parts.size())
+				SchemaValTypeJsonObj(SVT_ERR, elm, param);
+			index ++;
+			std::string s = parts[index];
+			bool found = false;
+			for(Json::Value telm : elm["elms"]){
+				if(telm["id"] == s){
+					elm = telm;
+					found = true;
+					break;
+				}
+			}
+			if(found){
+				if(param != NULL && param->isObject() && param->isMember(s)){
+					param = &(*param)[s];
+				}else{
+					param = NULL;
+				}
+				continue;
+			}
+			return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+		}
+		if(elm["type"] == "array"){
+			if(index+1 >= parts.size())
+				return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+			index ++;
+			elm = elm["elm"];
+
+			std::string aind = parts[index];
+			int aindex = atoi(aind.c_str());
+			if(param != NULL && param->isArray() && param->isValidIndex(aindex)){
+				param = &(*param)[aindex];
+			}else{
+				param = NULL;
+			}
+			continue;
+		}
+	}
+
+	return SchemaValTypeJsonObj(SVT_ERR, elm, param);
+}
+
+Json::Value *SchemaManager::getParamByAddr(Json::Value *paramRoot, std::string addr)
+{
+	SchemaValTypeJsonObj tmp = getParamAddrType(addr, paramRoot);
+	return tmp.param;
+}
+
+bool SchemaManager::validateAnimationParam(Json::Value &keyframeRoot, int frameCount, std::string &err)
+{
+	if(!keyframeRoot.isArray()) // quick assertion - should already be checked
+		return false;
+
+	for(auto keyframe : keyframeRoot){
+		if(!keyframe.isObject()){
+			err += "Error: Keyframe found which is not object!\n";
+			return false;
+		}
+		if(!keyframe.isMember("frame") || !keyframe["frame"].isInt()){
+			err += "Error: Keyframe must contain integer 'frame' number!\n";
+			return false;
+		}
+		int frameNo = keyframe["frame"].asInt();
+		if(frameNo > frameCount || frameNo <= 1){
+			err += "Error: Keyframe frame number must be > 1 and  <= framecount!\n";
+			return false;
+		}
+		if(!keyframe.isMember("val")){
+			err += "Error: Keyframe must contain a val element!\n";
+			return false;
+		}
+		if(!keyframe.isMember("param") || !keyframe["param"].isString()){
+			err += "Error: Keyframe must contain string 'param'!\n";
+			return false;
+		}
+
+		if(!keyframe.isMember("interp") || !keyframe["interp"].isString()){
+			keyframe["interp"] = "none";
+		}
+		std::string interp = keyframe["interp"].asString();
+		if(interp != "none" && interp != "linear" && interp != "cube" && interp != "square" &&
+				interp != "sqroot" && interp != "cuberoot"){
+			err += "Error: Invalid Keyframe interpolation: "+interp+"!\n";
+			return false;
+		}
+
+		// now check the param
+
+		SchemaValTypeJsonObj ret = getParamAddrType(keyframe["param"].asString(), NULL);
+		if(ret.vt == SVT_ERR){
+			err += "Error: Param Address Invalid!\n";
+			return false;
+		}
+		Json::Value schemaEntry = ret.elm;
+
+		// now verify the data:
+		std::vector<SchemaActuator> act;
+		if(ret.vt == SVT_INT){
+			SchemaElementIntegral Eint("", schemaEntry);
+			Eint.overrideElementID("val");
+			Eint.verifyElement(keyframe, err, act);
+		}else if(ret.vt == SVT_REAL){
+			SchemaElementReal Ereal("", schemaEntry);
+			Ereal.overrideElementID("val");
+			Ereal.verifyElement(keyframe, err, act);
+		}else if(ret.vt == SVT_COMPLEX){
+			SchemaElementComplex Ecomp("", schemaEntry);
+			Ecomp.overrideElementID("val");
+			Ecomp.verifyElement(keyframe, err, act);
+		}else if(ret.vt == SVT_TEXT){
+			SchemaElementText Etext("", schemaEntry);
+			Etext.overrideElementID("val");
+			Etext.verifyElement(keyframe, err, act);
+			if(interp != "none"){
+				err += "Error: Text Keyframe cannot be interpolated!\n";
+				return false;
+			}
+		}else if(ret.vt == SVT_COLOR){
+			SchemaElementColor Ecolor("", schemaEntry);
+			Ecolor.overrideElementID("val");
+			Ecolor.verifyElement(keyframe, err, act);
+		}else if(ret.vt == SVT_SELECTOR_NO_AFFECT){
+			SchemaElementSelector Esel("", schemaEntry);
+			Esel.overrideElementID("val");
+			Esel.verifyElement(keyframe, err, act);
+			if(interp != "none"){
+				err += "Error: Selector Keyframe cannot be interpolated!\n";
+				return false;
+			}
+		}
+
+	}
+	return err == "";
+}
+
+
 
 SchemaManager *SchemaManager::getSingleton()
 {

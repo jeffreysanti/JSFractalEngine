@@ -39,8 +39,8 @@ import org.json.simple.JSONValue;
  * @author jeffrey
  */
 public class ParamsElementArray extends ParamsElement {
-    public ParamsElementArray(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
-        super(schemaDefn, paramsContainer, cb, arrIndex);
+    public ParamsElementArray(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
+        super(schemaDefn, paramsContainer, cb, arrIndex, addr);
         
         lbl = new JLabel((String)schemaDefn.get("caption"));
         
@@ -48,6 +48,9 @@ public class ParamsElementArray extends ParamsElement {
         lst.setLayout(new BoxLayout(lst, BoxLayout.Y_AXIS));
         
         verify(); // assures some value is there
+        
+        callback.registerAnimationParamType(new AnimationWindow.AnimationParam(addr, 
+                AnimationWindow.AnimationParamType.APT_NON_TYPE, schem));
     }
     
     @Override
@@ -78,23 +81,28 @@ public class ParamsElementArray extends ParamsElement {
         JSONArray val = (JSONArray)getValue();
         JSONObject elmsSchema = (JSONObject)schem.get("elm");
         String type = (String)elmsSchema.get("type");
+        callback.removeAnimationParamType(addr+":");
         for(int i=0; i<val.size(); i++){
+            String newAddr = addr + ":" + i;
+            
             // add element to list & verify it
             ParamsElement e;
             if(type.equals("text")){
-                e = new ParamsElementText(elmsSchema, val, callback, i);
+                e = new ParamsElementText(elmsSchema, val, callback, i, newAddr);
             }else if(type.equals("integer")){
-                e = new ParamsElementIntegral(elmsSchema, val, callback, i);
+                e = new ParamsElementIntegral(elmsSchema, val, callback, i, newAddr);
             }else if(type.equals("selector")){
-                e = new ParamsElementSelector(elmsSchema, val, callback, i);
+                e = new ParamsElementSelector(elmsSchema, val, callback, i, newAddr);
             }else if(type.equals("color")){
-                e = new ParamsElementColor(elmsSchema, val, callback, i);
+                e = new ParamsElementColor(elmsSchema, val, callback, i, newAddr);
             }else if(type.equals("real")){
-                e = new ParamsElementReal(elmsSchema, val, callback, i);
+                e = new ParamsElementReal(elmsSchema, val, callback, i, newAddr);
+            }else if(type.equals("complex")){
+                e = new ParamsElementComplex(elmsSchema, val, callback, i, newAddr);
             }else if(type.equals("array")){
-                e = new ParamsElementArray(elmsSchema, val, callback, i);
+                e = new ParamsElementArray(elmsSchema, val, callback, i, newAddr);
             }else if(type.equals("tuple")){
-                e = new ParamsElementTuple(elmsSchema, val, callback, i);
+                e = new ParamsElementTuple(elmsSchema, val, callback, i, newAddr);
             }
             else{
                 continue;
@@ -118,6 +126,7 @@ public class ParamsElementArray extends ParamsElement {
                         return;
                     val.remove(arrIndex);
                     verify();
+                    callback.reportAnimationParamChange();
                 }
             });
             actionLbl.addMouseListener(new MouseAdapter(){
@@ -161,6 +170,7 @@ public class ParamsElementArray extends ParamsElement {
                 JSONArray val = (JSONArray)getValue();
                 val.add(null);
                 verify();
+                callback.reportAnimationParamChange();
             }
         });
         lst.add(btnNew);

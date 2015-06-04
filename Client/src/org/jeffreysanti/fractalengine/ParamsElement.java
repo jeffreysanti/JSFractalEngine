@@ -15,10 +15,11 @@ import org.json.simple.JSONValue;
  * @author jeffrey
  */
 public class ParamsElement {
-    public ParamsElement(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex){
+    public ParamsElement(JSONObject schemaDefn, Object paramsContainer, PanelProperties cb, int arrIndex, String addr){
         callback = cb;
         schem = schemaDefn;
         grp = paramsContainer;
+        this.addr = addr;
         
         id = (String)schem.get("id");
         aind = arrIndex;
@@ -73,4 +74,5 @@ public class ParamsElement {
     protected PanelProperties callback;
     protected String id;
     protected int aind;
+    protected String addr;
 }
