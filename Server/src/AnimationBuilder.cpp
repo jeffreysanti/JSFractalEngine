@@ -8,9 +8,8 @@
 #include "AnimationBuilder.h"
 #include "FractalGen.h"
 
-AnimationBuilder::AnimationBuilder(ParamsFile *params, ParamsFileNotSchema *paramsOut, int fid) {
+AnimationBuilder::AnimationBuilder(ParamsFile *params, int fid) {
 	p = params;
-	pOut = paramsOut;
 	id = fid;
 
 

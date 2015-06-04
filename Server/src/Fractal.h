@@ -43,7 +43,7 @@ enum FractalState{
 class Fractal{
 
 public:
-	Fractal(unsigned int id, ParamsFile *params, ParamsFileNotSchema *paramsOut);
+	Fractal(unsigned int id, ParamsFile *params);
 	virtual ~Fractal();
 
 	bool isEndedEarly();
@@ -65,7 +65,6 @@ public:
 
 protected:
 	ParamsFile *p;
-	ParamsFileNotSchema *pOut;
 
 	unsigned long renderStart;
 	void postRender();

@@ -7,8 +7,8 @@
 
 #include "FractalMandleJulia.h"
 
-FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p, ParamsFileNotSchema *paramsOut)
-						: Fractal(id, p, paramsOut) {
+FractalMandleJulia::FractalMandleJulia(unsigned int id, ParamsFile *p)
+						: Fractal(id, p) {
 	I = NULL;
 	histogram = NULL;
 	algoCopy = -1;
@@ -526,53 +526,61 @@ void FractalMandleJulia::passEvaluate()
 	if(updateStatus("Eval 5/5", 0))
 		return;
 
-	// how interesting is this?
-	int uniqueIterCount = 0;
-	int sum = 0;
-	for(int i=0; i<iters; i++)
-	{
-		if(histogram[i] > 0)
-			uniqueIterCount ++;
-		sum += (i+1)*histogram[i];
+	Json::Value &pOut = FractalLogger::getSingleton()->outParams(getId());
+
+	if(p->getFrameData() == 0){
+		// how interesting is this?
+		int uniqueIterCount = 0;
+		int sum = 0;
+		for(int i=0; i<iters; i++)
+		{
+			if(histogram[i] > 0)
+				uniqueIterCount ++;
+			sum += (i+1)*histogram[i];
+		}
+		pOut["uniqueSecs"] = uniqueIterCount;
+
+		// get standard deviation
+		double avg = sum / (width*height);
+		int hmax = 0;
+		pOut["avgIterCount"] = avg;
+		double variance = 0;
+		for(int i=0; i<iters; i++)
+		{
+			variance += histogram[i] * std::pow(avg - (i+1), 2);
+			if(histogram[i] > hmax)
+				hmax = histogram[i];
+		}
+		variance = variance / (width * height);
+		pOut["stdDeviation"] = std::sqrt(variance);
+
+		// populate charts
+		Json::Value graphs = Json::Value(Json::arrayValue);
+
+		Json::Value histo = Json::Value(Json::objectValue);
+		histo["title"] = "Histogram";
+		histo["xaxis"] = "Iteration Count";
+		histo["yaxis"] = "Pixel Count";
+		histo["xmin"] = 1;
+		histo["xmax"] = iters;
+		histo["ymin"] = 0;
+		histo["ymax"] = hmax;
+		histo["trace"] = Json::Value(Json::arrayValue);
+		for(int i=0; i<iters; i++)
+		{
+			Json::Value pt = Json::Value(Json::arrayValue);
+			pt[0] = i+1;
+			pt[1] = histogram[i];
+			histo["trace"][i] = pt;
+		}
+
+		graphs[0] = histo;
+		pOut["graphs"] = graphs;
+	}else{
+		// TODO: What About For Animations?
 	}
-	pOut->getJson()["uniqueSecs"] = uniqueIterCount;
 
-	// get standard deviation
-	double avg = sum / (width*height);
-	int hmax = 0;
-	pOut->getJson()["avgIterCount"] = avg;
-	double variance = 0;
-	for(int i=0; i<iters; i++)
-	{
-		variance += histogram[i] * std::pow(avg - (i+1), 2);
-		if(histogram[i] > hmax)
-			hmax = histogram[i];
-	}
-	variance = variance / (width * height);
-	pOut->getJson()["stdDeviation"] = std::sqrt(variance);
-
-	// populate charts
-	Json::Value graphs = Json::Value(Json::arrayValue);
-
-	Json::Value histo = Json::Value(Json::objectValue);
-	histo["title"] = "Histogram";
-	histo["xaxis"] = "Iteration Count";
-	histo["yaxis"] = "Pixel Count";
-	histo["xmin"] = 1;
-	histo["xmax"] = iters;
-	histo["ymin"] = 0;
-	histo["ymax"] = hmax;
-	histo["trace"] = Json::Value(Json::arrayValue);
-	for(int i=0; i<iters; i++)
-	{
-		Json::Value pt = Json::Value(Json::arrayValue);
-		pt[0] = i+1;
-		pt[1] = histogram[i];
-		histo["trace"][i] = pt;
-	}
-
-	graphs[0] = histo;
-	pOut->getJson()["graphs"] = graphs;
+	FractalLogger::getSingleton()->unlockOutParams(getId());
 }
 
 unsigned int FractalMandleJulia::returnArtifacts(FractalMeta &meta, char **dta)

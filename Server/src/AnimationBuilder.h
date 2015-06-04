@@ -51,7 +51,7 @@ struct AnimatedParam{
 
 class AnimationBuilder {
 public:
-	AnimationBuilder(ParamsFile *params, ParamsFileNotSchema *paramsOut, int fid);
+	AnimationBuilder(ParamsFile *params, int fid);
 	virtual ~AnimationBuilder();
 
 	Animation spawnJobs(std::string &err, int maxTime);
@@ -62,7 +62,6 @@ protected:
 	void interpolateFrame(ParamsFile &pnew, int frameno);
 
 	ParamsFile *p;
-	ParamsFileNotSchema *pOut;
 	int id;
 
 	std::map<std::string, AnimatedParam> A;

@@ -12,6 +12,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <thread>
 #include "DBManager.h"
 
 #define MAX_FILE_CACHE 12
@@ -28,6 +29,21 @@ struct LogCache{
 	bool open;
 };
 
+struct OutCache{
+
+	OutCache(){
+		open = false;
+		fid = 0;
+		dirty = false;
+	}
+
+	Json::Value root;
+	int fid;
+	bool open;
+	std::mutex lock;
+	bool dirty;
+};
+
 class FractalLogger {
 public:
 
@@ -35,12 +51,18 @@ public:
 
 	void write(int fid, std::string data);
 
+	Json::Value &outParams(int fid);
+	void unlockOutParams(int fid, bool flushNow = false);
+
+	void forceFlushAll();
+
 private:
 
 	FractalLogger();
 	virtual ~FractalLogger();
 
 	LogCache F[MAX_FILE_CACHE];
+	OutCache P[MAX_FILE_CACHE];
 
 	static FractalLogger singleton;
 

@@ -79,11 +79,9 @@ bool FractalGen::cancelJob(unsigned int id)
 
 	for(auto it=JQManual.begin(); it!=JQManual.end(); it++){
 		if((*it)->getJson()["internal"]["id"].asUInt() == id){
-			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut);
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it));
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
-			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
 			delete fTmp;
 			JQManual.erase(it);
 			canceled(id, this);
@@ -92,11 +90,9 @@ bool FractalGen::cancelJob(unsigned int id)
 	}
 	for(auto it=JQ.begin(); it!=JQ.end(); it++){
 		if((*it)->getJson()["internal"]["id"].asUInt() == id){
-			ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it), pOut);
+			Fractal *fTmp = new Fractal((*it)->getJson()["internal"]["id"].asUInt(), (*it));
 			fTmp->doCancel();
 			fTmp->updateStatus("JobQueueCanceling", 100);
-			pOut->saveToFile(concat(saveDir+"/", (*it)->getJson()["internal"]["id"].asUInt())+".info");
 			delete fTmp;
 			JQ.erase(it);
 			canceled(id, this);
@@ -423,6 +419,12 @@ void FractalGen::addAnimationFramesToRenderQueue(int count){
 			FractalLogger::getSingleton()->write((*itA).baseID,
 					concat("Animation Completed! Took: ", t) + " Seconds.\n");
 
+			time_t now = time(NULL);
+			char* dt = ctime(&now);
+			Json::Value &pOut = FractalLogger::getSingleton()->outParams((*itA).baseID);
+			pOut["freeTime"] = std::string(dt).substr(0, strlen(dt)-1);
+			FractalLogger::getSingleton()->unlockOutParams((*itA).baseID, true);
+
 			FractalMeta m = DBManager::getSingleton()->getFractal((*itA).baseID);
 			m.status = FDBS_COMPLETE;
 			DBManager::getSingleton()->updateFractal(m);
@@ -459,11 +461,9 @@ void FractalGen::cancelAnimation(int jid)
 int runGen(RenderingJob *r)
 {
 	try{
-		ParamsFileNotSchema *pOut = new ParamsFileNotSchema();
-
 		std::string err = "";
 		if(!r->params->validate(err)){
-			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params);
 			fTmp->err(err);
 			std::cerr << err;
 			delete fTmp;
@@ -475,10 +475,10 @@ int runGen(RenderingJob *r)
 
 		std::string animated = r->params->getJson()["basic"]["anim"]["selected"].asString();
 		if(animated == "yes"){
-			AnimationBuilder builder(r->params, pOut, r->params->getJson()["internal"]["id"].asInt());
+			AnimationBuilder builder(r->params, r->params->getJson()["internal"]["id"].asInt());
 			Animation anim = builder.spawnJobs(err, timeOut);
 			if(err != ""){
-				Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+				Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params);
 				fTmp->err(err);
 				std::cerr << err;
 				delete fTmp;
@@ -493,7 +493,7 @@ int runGen(RenderingJob *r)
 
 
 		if(type == "mandlejulia"){
-			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			r->fract = new FractalMandleJulia(r->params->getJson()["internal"]["id"].asInt(), r->params);
 			r->fract->processParams();
 			if(!r->fract->isOkay()){
 				std::cerr << r->fract->getErrors();
@@ -502,7 +502,7 @@ int runGen(RenderingJob *r)
 			}
 			r->fract->render(timeOut);
 		}else{
-			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params, pOut);
+			Fractal *fTmp = new Fractal(r->params->getJson()["internal"]["id"].asInt(), r->params);
 			fTmp->err("Error: Unknown type parameter: " + type);
 			r->timeStart = TIMESTART_COMPLETE;
 			delete fTmp;
@@ -511,11 +511,6 @@ int runGen(RenderingJob *r)
 
 		if(!r->fract->isEndedEarly()){
 			r->fract->updateStatus("Complete!!!", 100);
-			pOut->getJson()["Complete"] = "YES";
-		}
-
-		if(r->fract->isOkay()){
-			pOut->saveToFile(concat(FractalGen::getSaveDir()+"/", r->params->getJson()["internal"]["id"].asInt())+".info");
 		}
 		r->timeStart = TIMESTART_COMPLETE;
 	}catch (const std::exception &exc){
