@@ -49,7 +49,7 @@ Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 	}
 	Json::Value animData = p->getJson()["anim"];
 	p->getJson()["anim"] = Json::ValueType::nullValue;
-	p->getJson()["basic"]["anim"] = "no";
+	p->getJson()["basic"]["anim"]["selected"] = "no";
 	if(!animData.isMember("frames") || !animData["frames"].isInt()){
 		err += "anim.frames does not exist or non-int\n";
 		return anim;
@@ -96,6 +96,7 @@ Animation AnimationBuilder::spawnJobs(std::string &err, int maxTime){
 
 	p->getJson()["internal"]["thisframe"] = 1;
 	p->getJson()["anim"] = animData;
+	p->getJson()["basic"]["anim"]["selected"] = "yes"; // restore it :D
 
 	// finally revalidate the parameters in case we messed up
 	err += SchemaManager::getSingleton()->validateParamaters(p->getJson());
@@ -159,29 +160,29 @@ void AnimationBuilder::buildAnimatedParams(Json::Value &anim, ParamsFile *pnew){
 template<typename T>
 T animationInterpolate(std::string method, int frame, int fi, int ff, T i, T f){
 	double steps = ff - fi;
-	double progress = double(frame-fi) / steps;
+	double progress = double(frame-fi);
 	if(method == "linear"){
-		T m = f - i;
+		T m = (f - i)/steps;
 		T b = i;
 		return m * progress + b;
 	}
 	if(method == "square"){
-		T m = f - i;
+		T m = (f - i)/steps;
 		T b = i;
 		return m * std::pow(progress,2) + b;
 	}
 	if(method == "cube"){
-		T m = f - i;
+		T m = (f - i)/steps;
 		T b = i;
 		return m * std::pow(progress,3) + b;
 	}
 	if(method == "sqroot"){
-		T m = f - i;
+		T m = (f - i)/steps;
 		T b = i;
 		return m * std::sqrt(progress) + b;
 	}
 	if(method == "cuberoot"){
-		T m = f - i;
+		T m = (f - i)/steps;
 		T b = i;
 		return m * std::pow(progress,(double)1/3) + b;
 	}

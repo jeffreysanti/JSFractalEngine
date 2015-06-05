@@ -210,7 +210,6 @@ void FractalMandleJulia::applyTransformations(double sizeX, double sizeY, double
 	p->getJson()["basic"]["translateY"] = 0;
 	p->getJson()["basic"]["scaleX"] = 1;
 	p->getJson()["basic"]["scaleY"] = 1;
-	// TODO: DO i need to save here? p->saveToFile()
 }
 
 void FractalMandleJulia::processParamsGraphics()

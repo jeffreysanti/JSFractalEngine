@@ -152,6 +152,14 @@ void Fractal::processParams()
 
 void Fractal::postProcessParams()
 {
+	// update job file
+	if(p->getFrameData() == 0 || p->getFrameData() == 1)
+		p->saveToFile(concat(FractalGen::getSaveDir()+"/", getId())+".job");
+	else{
+		p->saveToFile(concat(concat(FractalGen::getSaveDir()+"/", getId())+".frame.",
+				p->getFrameData())+".job");
+	}
+
 	unsigned long end = time(NULL);
 	unsigned long len = end - processParamStart;
 	Json::Value &pOut = FractalLogger::getSingleton()->outParams(fId);
