@@ -13,7 +13,7 @@ ClientCommunicator::ClientCommunicator(SOCKET s, unsigned int id)
 	sock = s;
 	nosocket = false;
 	bytesIn = bytesOut = 0;
-	Pin = new Packet;
+	Pin = new Packet(nullptr);
 	Pout = nullptr;
 	ID = id;
 }
@@ -269,7 +269,7 @@ bool ClientCommunicator::update()
 						Pout = nullptr;
 						return false;
 					}
-					ssize_t count = send(sock, &buf, bytesLeft, 0);
+					ssize_t count = send(sock, (char*)&buf, bytesLeft, 0);
 					if(count < 0 && !wouldBeBlocked && !bufferFull){
 						std::cout << "Client Write Failed [" << ID << "] Kicking...\n";
 						std::cout << "  CASE B[FileSend]" << errno << "\n";
@@ -368,7 +368,7 @@ bool ClientCommunicator::update()
 						char buf[1024];
 						long int lenSent = 0;
 						while(lenSent < len){
-							long int bytesLeft = std::min((long int)1024, len-lenSent);
+							long int bytesLeft = std::min((long int)1024, (long int)len-lenSent);
 							pkt->fl->read((char*)&buf, bytesLeft);
 							if(!Pout->fl){
 								std::cout << "Client Write Failed [Reading Packet File]...\n";
