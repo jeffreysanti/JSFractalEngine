@@ -26,6 +26,7 @@
 #endif
 
 #include <iostream>
+#include <fstream>
 #include <cerrno>
 #include <cassert>
 
@@ -45,11 +46,12 @@ struct PacketHeader{
 };
 
 struct Packet{
-	Packet(){
+	Packet(std::fstream *f) : fl(f){
 		data = nullptr;
 	}
 	PacketHeader hdr;
 	char *data;
+	std::fstream *fl;
 };
 
 
@@ -83,6 +85,7 @@ public:
 
 	void addPacketToQueue(std::string head, unsigned int len, char *data, unsigned int replyTo=0);
 	void addPacketToQueue(std::string head, std::string str, unsigned int replyTo=0);
+	void addPacketToQueue(std::string head, std::fstream *flUpload, unsigned int replyTo=0);
 
 	void sendNoSocketAuthorization();
 

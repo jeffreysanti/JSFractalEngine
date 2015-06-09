@@ -36,6 +36,7 @@
 #include "DBManager.h"
 #include "FractalGenTrackManager.h"
 #include "AnimationBuilder.h"
+#include "FTPServer.h"
 
 int dummy();
 

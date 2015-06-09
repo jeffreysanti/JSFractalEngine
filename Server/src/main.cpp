@@ -16,7 +16,7 @@
 #include "UserManager.h"
 #include "ParamsFile.h"
 #include "FractalGen.h"
-
+#include "FTPServer.h"
 
 
 int manualSubmit(ParamsFile *p){
@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
 	DBManager::getSingleton()->initialize();
 	FractalGenTrackManager::getSingleton()->initialize();
 	ConnectionManager::getSingleton()->initialize();
+	FTPServer::getSingleton()->initialize();
 
 	FractalGen gen;
 

@@ -71,6 +71,14 @@ public class ServerConnection implements Runnable {
         return uid;
     }
     
+    synchronized public String getSocketsPath(){
+        return noSocketsPath + "/";
+    }
+    
+    synchronized public String getAddress(){
+        return addr;
+    }
+    
     synchronized private void readSocket(){
         
         if(nosockets){

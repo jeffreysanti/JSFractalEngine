@@ -587,46 +587,61 @@ unsigned int FractalMandleJulia::returnArtifacts(FractalMeta &meta, char **dta)
 	unsigned int len = 4;
 	unsigned int artificatCount = 0;
 
-	std::string imgPath = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", meta.jobID) + ".png";
+	std::string path = concat(DirectoryManager::getSingleton()->getRootDirectory()+"renders/", meta.jobID);
+	std::fstream animFile(std::string(path+".mkv").c_str(), std::ios_base::in | std::ios_base::binary);
+
+	std::string imgPath = path + ".png";
 	FILE *fp = fopen(imgPath.c_str(), "rb");
-	if(fp == NULL){ // no image
-		*dta = new char[len];
-		char *ptr = *dta;
 
-		artificatCount = htonl(artificatCount);
-		memcpy(ptr, &artificatCount, 4);
-		ptr += 4;
-	}else{
-		artificatCount = 1;
-		len += 8;
-
+	len = 4;
+	unsigned int imgSz;
+	if(fp != NULL){
+		artificatCount ++; // image
 		fseek(fp, 0L, SEEK_END);
-		int dtaSz = ftell(fp);
+		imgSz = ftell(fp);
 		fseek(fp, 0L, SEEK_SET);
-		len += dtaSz;
-		*dta = new char[len];
-		char *ptr = *dta;
+		len += imgSz;
+		len += 4 + 4; // {IMGS} {len}
+	}
+	if(animFile.is_open()){
+		artificatCount ++; // animation
+		len += 4 + 4 + 4; // {ANIM} {4} {portno}
+	}
 
-		// now copy data
-		artificatCount = htonl(artificatCount);
-		memcpy(ptr, &artificatCount, 4);
-		ptr += 4;
+	*dta = new char[len];
+	char *ptr = *dta;
+	artificatCount = htonl(artificatCount);
+	memcpy(ptr, &artificatCount, 4);
+	ptr += 4;
 
+	if(fp != NULL){
 		// image artifact
 		memcpy(ptr, "IMGS", 4); // image, scalable
 		ptr += 4;
 
-		unsigned int reportedSize = htonl(dtaSz);
+		unsigned int reportedSize = htonl(imgSz);
 		memcpy(ptr, &reportedSize, 4);
 		ptr += 4;
 
-		for(int i=0; i<dtaSz; i++){
+		for(int i=0; i<imgSz; i++){
 			char byte;
 			fread(&byte, 1, 1, fp);
 			*ptr = byte;
 			ptr ++;
 		}
 		fclose(fp);
+	}
+	if(animFile.is_open()){
+		memcpy(ptr, "ANIM", 4); // image, scalable
+		ptr += 4;
+
+		unsigned int zeroExtra = htonl(4);
+		memcpy(ptr, &zeroExtra, 4);
+		ptr += 4;
+
+		unsigned int portno = htonl(FTPServer::getSingleton()->getPortNo());
+		memcpy(ptr, &portno, 4);
+		ptr += 4;
 	}
 	return len;
 }

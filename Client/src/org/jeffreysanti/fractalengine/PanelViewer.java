@@ -60,6 +60,9 @@ public class PanelViewer extends JPanel implements ServerReplyer {
                 if(a.type.equals("IMGS")){                    
                     addPane(new ViewPaneTransformableImage(c, a.data), "Image");
                 }
+                if(a.type.equals("ANIM")){                    
+                    addPane(new ViewPaneAnimation(c, a.data), "Animation");
+                }
             }
         }
         

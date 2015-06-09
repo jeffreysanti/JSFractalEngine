@@ -23,7 +23,7 @@ ClientCommunicator::ClientCommunicator(int s, unsigned int id)
 	sock = s;
 	nosocket = false;
 	bytesIn = bytesOut = 0;
-	Pin = new Packet;
+	Pin = new Packet(nullptr);
 	Pout = nullptr;
 	ID = id;
 }
@@ -34,7 +34,7 @@ ClientCommunicator::ClientCommunicator()
 	sock = 0;
 	bytesIn = bytesOut = 0;
 	ID = 0;
-	Pin = new Packet;
+	Pin = new Packet(nullptr);
 	Pout = nullptr;
 }
 
@@ -62,6 +62,9 @@ void ClientCommunicator::deletePacket(Packet *pkt)
 		if(pkt->data != nullptr){
 			delete [] pkt->data;
 			pkt->data = nullptr;
+		}
+		if(pkt->fl != NULL){
+			delete pkt->fl;
 		}
 		delete pkt;
 		pkt = nullptr;
@@ -111,7 +114,7 @@ void ClientCommunicator::sendNoSocketAuthorization()
 
 void ClientCommunicator::addPacketToQueue(std::string head, unsigned int len, char *data, unsigned int replyTo)
 {
-	Packet *pkt = new Packet;
+	Packet *pkt = new Packet(nullptr);
 	pkt->data = data;
 	pkt->hdr.magic = htonl(MAGIC);
 	pkt->hdr.len = htonl(len);
@@ -130,6 +133,24 @@ void ClientCommunicator::addPacketToQueue(std::string head, std::string str, uns
 	}
 
 	addPacketToQueue(head, len, data, replyTo);
+}
+
+void ClientCommunicator::addPacketToQueue(std::string head, std::fstream *flUpload, unsigned int replyTo)
+{
+	if(!flUpload->is_open())
+		return;
+
+	flUpload->seekg(0, flUpload->end);
+	int len = flUpload->tellg();
+	flUpload->seekg(0, flUpload->beg);
+
+	Packet *pkt = new Packet(flUpload);
+	pkt->data = NULL;
+	pkt->hdr.magic = htonl(MAGIC);
+	pkt->hdr.len = htonl(len);
+	pkt->hdr.replyAddr = htonl(replyTo);
+	memcpy(&pkt->hdr.pckType, head.c_str(), 4);
+	O.push_back(pkt);
 }
 
 
@@ -195,12 +216,12 @@ bool ClientCommunicator::update()
 			}
 			if(bytesIn == Pin->hdr.len + sizeof(PacketHeader)){ // entire packet read -> reset reader
 				R.push_back(Pin);
-				Pin = new Packet;
+				Pin = new Packet(nullptr);
 				bytesIn = 0;
 			}
 		}else if(bytesIn == sizeof(PacketHeader) && Pin->hdr.len == 0){
 			R.push_back(Pin);
-			Pin = new Packet;
+			Pin = new Packet(nullptr);
 			bytesIn = 0;
 		}
 
@@ -227,15 +248,38 @@ bool ClientCommunicator::update()
 				Pout->hdr.len = ntohl(Pout->hdr.len);
 			}
 			if(bytesOut >= sizeof(PacketHeader) && Pout->hdr.len > 0){ // write data section
-				ssize_t count = send(sock, Pout->data+(bytesOut-sizeof(PacketHeader)), Pout->hdr.len-(bytesOut-sizeof(PacketHeader)), 0);
-				if(count < 0 && !wouldBeBlocked && !bufferFull){
-					std::cout << "Client Write Failed [" << ID << "] Kicking...\n";
-					std::cout << "  CASE B" << errno << "\n";
-					close();
-					return false;
-				}
-				if(count > 0){
-					bytesOut += count;
+				if(Pout->data != nullptr){
+					ssize_t count = send(sock, Pout->data+(bytesOut-sizeof(PacketHeader)), Pout->hdr.len-(bytesOut-sizeof(PacketHeader)), 0);
+					if(count < 0 && !wouldBeBlocked && !bufferFull){
+						std::cout << "Client Write Failed [" << ID << "] Kicking...\n";
+						std::cout << "  CASE B[DataSend]" << errno << "\n";
+						close();
+						return false;
+					}
+					if(count > 0){
+						bytesOut += count;
+					}
+				}else{
+					char buf[1024];
+					long unsigned int bytesLeft = std::min((long unsigned int)1024, (long unsigned int)Pout->hdr.len-(bytesOut-sizeof(PacketHeader)));
+					Pout->fl->read((char*)&buf, bytesLeft);
+					if(!Pout->fl){
+						std::cout << "Client Write Failed [Reading Packet File]...\n";
+						deletePacket(Pout);
+						Pout = nullptr;
+						return false;
+					}
+					ssize_t count = send(sock, &buf, bytesLeft, 0);
+					if(count < 0 && !wouldBeBlocked && !bufferFull){
+						std::cout << "Client Write Failed [" << ID << "] Kicking...\n";
+						std::cout << "  CASE B[FileSend]" << errno << "\n";
+						close();
+						return false;
+					}
+					Pout->fl->seekg(count-bytesLeft, std::ios_base::cur);
+					if(count > 0){
+						bytesOut += count;
+					}
 				}
 			}
 			if(bytesOut >= sizeof(PacketHeader) && bytesOut == sizeof(PacketHeader)+Pout->hdr.len){ // done sending
@@ -252,7 +296,7 @@ bool ClientCommunicator::update()
 			std::string infl = DirectoryManager::getSingleton()->getRootDirectory()+"sin.sck";
 			FILE *fp2 = fopen(infl.c_str(),"rb");
 			if(fp2 != NULL){
-				Packet *pkt = new Packet;
+				Packet *pkt = new Packet(nullptr);
 
 				// read the header [Only one packet allowed at a time]
 				unsigned int count = fread(&pkt->hdr, 1, sizeof(PacketHeader), fp2);
@@ -318,7 +362,22 @@ bool ClientCommunicator::update()
 				// now write data (if it exists)
 				unsigned int len = ntohl(pkt->hdr.len);
 				if(len > 0){
-					fwrite(pkt->data, len, 1, fp);
+					if(pkt->data != nullptr){
+						fwrite(pkt->data, len, 1, fp);
+					}else{
+						char buf[1024];
+						long int lenSent = 0;
+						while(lenSent < len){
+							long int bytesLeft = std::min((long int)1024, len-lenSent);
+							pkt->fl->read((char*)&buf, bytesLeft);
+							if(!Pout->fl){
+								std::cout << "Client Write Failed [Reading Packet File]...\n";
+								break;
+							}
+							fwrite(&buf, bytesLeft, 1, fp);
+							lenSent += bytesLeft;
+						}
+					}
 				}
 
 				fclose(fp);

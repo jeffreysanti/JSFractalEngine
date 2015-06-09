@@ -5,6 +5,10 @@
 
 	// Port number
 	"portno" : 14860,
+	
+	// FTP port number
+	
+	"ftpport" : 14861,
 
 	// Last Resort alternative to sockets [if firewall prevents their use]
 	"nosockets" : false,
